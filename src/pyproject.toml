@@ -1,0 +1,25 @@
+[project]
+name = "certificat"
+version = "0.1.0"
+description = "Web site and reference implementation for the acmev2 package"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "acmev2",
+    "django-huey>=1.2.1",
+    "django>=5.1.2",
+    "mysqlclient>=2.2.4",
+    "pydantic-settings>=2.5.2",
+    "redis>=5.1.1",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "acme>=2.11.0",
+    "dnsmock>=21.2b2",
+    "pytest-django>=4.9.0",
+    "watchdog>=5.0.3",
+]
+
+[tool.uv.sources]
+acmev2 = { path = "../../acmev2/dist/acmev2-0.0.1.tar.gz" }

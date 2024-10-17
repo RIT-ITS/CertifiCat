@@ -1,0 +1,33 @@
+// For format details, see https://aka.ms/devcontainer.json.
+{
+	"name": "Python 3 & MariaDB",
+	"dockerComposeFile": "docker-compose.yml",
+	"initializeCommand": "./.devcontainer/initialize.sh",
+	"postStartCommand": ". $HOME/.cargo/env",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"features": {
+		"ghcr.io/devcontainers/features/node": {}
+	},
+	"remoteEnv": {
+		"VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv",
+		"UV_PROJECT_ENVIRONMENT": "${containerWorkspaceFolder}/.venv"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.black-formatter",
+				"ms-azuretools.vscode-docker",
+				"njpwerner.autodocstring",
+				"ms-python.isort",
+				"charliermarsh.ruff",
+				"redhat.vscode-xml"
+			],
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/local/bin/python"
+			}
+		}
+	}
+}

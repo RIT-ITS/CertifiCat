@@ -1,0 +1,1 @@
+MYSQL_PWD=$CERTIFICAT_DB_ROOT_PASSWORD mariadb -h mariadb. -uroot -e "CREATE DATABASE certificat;CREATE DATABASE certificat_test;"

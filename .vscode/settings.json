@@ -1,0 +1,21 @@
+{
+    "ruff.lint.args": [
+        "--force-exclude",
+        "acme_srv\/(?!(db_handler\\.py|ca_handler\\.py))",
+    ],
+    "[python]": {        
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+        }
+    },
+    "python.defaultInterpreterPath": "/usr/local/bin/python",
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/.venv/lib/python3.11/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/.venv/lib/python3.11/site-packages"
+    ],
+    "python.analysis.autoImportCompletions": true,
+}

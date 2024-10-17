@@ -1,0 +1,91 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Django Dev Server",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "${workspaceFolder}/src/certificat/manage.py",
+                "runserver"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "runOptions": {
+                "runOn": "default"
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "Start Huey",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "${workspaceFolder}/.venv/bin/watchmedo",
+                "auto-restart",
+                "--directory",
+                "${workspaceFolder}/src/",
+                "--recursive",
+                "--patterns",
+                "*.py",
+                "--",
+                "${workspaceFolder}/scripts/manage",
+                "run_huey"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "runOptions": {
+                "runOn": "default"
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "Start Webpack",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/src/frontend"
+            },
+            "command": "${workspaceFolder}/src/frontend/node_modules/.bin/webpack",
+            "args": [
+                "--watch"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "runOptions": {
+                "runOn": "default"
+            },
+            "problemMatcher": [],
+        },
+        {
+            "group": {
+                "kind": "build"
+            },
+            "label": "Start All Dev Services",
+            "dependsOn": [
+                "Start Django Dev Server",
+                "Start Huey",
+                "Start Webpack"
+            ]
+        }
+    ]
+}

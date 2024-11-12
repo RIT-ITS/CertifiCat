@@ -1,0 +1,119 @@
+{
+  "status": "done",
+  "assets": {
+    "../../../../../frontend/dist/components/accountAccessManager.d.ts": {
+      "name": "../../../../../frontend/dist/components/accountAccessManager.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/accountAccessManager.d.ts"
+    },
+    "../../../../../frontend/dist/components/accountAccessManager.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/accountAccessManager.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/accountAccessManager.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/confirmButton.d.ts": {
+      "name": "../../../../../frontend/dist/components/confirmButton.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/confirmButton.d.ts"
+    },
+    "../../../../../frontend/dist/components/confirmButton.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/confirmButton.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/confirmButton.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/editableText.d.ts": {
+      "name": "../../../../../frontend/dist/components/editableText.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/editableText.d.ts"
+    },
+    "../../../../../frontend/dist/components/editableText.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/editableText.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/editableText.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/fadeOnLoad.d.ts": {
+      "name": "../../../../../frontend/dist/components/fadeOnLoad.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/fadeOnLoad.d.ts"
+    },
+    "../../../../../frontend/dist/components/fadeOnLoad.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/fadeOnLoad.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/fadeOnLoad.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/mobileNav.d.ts": {
+      "name": "../../../../../frontend/dist/components/mobileNav.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/mobileNav.d.ts"
+    },
+    "../../../../../frontend/dist/components/mobileNav.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/mobileNav.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/mobileNav.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/newAccountFormManager.d.ts": {
+      "name": "../../../../../frontend/dist/components/newAccountFormManager.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/newAccountFormManager.d.ts"
+    },
+    "../../../../../frontend/dist/components/newAccountFormManager.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/newAccountFormManager.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/newAccountFormManager.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/profileMenu.d.ts": {
+      "name": "../../../../../frontend/dist/components/profileMenu.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/profileMenu.d.ts"
+    },
+    "../../../../../frontend/dist/components/profileMenu.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/profileMenu.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/profileMenu.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/stickyNav.d.ts": {
+      "name": "../../../../../frontend/dist/components/stickyNav.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/stickyNav.d.ts"
+    },
+    "../../../../../frontend/dist/components/stickyNav.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/stickyNav.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/stickyNav.d.ts.map"
+    },
+    "../../../../../frontend/dist/index.d.ts": {
+      "name": "../../../../../frontend/dist/index.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/index.d.ts"
+    },
+    "../../../../../frontend/dist/index.d.ts.map": {
+      "name": "../../../../../frontend/dist/index.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/index.d.ts.map"
+    },
+    "../../../../../frontend/dist/util.d.ts": {
+      "name": "../../../../../frontend/dist/util.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/util.d.ts"
+    },
+    "../../../../../frontend/dist/util.d.ts.map": {
+      "name": "../../../../../frontend/dist/util.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/util.d.ts.map"
+    },
+    "237f4a0afb.woff2": {
+      "name": "237f4a0afb.woff2",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/237f4a0afb.woff2",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-solid-900.woff2"
+    },
+    "2d89b49ac2.woff2": {
+      "name": "2d89b49ac2.woff2",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/2d89b49ac2.woff2",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-regular-400.woff2"
+    },
+    "370dd5af19.ttf": {
+      "name": "370dd5af19.ttf",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/370dd5af19.ttf",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-regular-400.ttf"
+    },
+    "adec7d6f31.ttf": {
+      "name": "adec7d6f31.ttf",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/adec7d6f31.ttf",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-solid-900.ttf"
+    },
+    "main.28ad00b933.css": {
+      "name": "main.28ad00b933.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.28ad00b933.css"
+    },
+    "main.a7091f5f59.js": {
+      "name": "main.a7091f5f59.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a7091f5f59.js"
+    }
+  },
+  "chunks": {
+    "main": [
+      "main.28ad00b933.css",
+      "main.a7091f5f59.js"
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+@use 'theme';
+@use 'sass:color';
+
+.messages {
+    + .messages {
+        margin-top:$spacer*.5;
+    }
+
+    position: relative;
+    padding: $spacer;
+    word-wrap: break-word;
+    border: 1px solid;
+    border-width: 1px 1px 1px 0;
+    border-radius: 2px;
+    background: no-repeat 10px 17px;
+    overflow-wrap: break-word;
+
+    &.messages--status {
+        color: mix($accentGreen, black, 30%);
+        border-color: $accentGreen;
+        background-color: mix($accentGreen, white, 10%);
+        
+        box-shadow: -8px 0 0 $accentGreen;
+    }
+    
+    &.messages--info {
+        color: mix($accentBlue, black, 30%);
+        border-color: $accentBlue;
+        background-color: mix($accentBlue, white, 10%);
+        
+        box-shadow: -8px 0 0 $accentBlue;
+    }
+    
+    &.messages--warning {
+        color: mix($accentOrange, black, 30%);
+        border-color: $accentOrange;
+        background-color: mix($accentOrange, white, 10%);
+        
+        box-shadow: -8px 0 0 $accentOrange;
+    }
+    
+    &.messages--error {
+        color: mix($accentRed, black, 30%);
+        border-color: $accentRed;
+        background-color: mix($accentRed, white, 10%);
+        
+        box-shadow: -8px 0 0 $accentRed;
+    }
+
+    &.messages-small {
+        padding: $spacer*.5 $spacer*.5;
+        margin-top: 0;
+    }
+}
+

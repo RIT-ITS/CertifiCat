@@ -1,0 +1,9 @@
+FROM ubuntu:latest
+
+ENV PYTHONUNBUFFERED 1
+
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends \
+    certbot 
+
+EXPOSE 80

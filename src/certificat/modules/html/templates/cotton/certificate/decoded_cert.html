@@ -1,0 +1,41 @@
+{% load certificat %}
+
+<h5 class="bold mt-4">{{ cert.subject.rfc4514_string|default:"No Subject Found" }}</h5>
+                    
+<dl class="field-list no-borders">
+    <dt>Version</dt>
+    <dd>{{ cert.version|x509_version }}</dd>
+
+    <dt>Serial Number</dt>
+    <dd>{{ cert.serial_number|hex|upper }}</dd>
+
+    <dt>Signature</dt>
+    <dd>
+        {{ cert.signature_hash_algorithm.name }}<br />
+        <div class="monospaced adjustable-hex">
+        {% for line in cert.signature|hex|wrap:21 %}
+            <div>{{ line }}</div>
+        {% endfor %}
+        </div>
+    </dd>
+
+    <dt>Issuer</dt>
+    <dd>
+        {{ cert.issuer.rfc4514_string }}
+    </dd>
+
+    <dt>Validity</dt>
+    <dd>
+        NotBefore={{ cert.not_valid_before }}<br />
+        NotAfter={{ cert.not_valid_after }}
+    </dd>
+
+    <dt>Extensions</dt>
+    <dd class="p0">
+        <dl class="indented-list mt-2">
+        {% for ext in cert.extensions %}
+            {{ ext|render_x509_extension }}
+        {% endfor %}
+        </dl>
+    </dd>
+</dl>

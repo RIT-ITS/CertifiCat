@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+"""urls for acme django database"""
+
+from django.urls import path
+
+from . import views
+
+app_name = "api"
+urlpatterns = [
+    path(
+        "api/binding/<binding_name>",
+        views.edit_binding,
+        name="edit_binding",
+    ),
+    path(
+        "api/my/groups",
+        views.my_groups,
+        name="fetch_user_groups",
+    ),
+]

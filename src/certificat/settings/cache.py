@@ -1,18 +1,14 @@
-from django.utils.functional import SimpleLazyObject
-from .dynamic import ApplicationSettings
-
-import inject
-
 __all__ = ["CACHES"]
 
+import inject
+from .dynamic import ApplicationSettings
 
-def _default_cache():
-    app_settings = inject.instance(ApplicationSettings)
-    return {
+dynamic_settings = inject.instance(ApplicationSettings)
+
+CACHES = {
+    "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": f"redis://:{app_settings.redis.password}@{app_settings.redis.host}:{app_settings.redis.port}",
+        "LOCATION": f"redis://:{dynamic_settings.redis.password}@{dynamic_settings.redis.host}:{dynamic_settings.redis.port}",
         "OPTIONS": {"health_check_interval": 30},
     }
-
-
-CACHES = {"default": SimpleLazyObject(_default_cache)}
+}

@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from certificat.settings import bindings as settings_bindings
 
 
 class CertificatConfig(AppConfig):
@@ -31,7 +32,9 @@ class CertificatConfig(AppConfig):
 
         import inject
 
-        bindings = [
+        # Re-binds instances to the injector. Since it can only happen once
+        # it needs to get the settings binding sand re-apply them.
+        bindings = settings_bindings + [
             (INonceService, NonceService()),
             (IDirectoryService, DirectoryService()),
             (IAccountService, AccountService()),
@@ -44,7 +47,7 @@ class CertificatConfig(AppConfig):
         inject.configure(
             lambda binder: [binder.bind(api, impl) for api, impl in bindings],
             bind_in_runtime=False,
-            once=True,
+            clear=True,
         )
 
         # Import tasks to register them and make them available to call

@@ -5,6 +5,7 @@ from huey.contrib.djhuey import task, db_task
 import inject
 from . import finalize_order
 from . import validate_challenge
+from . import housekeeping
 
 logger = logging.getLogger(__name__)
 

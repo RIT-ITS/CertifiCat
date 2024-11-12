@@ -1,0 +1,91 @@
+$spacer: 1rem !default;
+
+$spacers: (
+    0: 0,
+    1: $spacer * 0.25,
+    2: $spacer * 0.5,
+    3: $spacer,
+    4: $spacer * 1.5,
+    5: $spacer * 3,
+    6: $spacer * 4.5,
+    auto: auto,
+    ) !default;
+
+$axises: (
+    x,
+    y
+);
+
+@each $key, $value in $spacers {
+    @each $axis in $axises {
+        @if $axis ==x {
+            // generate mx-* classes
+            .ml-#{$key}, .m#{$axis}-#{$key} {
+                margin-left: #{$value} !important;
+            }
+
+            .mr-#{$key}, .m#{$axis}-#{$key} {
+                margin-right: #{$value} !important;
+            }
+
+            .ml-n#{$key} {
+                margin-left: -#{$value} !important;
+            }
+
+            .mr-n#{$key} {
+                margin-right: -#{$value} !important;
+            }
+
+            // generate px-* classes excluding key = auto
+            @if $key !=auto {
+                .pl-#{$key}, .p#{$axis}-#{$key} {
+                    padding-left: #{$value} !important;
+                }
+    
+                .pr-#{$key}, .p#{$axis}-#{$key} {
+                    padding-right: #{$value} !important;
+                }
+            }
+        }
+
+        @else if $axis ==y {
+            // generate my-* classes
+            
+            .mt-#{$key}, .m#{$axis}-#{$key} {
+                margin-top: #{$value} !important;
+            }
+
+            .mb-#{$key}, .m#{$axis}-#{$key} {
+                margin-bottom: #{$value} !important;
+            }
+
+            .mt-n#{$key} {
+                margin-top: -#{$value} !important;
+            }
+
+            .mb-n#{$key} {
+                margin-bottom: -#{$value} !important;
+            }
+
+            // generate py-* classes excluding key = auto
+            @if $key !=auto {
+                .p#{$axis}-#{$key} {
+                    padding-top: #{$value} !important;
+                    padding-bottom: #{$value} !important;
+                }
+            }
+        }
+
+        @else {
+            @error "Unknown axis #{$axis}.";
+        }
+    }
+}
+
+.p0 {
+    padding: 0 !important;
+}
+
+.m0 {
+    margin: 0 !important;
+}

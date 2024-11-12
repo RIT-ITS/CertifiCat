@@ -7,7 +7,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "certificat.settings.all")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "certificat_dev.settings")
     from django.core.management.commands.runserver import Command as RunServerCommand
 
     # HACK: Expose dev server externally

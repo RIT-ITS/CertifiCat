@@ -1,0 +1,30 @@
+{% load certificat %}
+
+<dt>Precertificate Signed Certificate Timestamps</dt>
+<dd>
+    <ul>
+    {% for timestamp in extension.value %}
+        <li>
+            <dl>
+                <dt>Version</dt>
+                <dd>{{ timestamp.version|x509_version }}</dd>
+
+                <dt>Log ID</dt>
+                <dd class="monospaced">{{ timestamp.log_id|hex|upper }}</dd>
+
+                <dt>Timestamp</dt>
+                <dd>{{ timestamp.timestamp }}</dd>
+
+                <dt>Signature</dt>
+                <dd>{{ timestamp.signature_algorithm.name }}
+                    <div class="monospaced adjustable-hex">
+                        {% for line in timestamp.signature|hex|wrap:21 %}
+                            <div>{{ line }}</div>
+                        {% endfor %}
+                        </div>
+                </dd>
+            </dl>
+        </li>
+    {% endfor %}
+    </ul>
+</dd>

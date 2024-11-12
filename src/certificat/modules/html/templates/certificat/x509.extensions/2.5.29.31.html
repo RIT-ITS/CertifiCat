@@ -1,0 +1,12 @@
+{% load certificat %}
+
+<dt>CRL Distribution Points</dt>
+<dd>
+    <ul>
+        {% for point in extension.value %}
+            <li>{% for name in point.full_name %}
+                {{ name.value }}{% if not forloop.last %},{% endif %}
+                {% endfor %}</li>
+        {% endfor %}
+    </ul>
+</dd>

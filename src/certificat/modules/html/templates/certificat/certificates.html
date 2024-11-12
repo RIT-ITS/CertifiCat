@@ -1,0 +1,46 @@
+{% extends "certificat/base.html" %}
+{% load certificat %}
+
+{% block headline %}View Issued Certificates{% endblock %}
+
+{% block body %}
+
+<div class="container mt-4">
+    <c-table name="certificates">
+        <c-slot name="head">
+            <tr>
+                <th>Created</th>
+                <th>Expires</th>                        
+                <th>SANs</th>                        
+                <th><!-- details --></th>
+            </tr>
+        </c-slot>
+        <c-slot name="body">
+            {% for cert in certificates.page %}
+                <tr>
+                    <td class="created_at">
+                        {{ cert.created_at }}
+                    </td>
+                    <td class="expires">
+                        {{ cert.metadata.not_valid_after|to_datetime }}
+                    </td>
+                    <td class="sans">
+                        {{ cert.metadata.sans|join:", " }}
+                    </td>
+                    <td class="edit row-button">
+                        <a class="btn btn-primary-outline btn-sm" href="{% url 'certificate' cert.id %}">Details
+                            &nbsp;<span class="fa-solid fa-angle-right"></span></a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="100%">No certificates created yet.</td></tr>
+            {% endfor %}
+        </c-slot>
+    </c-table>
+    <div class="row mt-2 center-xs">
+        <c-pagination :page="certificates.page" />
+    </div>
+       
+</div>
+
+{% endblock %}

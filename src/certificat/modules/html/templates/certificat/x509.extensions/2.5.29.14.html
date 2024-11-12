@@ -1,0 +1,6 @@
+{% load certificat %}
+
+<dt>Subject Key Identifier</dt>
+<dd class="monospaced">
+    {{ extension.value.digest|hex|upper }}
+</dd>

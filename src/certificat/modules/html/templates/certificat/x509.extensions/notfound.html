@@ -1,0 +1,5 @@
+{% load certificat %}
+
+<dt>
+    {{ extension.oid|x509_oid_to_name }} (oid:{{ extension.oid.dotted_string }})
+</dt>

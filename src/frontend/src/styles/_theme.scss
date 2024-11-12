@@ -1,0 +1,63 @@
+$primaryColor: var(--primary-color) !default;
+$linkColor: var(--link-color) !default;
+$primaryColorAccessible: #C75300 !default;
+$lightGrayColor: #D0D3D4 !default;
+$mediumGrayColor: #A2AAAD !default;
+$darkGrayColor: #7C878E !default;
+$lightWarmGray: #D7D2CB !default;
+$darkWarmGray: #ACA39A !default;
+
+$accentGreen: #84BD00 !default;
+$accentLime: #C4D600 !default;
+$accentBlue: #009CBD !default;
+$accentPurple: #7D55C7 !default;
+$accentRed: #DA291C !default;
+$accentOrange: #F6BE00 !default;
+
+$bodyTextColor: #212529 !default;
+$headerColor: var(--header-color);
+$headerTextColor: var(--header-text-color);
+
+$smallSmartphone: 480px !default;
+$largeSmartphone: 768px !default;
+$tinyDesktop: 1000px !default;
+$smallDesktop: 1200px !default;
+
+$fontStack: "Helvetica", "Arial", sans‑serif !default;
+$maxWidth: 1400px;
+
+.bg-gray-100 {
+    background-color: #f8f9fa !important;
+}
+
+.bg-gray-200 {
+    background-color: #e9ecef !important;
+}
+
+.bg-gray-300 {
+    background-color: #dee2e6 !important;
+}
+
+.bg-gray-400 {
+    background-color: #ced4da !important;
+}
+
+.bg-gray-500 {
+    background-color: #adb5bd !important;
+}
+
+.bg-gray-600 {
+    background-color: #6c757d !important;
+}
+
+.bg-gray-700 {
+    background-color: #495057 !important;
+}
+
+.bg-gray-800 {
+    background-color: #343a40 !important;
+}
+
+.bg-gray-900 {
+    background-color: #212529 !important;
+}

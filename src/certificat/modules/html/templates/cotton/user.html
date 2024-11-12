@@ -1,0 +1,10 @@
+{% if user.first_name %}
+    <b class='bold'>{{ user.first_name }} {{ user.last_name }}</b><br />
+{% else %}
+    <b class='bold'>{{ user.username }}</b><br />
+{% endif %}
+{% if emailIsLink %}
+    <a href='mailto:{{ user.email }}'>{{ user.email }}</a>
+{% else %}
+    {{ user.email }}
+{% endif %}

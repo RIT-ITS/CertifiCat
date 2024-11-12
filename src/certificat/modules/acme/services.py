@@ -1,9 +1,8 @@
-from datetime import datetime
 import uuid
 from certificat.modules.acme.util import gen_id
 import inject
 from josepy.jwk import JWK
-
+from acmev2.errors import ACMEError
 from acmev2.models import (
     AccountResource,
     OrderResource,
@@ -32,6 +31,8 @@ from django.db.models import Subquery
 from . import models as db
 import json
 from certificat.modules import tasks
+from django.utils.timezone import make_aware
+from django.utils import timezone
 
 AccountIdStr = str
 KIDStr = str
@@ -68,7 +69,13 @@ class AccountService(IAccountService):
         pass
 
     def create(self, resource: AccountResource, eab_kid: str = None) -> AccountResource:
-        # TODO: do account binding with eab_kid
+        # TODO: Add lock around this to avoid race condition. Will probably never happen
+        # except in testing.
+        binding: db.AccountBinding | None = None
+        if eab_kid:
+            binding = db.AccountBinding.objects.get(hmac_id=eab_kid)
+            if binding.bound_to is not None:
+                raise ACMEError(detail="Attempting to rebind external account")
 
         account_name = gen_id()
         while db.Account.objects.filter(name=account_name).exists():
@@ -81,18 +88,26 @@ class AccountService(IAccountService):
             jwk_thumbprint=resource.jwk.thumbprint().hex(),
         )
 
+        db.TaggedEvent.record(db.AccountEventType.BOUND, account)
+
+        if binding:
+            binding.bind_to(account)
+
         resource.id = account.name
 
         return resource
 
     def get(self, account_id: str) -> AccountResource | None:
+        # the account id is namespaced but we discard the namespace
+        # when storing or retrieving.
+        account_id = account_id.split("/")[-1]
         return db.to_pydantic(db.Account.objects.get(name=account_id))
 
     def get_by_jwk(self, jwk: JWK) -> AccountResource | None:
         pass
 
     def get_eab_hmac(self, kid: str) -> str | None:
-        pass
+        return db.AccountBinding.objects.get(hmac_id=kid).hmac_key
 
     def check_access(
         self, account_id: str, resource_id: str, resource_type: ACMEResourceType
@@ -131,8 +146,10 @@ class OrderService(IOrderService):
             ),
             name=order_name,
             status=resource.status,
-            expires=resource.expires,
+            expires=make_aware(resource.expires),
         )
+
+        db.TaggedEvent.record(db.OrderEventType.CREATED, order)
 
         # Create identifiers
         for identifier in resource.identifiers:
@@ -164,7 +181,7 @@ class OrderService(IOrderService):
             order_id=Subquery(db.Order.objects.filter(name=order.id).values("id")[:1]),
             csr=csr.public_bytes(encoding=serialization.Encoding.PEM).decode(),
         )
-        tasks.finalize_order_task(order.id)
+        tasks.finalize_order.finalize_order_task(order.id)
 
         return order
 
@@ -185,7 +202,7 @@ class AuthorizationService(IAuthorizationService):
             identifier_id=resource.identifier.id,
             name=authz_name,
             status=resource.status,
-            expires=resource.expires,
+            expires=make_aware(resource.expires),
         )
 
         resource.id = authz.name
@@ -243,7 +260,7 @@ class ChallengeService(IChallengeService):
 
         updates = {"status": new_state}
         if new_state == ChallengeStatus.valid:
-            updates["validated"] = datetime.now()
+            updates["validated"] = timezone.now()
 
         db.Challenge.objects.filter(name=chall.id).update(**updates)
         chall.status = new_state
@@ -255,7 +272,7 @@ class ChallengeService(IChallengeService):
 
     def queue_validation(self, chall):
         self.update_status(chall, ChallengeStatus.processing)
-        tasks.validate_challenge_task(chall.id)
+        tasks.validate_challenge.validate_challenge_task(chall.id)
 
         return chall
 

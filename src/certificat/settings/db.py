@@ -1,20 +1,17 @@
-import inject
-from .dynamic import ApplicationSettings
-from django.utils.functional import SimpleLazyObject
-
 __all__ = ["DATABASES"]
 
+import inject
+from .dynamic import ApplicationSettings
 
-def _default_database():
-    app_settings = inject.instance(ApplicationSettings)
-    return {
-        "ENGINE": app_settings.db.engine,
-        "NAME": app_settings.db.name,
-        "USER": app_settings.db.user,
-        "PASSWORD": app_settings.db.password,
-        "HOST": app_settings.db.host,
-        "PORT": app_settings.db.port,
+dynamic_settings = inject.instance(ApplicationSettings)
+
+DATABASES = {
+    "default": {
+        "ENGINE": dynamic_settings.db.engine,
+        "NAME": dynamic_settings.db.name,
+        "USER": dynamic_settings.db.user,
+        "PASSWORD": dynamic_settings.db.password,
+        "HOST": dynamic_settings.db.host,
+        "PORT": dynamic_settings.db.port,
     }
-
-
-DATABASES = {"default": SimpleLazyObject(_default_database)}
+}

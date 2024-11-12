@@ -1,0 +1,36 @@
+{% load certificat %}
+
+<dt>Key Usage</dt>
+<dd>
+    <ul class="flat-list">
+    {% if extension.value.digital_signature %}
+        <li>Digital Signature</li>
+    {% endif %}
+    {% if extension.value.content_commitment %}
+        <li>Content Commitment</li>
+    {% endif %}
+    {% if extension.value.key_encipherment %}
+        <li>Key Encipherment</li>
+    {% endif %}
+    {% if extension.value.data_encipherment %}
+        <li>Data Encipherment</li>
+    {% endif %}
+    {% if extension.value.key_agreement %}
+        <li>Key Agreement</li>
+    {% endif %}
+    {% if extension.value.key_cert_sign %}
+        <li>Key Cert Sign</li>
+    {% endif %}
+    {% if extension.value.crl_sign %}
+        <li>CRL Sign</li>
+    {% endif %}
+    {% if extension.value.key_agreement %}
+        {% if extension.value.encipher_only %}
+            <li>Encipher Only</li>
+        {% endif %}
+        {% if extension.value.decipher_only %}
+            <li>Decipher Only</li>
+        {% endif %}
+    {% endif %}
+    </ul>
+</dd>

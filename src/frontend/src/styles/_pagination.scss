@@ -1,0 +1,58 @@
+@use 'theme';
+
+.pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    border-radius: 0;
+}
+
+.page-link {
+    position: relative;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: $primaryColor;
+    background-color: #fff;
+    border: 1px solid $lightGrayColor;
+}
+
+.page-link:hover {
+    z-index: 2;
+    color: $bodyTextColor;
+    text-decoration: none;
+    background-color: $lightGrayColor;
+}
+
+.page-link:focus {
+    z-index: 3;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem $primaryColor;
+}
+
+.page-item:first-child .page-link {
+    margin-left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.page-item:last-child .page-link {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: $primaryColor;
+    border-color: $primaryColor;
+}
+
+.page-item.disabled .page-link {
+    color: $darkWarmGray;
+    pointer-events: none;
+    cursor: auto;
+    background-color: #fff;
+    border-color: $lightGrayColor
+}

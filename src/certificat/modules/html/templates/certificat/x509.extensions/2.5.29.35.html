@@ -1,0 +1,6 @@
+{% load certificat %}
+
+<dt>Authority Key Identifier</dt>
+<dd class="monospaced">
+    {{ extension.value.key_identifier|hex|upper }}
+</dd>

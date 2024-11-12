@@ -1,0 +1,10 @@
+{% load certificat %}
+
+<dt>Certificate Policies</dt>
+<dd>
+    <ul>
+        {% for policy in extension.value %}
+            <li>Policy={{ policy.policy_identifier.dotted_string }}{% if policy.policy_qualifiers %}, Qualifiers={{ policy.policy_qualifiers|join:"," }}{% endif %}</li>
+        {% endfor %}
+    </ul>
+</dd>

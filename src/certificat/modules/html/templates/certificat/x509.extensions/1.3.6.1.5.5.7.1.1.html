@@ -1,0 +1,10 @@
+{% load certificat %}
+
+<dt>Authority Information Access</dt>
+<dd>
+    <ul>
+    {% for access in extension.value %}
+        <li>{{ access.access_method|x509_oid_to_name }} - {{ access.access_location.value }}</li>
+    {% endfor %}
+    </ul>
+</dd>

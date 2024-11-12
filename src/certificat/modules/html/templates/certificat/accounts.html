@@ -1,0 +1,75 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Manage ACME Accounts{% endblock %}
+
+{% block body %}
+
+<c-layouts.left-col>
+    <c-slot name="left">
+        <h3 class="bold">Add New Account</h3>
+        <new-account-form-manager>
+            <form action='.' id='add_new_binding_form' method='post'>
+                {% csrf_token %}
+                {{ new_binding_form }}
+
+                <input 
+                    class="btn btn-primary row-btn mt-2" 
+                    type="submit"
+                    id="new-account-submit" 
+                    name="new-account" 
+                    value="Add New Account">
+            </form>
+        </new-account-form-manager>
+    </c-slot>
+    
+    <c-table name="accounts">
+        <c-slot name="head">
+            <tr>
+                <th>Created</th>
+                <th>Access</th>                        
+                <th>Description</th>
+                <th>Activated</th>                        
+                <th><!-- edit --></th>
+            </tr>
+        </c-slot>
+        <c-slot name="body">
+            {% for binding in bindings.page %}
+                <tr>
+                    <td class="created_at">
+                        {{ binding.created_at|date:"DATE_FORMAT" }}
+                    </td>
+                    <td class="access">
+                        {% for scope in binding.group_scopes.all %}
+                            {{ scope.friendly_name }}{% if not forloop.last %}<br />{% endif %}
+                        {% empty %}
+                            <c-user :user="binding.creator" />
+                        {% endfor %}
+                    </td>
+                    <td class="description">
+                        <b class="bold">{{ binding.name }}</b>
+                        <p>{{ binding.note }}</p>
+                    </td>
+                    <td class="activated">
+                        {% if binding.bound_to %}
+                        <i class="fa-solid fa-check"></i>
+                        {% endif %}
+                    </td>
+                    <td class="edit row-button">
+                        <a class="btn btn-primary-outline btn-sm" href="{% url 'account' binding.id %}">Manage
+                            &nbsp;<span class="fa-solid fa-angle-right"></span></a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="100%"><p>No accounts created yet.</p></td>
+                </tr>
+            {% endfor %}
+        </c-slot>
+    </c-table>
+
+    <div class="row mt-2 center-xs">
+        <c-pagination :page="bindings.page" />
+    </div>
+</c-layouts.left-col>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% load certificat %}
+
+<dt>Subject Alternative Name</dt>
+<dd>
+    <ul class="flat-list">
+        {% for val in extension.value %}
+            <li>{{ val.value }}</li>
+        {% endfor %}
+    </ul>
+</dd>

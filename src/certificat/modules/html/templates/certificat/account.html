@@ -1,0 +1,119 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Account Detail{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    <fade-on-load>
+        {% if account_invalid %}
+            <div class="container mb-4">
+                <c-message type="error">
+                    This account is invalid. You will no longer be able to issue certificates with any machines using this KID.
+                </c-message>
+            </div>
+        {% endif %}
+
+        <div class="container">
+            <dl class="field-list">
+                <dt>Created</dt>
+                <dd>
+                    {{ binding.created_at }}
+                </dd>
+
+                <dt>Creator</dt>
+                <dd>
+                    <c-user :user="binding.creator" />
+                </dd>
+
+                <dt>Name</dt>
+                <dd>
+                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                        <span id="binding-name" data-editable-id="name">{{ binding.name }}</span>
+                    </editable-text>
+                </dd>
+
+                <dt>Note</dt>
+                <dd>
+                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                        <span id="binding-note" data-editable-id="note">{{ binding.note }}</span>
+                    </editable-text>
+                </dd>
+
+                {% if binding_event %}
+                <dt>Registered</dt>
+                <dd class="row flex-column">
+                    <div>{{ binding_event.created_at }}</div>
+                    <div>
+                        {{ binding_event.user_agent }}
+                    </div>
+                    <div class="subtext mt-2">Recorded when the ACME client registers the account with the generated key/id pair.</div>
+                </dd>
+                {% endif %}
+
+                <dt>Account KID</dt>
+                <dd>{{ binding.bound_to.fully_qualified_name }}</dd>
+
+                <dt>Access</dt>
+                <dd>
+                    <account-access-manager 
+                        groupFetchUrl="{% url 'api:fetch_user_groups' %}" 
+                        groupUpdateUrl="{% url 'api:edit_binding' binding.id %}" 
+                        accessibleBy="{{ access_group_json }}">
+                    </account-access-manager>
+                </dd>
+            </dl>
+        </div>
+
+        <div class="container mt-4">
+            <h3 class="bold">Recent Orders</h3>
+            <c-table name="orders">
+                <c-slot name="head">
+                    <tr>
+                        <th>Created</th>
+                        <th>Status</th>                        
+                        <th>Identifiers</th>
+                        <th><!-- edit --></th>
+                    </tr>
+                </c-slot>
+                <c-slot name="body">
+                    {% for order in orders %}
+                        <tr>
+                            <td class="created_at">
+                                {{ order.created_at|date:"Y/m/d" }}
+                            </td>
+                            <td class="status">
+                                <c-status :status="order.status" />
+                            </td>
+                            <td class="identifiers">
+                                {% for identifier in order.identifiers.all %}
+                                    {{ identifier.value }}{% if not forloop.last %},{% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="edit row-button">
+                                <a class="btn btn-primary-outline btn-sm" href="{% url 'order' order.id %}">Manage
+                                    &nbsp;<span class="fa-solid fa-angle-right"></span></a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="100%"><p style="text-align:center;">No recent orders.</p></td>
+                        </tr>
+                    {% endfor %}
+                </c-slot>
+            </c-table>
+        </div>
+
+        {% if not account_invalid %}
+            <div class="container mt-4">
+                <h3 class="bold">Account Management</h3>
+                <form action="{% url 'account' binding.id %}" method="POST">
+                    {% csrf_token %}
+                    <confirm-button buttonType="submit" value="Disable Account" name="revoke-account" warningtext="Are you sure you want to disable this binding? Any bound accounts will lose access to the ACME service." />
+                </form>
+            </div>
+        {% endif %}
+    </fade-on-load>
+</c-layouts.base>
+
+{% endblock %}

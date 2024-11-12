@@ -1,49 +1,24 @@
 from datetime import datetime, timezone, timedelta
-from certificat.settings.dynamic import LocalCASettings
-import uuid
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography import x509
+from certificat.modules.acme import models as db
 
 from certificat.modules.acme.backends import (
-    ApproveResponse,
-    CollectResponse,
-    EnrollResponse,
-    GetResponse,
-    Backend,
+    FinalizeResponse,
+    Finalizer,
 )
+from certificat.settings.dynamic import LocalCASettings
 
 
-class LocalBackend(Backend):
-    """
-    Very simple CA Backend that illustrates how to sign certs with a local keypair.
+class LocalFinalizer(Finalizer):
+    def finalize(self, order: db.Order, pem_csr: str):
+        ca_settings = LocalCASettings()
 
-    The csr -> ssl link is stored in memory, so restarting the service will disrupt any
-    in-flight ACME requests.
-    """
-
-    csrs = {}
-
-    def __init__(self):
-        self.settings = LocalCASettings()
-
-    def enroll(self, csr: str) -> EnrollResponse:
-        ssl_id = uuid.uuid4().hex
-        self.csrs[ssl_id] = csr
-
-        return EnrollResponse(status=200, ssl_id=ssl_id)
-
-    def get(self, ssl_id: str) -> GetResponse:
-        return GetResponse(status=200, cert_status="approved", approved=datetime.now())
-
-    def approve(self, ssl_id: str, message: str):
-        return ApproveResponse(status=200)
-
-    def collect(self, ssl_id: str) -> CollectResponse:
         ca_key = serialization.load_pem_private_key(
-            self.settings.key.encode(), password=None
+            ca_settings.key.encode(), password=None
         )
-        ca_cert = x509.load_pem_x509_certificate(self.settings.cert.encode())
-        csr = x509.load_pem_x509_csr(self.csrs[ssl_id].encode())
+        ca_cert = x509.load_pem_x509_certificate(ca_settings.cert.encode())
+        csr = x509.load_pem_x509_csr(pem_csr.encode())
 
         builder = (
             x509.CertificateBuilder()
@@ -59,9 +34,15 @@ class LocalBackend(Backend):
             builder = builder.add_extension(ext.value, ext.critical)
 
         cert = builder.sign(ca_key, hashes.SHA256())
+        chain = (
+            cert.public_bytes(serialization.Encoding.PEM).decode()
+            + ca_cert.public_bytes(serialization.Encoding.PEM).decode()
+        )
 
-        return CollectResponse(
-            status=200,
-            bundle=cert.public_bytes(serialization.Encoding.PEM).decode()
-            + ca_cert.public_bytes(serialization.Encoding.PEM).decode(),
+        db.Certificate.objects.create(order=order, chain=chain)
+        return FinalizeResponse(
+            bundle=(
+                cert.public_bytes(serialization.Encoding.PEM).decode()
+                + ca_cert.public_bytes(serialization.Encoding.PEM).decode()
+            )
         )

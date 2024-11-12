@@ -15,6 +15,7 @@ from acmev2.handlers import handle as process_acme_request
 import inject
 from django.http import HttpResponse, JsonResponse, HttpRequest
 import json
+from django.views.decorators.csrf import csrf_exempt
 
 
 @require_http_methods(["GET"])
@@ -55,33 +56,41 @@ def handleACMERequest(
     return resp
 
 
+@csrf_exempt
 def newNonce(request):
     return handleACMERequest(request, NewNonceRequestHandler)
 
 
+@csrf_exempt
 def newAccount(request):
     return handleACMERequest(request, NewAccountRequestHandler)
 
 
+@csrf_exempt
 def newOrder(request):
     return handleACMERequest(request, NewOrderRequestHandler)
 
 
+@csrf_exempt
 def authz(request, authz_id: str):
     return handleACMERequest(request, AuthorizationRequestHandler)
 
 
+@csrf_exempt
 def chall(request, chall_id: str):
     return handleACMERequest(request, ChallengeRequestHandler)
 
 
+@csrf_exempt
 def order(request, order_id: str):
     return handleACMERequest(request, OrderRequestHandler)
 
 
+@csrf_exempt
 def cert(request, cert_id: str):
     return handleACMERequest(request, CertRequestHandler)
 
 
+@csrf_exempt
 def finalize(request, order_id: str):
     return handleACMERequest(request, OrderFinalizationRequestHandler)

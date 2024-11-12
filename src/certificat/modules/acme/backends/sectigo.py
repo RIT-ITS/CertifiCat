@@ -1,19 +1,54 @@
+from dataclasses import dataclass
+import time
 import requests
 
 from certificat.modules.acme.backends import (
-    ApproveResponse,
-    CollectResponse,
-    EnrollResponse,
     ErrorResponse,
-    GetResponse,
-    Backend,
+    FinalizeResponse,
+    Finalizer,
 )
 
 from certificat.settings import dynamic
-import inject
+import logging
+from certificat.modules.acme import models as db
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
-class SectigoBackend(Backend):
+@dataclass
+class APIResponse:
+    status: int
+    error: ErrorResponse = None
+
+    def ok(self) -> bool:
+        return self.error is None
+
+
+@dataclass
+class EnrollResponse(APIResponse):
+    ssl_id: str = None
+
+
+@dataclass
+class GetResponse(APIResponse):
+    # Status of the certificate
+    cert_status: str = None
+    # Approval date
+    approved: str = None
+
+
+@dataclass
+class ApproveResponse(APIResponse):
+    pass
+
+
+@dataclass
+class CollectResponse(APIResponse):
+    bundle: str = None
+
+
+class SectigoBackend:
     """Organization or department id.
     https://cert-manager.com/api/organization/v1
     """
@@ -55,22 +90,21 @@ class SectigoBackend(Backend):
     poll_deadline: int
 
     def __init__(self):
-        app_settings = inject.instance(dynamic.ApplicationSettings)
-        self.api_base = app_settings.sectigo.api_base
-        self.api_password = app_settings.sectigo.api_password
-        self.api_user = app_settings.sectigo.api_user
-        self.approval_api_password = app_settings.sectigo.approval_api_password
-        self.approval_api_user = app_settings.sectigo.approval_api_user
-        self.cert_profile_id = app_settings.sectigo.cert_profile_id
-        self.cert_validity_period = app_settings.sectigo.cert_validity_period
-        self.customer_uri = app_settings.sectigo.customer_uri
-        self.external_requester_override = (
-            app_settings.sectigo.external_requester_override
-        )
-        self.org_id = app_settings.sectigo.org_id
+        ca_settings = dynamic.SectigoSettings()
+        self.api_base = ca_settings.api_base
+        self.api_password = ca_settings.api_password
+        self.api_user = ca_settings.api_user
+        self.approval_api_password = ca_settings.approval_api_password
+        self.approval_api_user = ca_settings.approval_api_user
+        self.cert_profile_id = ca_settings.cert_profile_id
+        self.cert_validity_period = ca_settings.cert_validity_period
+        self.customer_uri = ca_settings.customer_uri
+        self.external_requester_override = ca_settings.external_requester_override
+        self.org_id = ca_settings.org_id
+        self.poll_deadline = ca_settings.poll_deadline
         self.session = requests.session()
 
-    def enroll(self, external_requester: str, csr: str) -> EnrollResponse:
+    def enroll(self, order: db.Order, csr: str) -> EnrollResponse:
         """Enrolls a certificate request.
 
         Args:
@@ -82,11 +116,13 @@ class SectigoBackend(Backend):
         """
 
         endpoint = "ssl/v1/enroll"
-        external_requester = (
-            self.external_requester_override
-            if self.external_requester_override
-            else external_requester
-        )
+        # External requester is the email of the bound account or a default if no external
+        # requester is supplied.
+        if self.external_requester_override or not order.account.binding:
+            external_requester = self.external_requester_override
+        else:
+            external_requester = order.account.binding.creator.email
+
         body = {
             "orgId": self.org_id,
             "certType": self.cert_profile_id,
@@ -154,7 +190,7 @@ class SectigoBackend(Backend):
             approved=detail.get("approved"),
         )
 
-    def approve(self, ssl_id: str, message: str):
+    def approve(self, ssl_id: str, message: str) -> ApproveResponse:
         endpoint = f"ssl/v1/approve/{ssl_id}"
 
         body = {"message": message}
@@ -223,3 +259,102 @@ class SectigoBackend(Backend):
             full_url += "/"
 
         return f"{full_url}{endpoint}"
+
+
+class SectigoFinalizer(Finalizer):
+    backend: SectigoBackend = None
+
+    def __init__(self):
+        self.backend = SectigoBackend()
+
+    def finalize(self, order: db.Order, pem_csr):
+        log_prefix = "order " + order.name
+
+        processing_state: db.SectigoOrderProcessingState = (
+            db.SectigoOrderProcessingState.for_order(order)
+        )
+
+        if processing_state.state == db.SectigoOrderProcessingState.Choices.SUBMITTED:
+            logger.info(f"{log_prefix}: enrolling csr")
+            # Enroll the certificate. This kicks off a process and the CA has to issue a new certificate
+            # and either auto-approve it or ask the user to approve it.
+
+            enroll_response = self.backend.enroll(order, pem_csr)
+            processing_state.ssl_id = enroll_response.ssl_id
+            processing_state.save()
+
+            if not enroll_response.ok():
+                raise Exception(
+                    f"Error {enroll_response.error.code}: {enroll_response.error.description}"
+                )
+
+            processing_state.transition_to(
+                db.SectigoOrderProcessingState.Choices.ENROLLED
+            )
+
+        if processing_state.state == db.SectigoOrderProcessingState.Choices.ENROLLED:
+            ready_for_approval = False
+            approved = False
+            # Poll the certificate endpoint every few seconds to see if it's ready for approval. It may also
+            # be auto-approved depending on the rules set up for the org/department.
+            start = datetime.now()
+            while not (ready_for_approval or approved):
+                logger.info(f"{log_prefix}: polling for approval")
+                get_response = self.backend.get(processing_state.ssl_id)
+                if not get_response.ok():
+                    raise Exception(
+                        f"Error {get_response.error.code}: {get_response.error.description}"
+                    )
+
+                ready_for_approval = get_response.cert_status == "requested"
+                approved = get_response.approved is not None
+
+                if (datetime.now() - start).seconds > self.backend.poll_deadline:
+                    raise Exception(
+                        "Polling deadline exceeded for state " + processing_state.state
+                    )
+
+                if not (ready_for_approval or approved):
+                    time.sleep(1)
+
+            # If the certificate isn't approved we need to make a final call to approve it.
+            if not approved:
+                logger.info(f"{log_prefix}: approving certificate")
+                approve_response = self.backend.approve(
+                    processing_state.ssl_id, message="Auto-approved by ACME"
+                )
+                if not approve_response.ok():
+                    raise Exception(
+                        f"Error {approve_response.error.code}: {approve_response.error.description}"
+                    )
+
+                approved = True
+
+            processing_state.transition_to(
+                db.SectigoOrderProcessingState.Choices.APPROVED
+            )
+
+        if processing_state.state == db.SectigoOrderProcessingState.Choices.APPROVED:
+            logger.info("collecting certificate")
+            # Get the certificate PEM bundle
+
+            collect_response = self.backend.collect(processing_state.ssl_id)
+            if not collect_response.ok():
+                raise Exception(
+                    f"Error {collect_response.error.code}: {collect_response.error.description}"
+                )
+
+            # Some clients (like certbot) expect the bundle to end with a newline and will
+            # fail if it doesn't.
+            if not collect_response.bundle.endswith("\n"):
+                collect_response.bundle += "\n"
+
+            db.Certificate.objects.create(order=order, chain=collect_response.bundle)
+            processing_state.transition_to(
+                db.SectigoOrderProcessingState.Choices.COLLECTED
+            )
+
+        if processing_state.state == db.SectigoOrderProcessingState.Choices.COLLECTED:
+            return FinalizeResponse(
+                bundle=db.Certificate.objects.get(order=order).chain
+            )

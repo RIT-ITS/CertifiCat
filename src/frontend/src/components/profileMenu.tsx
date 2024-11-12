@@ -1,0 +1,40 @@
+import { LitElement } from "lit";
+import { customElement, query } from "lit/decorators.js";
+
+@customElement("profile-menu")
+export class ProfileMenuElement extends LitElement {
+    @query(".submenu-toggle")
+    private submenuToggle!: HTMLElement;
+    @query(".submenu")
+    private submenu!: HTMLElement;
+
+    protected override createRenderRoot(): HTMLElement | DocumentFragment {
+        return this;
+    }
+
+    override connectedCallback(): void {
+        super.connectedCallback();
+        this.submenuToggle.addEventListener("click", this.toggle);
+        this.submenu.addEventListener("mousedown", this.submenuClick);
+        document.addEventListener("mousedown", this.hide);
+        document.addEventListener("scroll", this.hide);
+    }
+
+    private toggle = (evt: Event) => {
+        if (this.classList.contains("show")) {
+            this.classList.remove("show");
+        } else {
+            this.classList.add("show");
+        }
+
+        evt.stopPropagation();
+    };
+
+    private submenuClick = (evt: Event) => {
+        evt.stopPropagation();
+    };
+
+    private hide = () => {
+        this.classList.remove("show");
+    };
+}

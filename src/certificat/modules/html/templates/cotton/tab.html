@@ -1,0 +1,5 @@
+<input type="radio" name="{{ group }}-tabs" id="{{ id }}-tab" {% if default %}checked{% endif %} />
+<label for="{{ id }}-tab">{{ label }}</label>
+<div class="tabs--tab-content">
+{{ slot }}
+</div>

@@ -1,0 +1,51 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Account Activation{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    <c-message type="info">
+        Your account hasn't been activated, use the register action provided by your ACME client to continue. After you've activated your account, refresh the page to view more options.
+    </c-message>
+    
+    <dl class="field-list mt-4 mb-3">
+        <dt>External Account ID <i class="fa-solid fa-circle-question tooltip fa-xl" data-text="This is tooltip text."></i></dt>
+        <dd class="monospaced">{{ binding.hmac_id }}</dd>
+        <dt>External Account Key <i class="fa-solid fa-circle-question tooltip fa-xl" data-text="This is tooltip text."></i></dt>
+        <dd class="monospaced">{{ binding.hmac_key }}</dd>
+    </dl>
+
+    <c-tabs bordered>
+        <c-tab group="clients" id="certbot" label="Certbot" default>
+            <pre><code data-trim class='language-bash'>sudo certbot register \
+    --server "{{ request.scheme }}://{{ request.get_host }}{% url 'acme:directory' %}" \
+    --eab-kid "{{ binding.hmac_id }}" \
+    --eab-hmac-key "{{ binding.hmac_key }}" \
+    --email "{{ request.user.email }}"</code></pre>
+        </c-tab>
+        <c-tab group="clients" id="getssl" label="getssl">
+            Getssl! Suspendisse vulputate nunc ac pretium pulvinar. Morbi pretium quis erat non vehicula. Phasellus porta dolor velit, vitae consectetur nisl consequat at. Praesent ac accumsan urna. Mauris lorem purus, pharetra ac ultrices sit amet, pulvinar sed sapien. Phasellus ornare laoreet dui, et eleifend risus tristique non. Donec lectus dolor, iaculis non tellus vitae, venenatis sagittis purus. Sed at rhoncus neque. Suspendisse gravida est eu consectetur tincidunt. Aliquam fermentum gravida fringilla
+        </c-tab>
+    </c-tabs>
+
+    <div class="mt-4">
+        <form action="{% url 'account' binding.id %}" method="POST">
+            {% csrf_token %}
+            <input class="btn btn-primary btn-danger width-auto" type="submit" id="delete-binding-submit" name="delete-binding" value="Delete Binding">
+        </form>
+    </div>
+</c-layouts.base>
+
+<!-- code highlighting support -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/a11y-dark.min.css" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://unpkg.com/highlightjs-copy/dist/highlightjs-copy.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/highlightjs-copy/dist/highlightjs-copy.min.css" />
+
+<script>
+    hljs.addPlugin(new CopyButtonPlugin());
+    hljs.highlightAll();
+</script>
+
+{% endblock %}

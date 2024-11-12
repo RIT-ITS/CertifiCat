@@ -1,0 +1,47 @@
+{% extends "certificat/base.html" %}
+{% load certificat %}
+
+{% block headline %}View ACME Certificate{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    
+    <dl class="field-list">
+        <dt>Created</dt>
+        <dd>
+            {{ cert.created_at }}
+        </dd>
+        
+        <dt>Expires</dt>
+        <dd>
+            {{ cert.metadata.not_valid_after|to_datetime }}
+        </dd>
+
+        <dt>SANS</dt>
+        <dd>
+            {{ cert.metadata.sans|join:", " }}
+        </dd>
+    </dl>
+
+    <h3 class="mt-4">Certificate Chain</h3>
+      
+    <c-tabs bordered>
+        <c-tab group="cert" id="pem" label="PEM Format" default>
+            <div class="monospaced mt-3">
+                <c-certificate.pem-chain :chain="cert.chain" />
+            </div>
+        </c-tab>
+        <c-tab group="cert" id="decoded" label="Decoded">
+            {% for cert in cert.chain|to_x509 %}
+                {% if not forloop.first %}
+                <div class="divider my-4"></div>
+                {% endif %}
+                <c-certificate.decoded-cert :cert="cert" />
+            {% endfor %}
+        </c-tab>
+    </c-tabs>
+    
+</c-layouts.base>
+
+{% endblock %}

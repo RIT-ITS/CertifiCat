@@ -1,0 +1,10 @@
+{% load certificat %}
+
+<dt>Extended Key Usage</dt>
+<dd>
+    <ul class="flat-list">
+        {% for usage in extension.value %}
+            <li>{{ usage|x509_oid_to_name }}</li>
+        {% endfor %}
+    </ul>
+</dd>

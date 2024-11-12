@@ -1,0 +1,141 @@
+{% extends "certificat/base.html" %}
+{% load certificat %}
+
+{% block headline %}ACME Order{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    <dl class="field-list">
+        <dt>Name</dt>
+        <dd>
+            {{ order.name }}
+        </dd>
+        
+        <dt>Expires</dt>
+        <dd>
+            {{ order.expires }}
+        </dd>
+
+        <dt>Created</dt>
+        <dd>
+            {{ order.created_at }}
+        </dd>
+        
+        {% if creation_event %}
+        <dt>Creator IP</dt>
+        <dd>
+            {{ creation_event.ip_address }}
+        </dd>
+
+        <dt>Creator User Agent</dt>
+        <dd>
+            {{ creation_event.user_agent }}
+        </dd>
+        {% endif %}
+        
+        <dt>Status</dt>
+        <dd>
+            <c-status :status="order.status" />
+        </dd>
+
+    </dl>
+
+    <h3 class="mt-4">Authorizations</h3>
+
+    <c-table name="authorizations">
+        <c-slot name="head">
+            <tr>
+                <th>Expires</th>
+                <th>Name</th>
+                <th>Challenges</th>                        
+                <th>Identifier</th>
+                <th>Status</th>
+                <th>Validated</th>
+            </tr>
+        </c-slot>
+        <c-slot name="body">
+            {% for auth in order.authorizations.all %}
+                <tr>
+                    <td class="expires_at">
+                        {{ auth.expires }}
+                    </td>
+                    <td class="name">
+                        {{ auth.name }}
+                    </td>
+                    <td class="challenges">
+                        {% for chall in auth.challenges.all %}
+                            {{ chall.type }}{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    </td>
+                    <td class="identifier">
+                        {{ auth.identifier.value }}
+                    </td>
+                    <td class="status">
+                        <c-status :status="auth.status" />
+                    </td>
+                    <td class="validated_at">
+                        {% if auth.is_valid %}{{ auth.first_valid_challenge.validated }}{% endif %}
+                    </td>
+                </tr>
+                {% if auth.status == 'invalid' %}
+                <tr class="error-row">
+                    <td colspan="100%" class="p0">
+                        <div class="challenge--error">
+                            {{ auth.first_invalid_challenge.first_error.error }}
+                            <div class="subtext">{{ auth.first_invalid_challenge.first_error.created_at }}</div>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+            {% empty %}
+                <tr>
+                    <td colspan="100%"><p style="text-align:center;">No recent orders.</p></td>
+                </tr>
+            {% endfor %}
+        </c-slot>
+    </c-table>
+    
+    {% if order.certificate_request %}
+        <h3 class="mt-4">Certificate Signing Request</h3>
+        <div class="monospaced">
+            {% for line in order.certificate_request.csr|break_at_armor %}
+                {{ line }} <br />
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not order.certificate %}
+        {% with err=order.last_finalization_error %}
+            {% if err %}
+                <h3 class="mt-4">Finalization</h3>
+                <div role="contentinfo" class="messages messages--error">
+                    {{ err.error }}
+                </div>
+            {% endif %}
+        {% endwith %}
+    {% else %}
+        <h3 class="mt-4">Certificate Chain</h3>
+
+        <c-tabs bordered>
+            <c-tab group="cert" id="pem" label="PEM Format" default>
+                <div class="monospaced mt-3">
+                    <c-certificate.pem-chain :chain="order.certificate.chain" />
+                </div>
+            </c-tab>
+            <c-tab group="cert" id="decoded" label="Decoded">
+                {% for cert in order.certificate.chain|to_x509 %}
+                    {% if not forloop.first %}
+                    <div class="divider my-4"></div>
+                    {% endif %}
+                    <c-certificate.decoded-cert :cert="cert" />
+                {% endfor %}
+            </c-tab>
+        </c-tabs>
+
+        
+    </div>
+    {% endif %}
+
+</c-layouts.base>
+{% endblock %}

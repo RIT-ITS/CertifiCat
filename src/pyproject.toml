@@ -6,20 +6,33 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "acmev2",
+    "asn1>=2.7.1",
+    "django-cotton>=1.3.0",
+    "django-csp>=3.8",
     "django-huey>=1.2.1",
+    "django-webpack-loader>=3.1.1",
     "django>=5.1.2",
+    "djangosaml2>=1.9.3",
+    "lxml-html-clean>=0.3.1",
     "mysqlclient>=2.2.4",
     "pydantic-settings>=2.5.2",
+    "pyopenssl>=24.2.1",
+    "pysaml2>=7.5.0",
     "redis>=5.1.1",
 ]
 
 [tool.uv]
 dev-dependencies = [
     "acme>=2.11.0",
+    "django-debug-toolbar>=4.4.6",
     "dnsmock>=21.2b2",
     "pytest-django>=4.9.0",
+    "pytest-mock>=3.14.0",
     "watchdog>=5.0.3",
 ]
 
 [tool.uv.sources]
-acmev2 = { path = "../../acmev2/dist/acmev2-0.0.1.tar.gz" }
+acmev2 = { path = "../../acmev2/dist/acmev2-0.0.2.tar.gz" }
+
+[tool.setuptools.packages.find]
+include = ["certificat"]

@@ -1,0 +1,8 @@
+{% for item in nav.top_level_nav %}
+    {% if item.can_access %}
+    <li {% if item.is_selected %}class="selected"{% endif %}>
+        <a href="{{ item.path_prefix }}">{{ item.name }}</a>
+    </li>
+    {% endif %}
+{% endfor %}
+

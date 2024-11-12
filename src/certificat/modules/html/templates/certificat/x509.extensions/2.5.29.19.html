@@ -1,0 +1,11 @@
+{% load certificat %}
+
+<dt>Basic Constraints</dt>
+<dd>
+    <ul>
+        <li>CA={{ extension.value.ca }}</li>
+        {% if extension.value.path_length %}
+        <li>PATH_LENGTH={{ extension.value.path_length }}</li>
+        {% endif %}
+    </ul>
+</dd>

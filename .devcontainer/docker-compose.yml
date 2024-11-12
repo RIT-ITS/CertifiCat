@@ -1,6 +1,11 @@
-version: '3.8'
-
 services:
+  certbot:
+    build:
+      context: .
+      dockerfile: Dockerfile.certbot
+    command: sleep infinity
+    ports:
+      - "80"
   traefik:
     image: "traefik:v2.10"
     container_name: "traefik"
@@ -16,6 +21,10 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
   app:
+    links:
+      - certbot:acme.edu
+      - certbot:subdomain.acme.edu
+      - certbot:subdommain2.acme.edu
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -32,11 +41,17 @@ services:
       CERTIFICAT_DB_HOST: mariadb.
       CERTIFICAT_SECRET_KEY: ${_DJ_SECRET_KEY}
       CERTIFICAT_DEBUG: "True"
-      CERTIFICAT_URL_ROOT: http://localhost:8000
-      #CERTIFICAT_URL_ROOT: http://certificat.localtest.me
+      #CERTIFICAT_URL_ROOT: http://localhost:8000
+      CERTIFICAT_URL_ROOT: http://certificat.localtest.me
       CERTIFICAT_REDIS_HOST: redis.
       CERTIFICAT_REDIS_PASSWORD: ${_DJ_REDIS_PWD}
-      CERTIFICAT_CA_MODULE: certificat.modules.acme.backends.local.LocalBackend
+      CERTIFICAT_FINALIZER_MODULE: certificat.modules.acme.backends.local.LocalFinalizer
+      CERTIFICAT_LOGIN_METHOD: saml
+      SAML_DEBUG: True
+      SAML_ENTITY_ID: "http://certificat.localtest.me/saml2/metadata/"
+      SAML_IDP_METADATA_PATH: "/workspaces/certificat/src/certificat_dev/saml/local-idp.xml"
+      SAML_KEY_PATH: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
+      SAML_CERT_PATH: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
       LOCAL_CA_KEY: |
         -----BEGIN RSA PRIVATE KEY-----
         MIIEowIBAAKCAQEAld0nGypEoP0EKuY1K7PA7auFw94EZy0l2KkbkOcgsdykDcka
@@ -83,7 +98,8 @@ services:
         atZhtPs3UzZ4gYJY9wB+MeX5EpLPHQJpoLYQoJO+Q22JuFuPkTfIsQG/Fzvv+hzj
         0aRuPpTug5Kgc1VrD97fjbNVn5Q/v0d8eL+eB7jujTSSXg/iBTH9D/0MSTp0u2Mm
         qIQFqQ2WEBc=
-        -----END CERTIFICATE-----        
+        -----END CERTIFICATE-----  
+      
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.certificat.rule=Host(`certificat.localtest.me`)"
@@ -101,6 +117,21 @@ services:
     image: redis:7.2.4
     restart: unless-stopped
     command: redis-server --save 60 1 --requirepass ${_DJ_REDIS_PWD}
+
+  idp:
+    image: kenchan0130/simplesamlphp
+    ports:
+      - "80"
+    environment:
+      SIMPLESAMLPHP_SP_ENTITY_ID: http://certificat.localtest.me/saml2/metadata/
+      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://certificat.localtest.me/saml2/acs/
+      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: http://certificat.localtest.me/saml2/ls/post
+    volumes:
+      - "../src/certificat_dev/saml/simple_saml_auth.php:/var/www/simplesamlphp/config/authsources.php"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.idp.rule=Host(`idp.localtest.me`)"
+      - "traefik.http.services.idp.loadbalancer.server.port=8080"
 
 volumes:
   mariadb-data:

@@ -19,6 +19,6 @@ acme_resource_patterns = (
 
 urlpatterns = [
     # Support optional trailing slash for difficult clients
-    re_path(r"directory/?", views.directory),
+    re_path(r"directory/?", views.directory, name="directory"),
     path("acme/", include(acme_resource_patterns)),
 ]

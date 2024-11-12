@@ -1,6 +1,9 @@
 import os
 
-from .lazy import LazyAppSetting
+import inject
+from .dynamic import ApplicationSettings
+
+dynamic_settings = inject.instance(ApplicationSettings)
 
 __all__ = [
     "BASE_DIR",
@@ -10,6 +13,8 @@ __all__ = [
     "APPEND_SLASH",
     "STATIC_URL",
     "STATIC_ROOT",
+    "LOGIN_URL",
+    "LOGIN_REDIRECT_URL",
     "LOGOUT_REDIRECT_URL",
     "AUTHENTICATION_BACKENDS",
     "INSTALLED_APPS",
@@ -23,9 +28,9 @@ __all__ = [
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-SECRET_KEY = LazyAppSetting(lambda settings: settings.secret_key)
+SECRET_KEY = dynamic_settings.secret_key
 
-DEBUG = LazyAppSetting(lambda settings: settings.debug)
+DEBUG = dynamic_settings.debug
 
 ALLOWED_HOSTS = ["*"]
 
@@ -34,9 +39,13 @@ APPEND_SLASH = False
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "server/static")
 
-LOGOUT_REDIRECT_URL = "/logout-successful/"
+SESSION_COOKIE_SECURE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
-AUTHENTICATION_BACKENDS = []  # "acme_proxy.server.auth.Saml2Backend"]
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -45,25 +54,27 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "djangosaml2",
+    "djangosaml2",
     "huey.contrib.djhuey",
-    # "webpack_loader",
+    "webpack_loader",
+    "django_cotton",
     "certificat.app.CertificatConfig",
     "certificat.modules.acme",
-    "certificat.modules.web",
+    "certificat.modules.html",
+    "certificat.modules.api",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    "django.middleware.csrf.CsrfViewMiddleware",
     # "csp.middleware.CSPMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # "djangosaml2.middleware.SamlSessionMiddleware",
-    # "acme_proxy.server.middleware.GlobalRequestMiddleware",
+    "certificat.modules.html.middleware.global_request_middleware",
+    "djangosaml2.middleware.SamlSessionMiddleware",
 ]
 
 ROOT_URLCONF = "certificat.urls"
@@ -79,6 +90,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "certificat.modules.html.context_processors.nav",
             ],
         },
     },

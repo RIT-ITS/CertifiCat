@@ -1,0 +1,13 @@
+<span class="chip {% if status == 'valid' %}
+                        chip-success
+                    {% elif status == 'invalid' %}
+                        chip-danger
+                    {% elif status == 'processing' %}
+                        chip-info
+                    {% elif status == 'pending' %}
+                        chip-info
+                    {% else %}
+                        chip-info
+                    {% endif %}">
+    {{ status }}
+</span>

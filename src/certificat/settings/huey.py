@@ -1,15 +1,18 @@
-from .dynamic import app_settings
-
 __all__ = ["HUEY"]
+
+import inject
+from .dynamic import ApplicationSettings
+
+dynamic_settings = inject.instance(ApplicationSettings)
 
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey implementation to use.
     "name": "huey",  # Use db name for huey.
     "immediate": False,
     "connection": {
-        "host": app_settings.redis.host,
-        "password": app_settings.redis.password,
-        "port": app_settings.redis.port,
+        "host": dynamic_settings.redis.host,
+        "password": dynamic_settings.redis.password,
+        "port": dynamic_settings.redis.port,
     },
     "consumer": {
         "workers": 1,

@@ -1,0 +1,360 @@
+@import '_theme';
+@import '_reset';
+@import '_spacing';
+@import '_typography';
+@import 'grid/main';
+@import 'forms';
+@import 'tables';
+@import 'pagination';
+@import 'messages';
+@import 'buttons';
+@import 'tabs';
+@import 'fontawesome/scss/fontawesome';
+@import './fontawesome/scss/regular.scss';
+@import './fontawesome/scss/solid.scss';
+@import 'nav';
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: $fontStack;
+    font-size: 1rem;
+    font-feature-settings: "kern", "liga", "pnum";
+    -webkit-font-smoothing: antialiased;
+    color: $bodyTextColor;
+    line-height: 1.5;
+
+    >* {
+        width: 100%;
+        flex-shrink: 1;
+    }
+}
+
+// generic container, constrains content to a max-width and centers it
+.container {
+    max-width: $maxWidth;
+    margin: 0 auto;
+    box-sizing: border-box;
+
+    @media(max-width: calc($maxWidth*1 + $spacer*2)) {
+        width: 100%;
+        max-width: unset;
+        padding: 0 $spacer 0 $spacer;
+    }
+}
+
+// generic default header for each page
+#headline {
+    @media (max-width: $largeSmartphone) {
+        margin-top: $spacer*1.5 !important;
+    }
+}
+
+a {
+    text-decoration: none;
+    color: $linkColor;
+}
+
+ul {
+    &.flat-list {
+        display: flex;
+        flex-wrap: wrap;
+
+        li {
+            &:not(:last-of-type):after {
+                content:",";
+                padding-right: $spacer*.25;
+            }
+        }
+    }
+
+    
+}
+
+li {
+    list-style-type: none;
+}
+
+#add_new_binding_form {
+    /*label[for=id_group], label[for=id_name], label[for=id_note] {
+        display: none;
+    }*/
+    #id_group {
+        display: none;
+    }
+
+    > div {
+        margin-bottom: $spacer*.5;
+    }
+}
+
+.chip {
+    box-sizing: border-box;
+    padding: $spacer *.25 $spacer*.5;
+    border: 1px solid;
+    border-radius: 10px;
+    font-weight: bold;
+   
+    font-size:.8rem;
+
+    &.chip-success {
+        color: mix($accentGreen, white, 10%);
+        background-color: $accentGreen;
+        border-color: mix($accentGreen, black, 70%);
+    }
+
+    &.chip-warning {
+        color: mix($accentOrange, white, 10%);
+        background-color: $accentOrange;
+        border-color: mix($accentOrange, black, 70%);
+        
+    }
+
+    &.chip-info {
+        color: mix($accentBlue, white, 10%);
+        background-color: $accentBlue;
+        border-color: mix($accentBlue, black, 70%);
+    }
+
+    &.chip-danger {
+        color: mix($accentRed, white, 10%);
+        background-color: $accentRed;
+        border-color: mix($accentRed, black, 70%);
+    }
+}
+
+editable-text {    
+    [data-editable-id] {
+        white-space: pre-wrap;
+    }
+    &.horizontal {
+        display: flex;
+        @media (max-width: ($largeSmartphone)) {
+            flex-direction: column;
+        }
+        > .edit-wrap {
+            margin-bottom: 0;
+            margin-right: 1em;
+            max-width: 400px;
+        }
+
+        .cancel {
+            margin-right: 1em;
+            color: $bodyTextColor;
+        }
+    }
+    > .edit-wrap {
+        [data-editable-id] {
+            border-bottom: 2px solid transparent;    
+            display: inline-block;   
+        }
+
+        [contenteditable="plaintext-only"] {
+            min-width:100px;
+            outline: none;
+            background-color: mix($lightGrayColor, white, 30%);
+            border-bottom: 2px solid $primaryColor;          
+        }
+        
+       
+        display: block;
+        margin-bottom: 1em;
+    }
+
+    input {
+        display: inline-block;
+    }    
+
+    .buttons {
+        white-space:normal;        
+    }
+
+    &:not(.editing) {
+        #binding-name:empty {
+            &::before {
+                content: "Add a name...";
+                color: $darkGrayColor;
+            }
+        }
+
+        #binding-note:empty {
+            &::before {
+                content: "Add a note...";
+                color: $darkGrayColor;
+            }
+        }
+    }
+}
+
+account-access-manager {
+    display: block;
+    max-width: 500px;
+    .accessmanager--edit, .accessmanager--cancel {
+        margin-left: $spacer;
+    }
+    .accessmanager--add {
+        margin-top: $spacer*.5;
+        padding-top: $spacer*.5;
+        display: flex;
+        a {
+            margin-left: $spacer*.5;
+            white-space: nowrap;
+        }
+    }
+    ul {
+        list-style-type: none;
+        
+        li {
+            display: flex;
+            margin-top:$spacer*.5;
+            .accessmanager--groupname {
+                flex: 1;
+            }
+            
+        }
+    }
+}
+
+confirm-button {
+    input {
+        display:inline-block;
+        width: auto;
+    }
+}
+
+fade-on-load {
+    opacity: 0;
+    &.loaded {
+        opacity: 1;
+    }
+}
+
+// Left-col layout spacing. Size of the columns is handled in the html
+.layout--left {
+    > div:first-of-type {
+        @media (min-width: ($tinyDesktop*1+1)) {
+            padding-right: $spacer*1.5;
+        }
+        @media (max-width: $tinyDesktop) {
+            padding-bottom: $spacer*1.5;
+        }
+    }
+}
+
+// Adds a generic light horizontal line to an element
+.divider {
+    border-top: 1px solid $lightGrayColor;
+}
+
+.divider-horizontal {
+    border-right: 1px solid $lightGrayColor;
+}
+
+.background-lightgray {
+    background-color: mix($lightGrayColor, white, 50%);
+}
+
+.adjustable-hex {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 700px;
+}
+
+dl {
+    &.indented-list {
+        dt {
+            font-weight: bold;
+            
+            
+        }
+
+        dd {
+            margin-left: $spacer;
+            margin-bottom: $spacer*.25;
+        }
+    }
+
+    &.field-list {
+        display: inline-grid;
+        grid-template-columns: min-content auto;
+        
+        width: 100%;
+
+        >dt {
+            font-weight: bold;
+            white-space: nowrap;
+            padding: $spacer*.5 $spacer*1.5 $spacer*.5 0;
+            //border-bottom: 1px solid $lightGrayColor;
+        }
+
+        >dd {
+            overflow-wrap:anywhere;
+            padding: $spacer*.5 0 $spacer*.5 $spacer*.5;
+            //border-bottom: 1px solid $lightGrayColor;
+        }
+
+        &.no-borders {
+            dt,dd {
+                border-bottom: none;
+            }
+        }
+
+        >dt:last-of-type {
+            border-bottom: none;
+        }
+
+        >dd:last-of-type {
+            border-bottom: none;
+        }
+    }
+}
+
+.tooltip {
+    position: relative;
+    cursor: pointer;
+    color: $darkGrayColor;
+
+    &:hover::after {
+        opacity: 1;
+        
+        visibility: visible;
+        transition: all 250ms ease-in-out .1s;
+    }
+
+    &::after {
+        content: attr(data-text); 
+        box-sizing: border-box;
+        position:absolute;
+        z-index: 50;
+        font-family: $fontStack;
+        
+        left: 50%;
+        transform:translate(-50%, 15px);
+        
+        max-width: 500px;
+        padding:$spacer*.5 $spacer;
+        border-radius:2px;
+        background:#000;
+        color: #fff;
+        text-align:center;
+        display: block;
+        font-size: 1rem;
+        line-height: 1.5rem;
+        opacity: 0;
+        visibility:hidden;
+        
+        transition: all 250ms ease-in-out .2s;
+    }
+    
+}
+
+code {
+    font-family: monospace;
+}
+
+.width-auto {
+    width: auto !important;
+}
+

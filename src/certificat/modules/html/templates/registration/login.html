@@ -1,0 +1,43 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Log In{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    
+    {% if next %}
+        {% if user.is_authenticated %}
+            <div role="contentinfo" class="messages messages--warning">
+                Your account doesn't have access to this page. To proceed,
+                please login with an account that has access.
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if form.errors %}
+        <div role="contentinfo" class="messages messages--error mb-4">Your username and password didn't match. Please try again.</div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <div class="row flex-column">
+            <div class="col flex-column col-xs-12 col-sm-8 col-md-6 col-lg-4">
+                <div class="col">
+                    <label for="{{ form.username.auto_id }}">Username</label>
+                    {{ form.username }}
+                </div>
+                <div class="col mt-1">
+                    <label for="{{ form.password.auto_id }}">Password</label>
+                    {{ form.password }}
+                </div>
+                
+                <input class="btn btn-primary mt-4 width-auto pl-5 pr-5" type="submit" value="Log In">
+                <input type="hidden" name="next" value="{{ next }}">
+            </div>
+        </div>
+      
+        
+    </form>
+</div>
+{% endblock %}

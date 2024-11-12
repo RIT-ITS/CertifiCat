@@ -1,5 +1,6 @@
 __all__ = ["LOGGING"]
 
+# TODO: Set logging via pydantic settings
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
@@ -34,7 +35,7 @@ LOGGING = {
             "propagate": False,
         },
         "acmev2": {
-            "level": "DEBUG",
+            "level": "INFO",
             "handlers": ["console"],
             "propagate": False,
         },

@@ -10,6 +10,8 @@ from acmev2.services.services import (
     IAuthorizationService,
     IChallengeService,
 )
+from certificat.modules.acme import models as db
+from django.db.models import Subquery
 
 logger = logging.getLogger(__name__)
 
@@ -38,39 +40,44 @@ def validate_challenge_task(challenge_name: str, task=None):
         order_service = inject.instance(IOrderService)
         account_service = inject.instance(IAccountService)
 
-        challenge = chall_service.get(challenge_name)
-        if challenge.status != ChallengeStatus.processing:
+        chall = chall_service.get(challenge_name)
+        if chall.status != ChallengeStatus.processing:
             logger.info(
                 f"{log_prefix}: cannot validate challenge if status != processing"
             )
+            return
 
         logger.info(
             f"{log_prefix}: beginning validation, retries available: {task.retries} "
         )
 
         passed = False
-        event_payload = {}
 
         try:
-            authz = auth_service.get(challenge.authz_id)
+            authz = auth_service.get(chall.authz_id)
             order = order_service.get(authz.order_id)
             acct = account_service.get(order.account_id)
 
-            chall = chall_service.validate(acct.jwk, order, authz, challenge)
+            chall = chall_service.validate(acct.jwk, order, authz, chall)
             passed = chall.status == ChallengeStatus.valid
+            if not passed:
+                db.ChallengeError.objects.create(
+                    challenge_id=Subquery(
+                        db.Challenge.objects.filter(name=chall.id).values("id")[:1]
+                    ),
+                    error="Challenge not validated",
+                )
         except Exception as exc:
             logger.info(f"{log_prefix}: exception evaluating challenge - {exc}")
-            event_payload["exception"] = str(exc)
+            db.ChallengeError.objects.create(
+                challenge_id=Subquery(
+                    db.Challenge.objects.filter(name=chall.id).values("id")[:1]
+                ),
+                error=str(exc),
+            )
 
         if passed:
             return True
-        else:
-            pass
-            # ChallengeEvent.record(
-            #    ChallengeEventType.FAILED_VERIFICATION,
-            #    challenge,
-            #    payload=event_payload,
-            # )
 
         if task.retries == 0 or HUEY.immediate:
             # If it did not pass, set the challenge to invalid. The consumer will have
@@ -79,12 +86,6 @@ def validate_challenge_task(challenge_name: str, task=None):
                 f"{log_prefix}: retries exceeded, marking challenge and auth invalid"
             )
             chall = chall_service.invalidate(order, authz, chall)
-            # ChallengeEvent.record(ChallengeEventType.RETRIES_EXCEEDED, challenge)
-            # challenge.status = Status.objects.get(name="invalid")
-            # challenge.save()
-
-            # challenge.authorization.status = challenge.status
-            # challenge.authorization.save()
         else:
             task.retries -= 1
             raise RetryTask("Challenges unsuccessful")

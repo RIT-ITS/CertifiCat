@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "css-loader": "^6.9.0",
+    "mini-css-extract-plugin": "^2.7.7",
+    "sass": "^1.69.7",
+    "sass-loader": "^13.3.3",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-bundle-tracker": "^3.0.1",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@lit/task": "^1.0.1",
+    "lit": "^3.1.3"
+  }
+}

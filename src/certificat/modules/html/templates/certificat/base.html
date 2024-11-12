@@ -1,0 +1,121 @@
+{% load render_bundle from webpack_loader %}
+{% load cache %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}CertifiCat{% endblock %}</title>
+    <meta name="description" content="CertifiCat ACME server" />
+    <link rel="shortcut icon" href="{% static 'certificat/favicon.ico' %}" type="image/vnd.microsoft.icon" />
+    <meta charset="UTF-8" />
+    <style>
+        :root {
+            --primary-color: #F76902;
+            --link-color: #C75300;
+            --header-color: #FFF;
+            --header-text-color: #212529;
+        }
+    </style>
+    {% render_bundle 'main' 'css' %}
+
+    {% if request.user.is_authenticated %}
+    <script>
+        window.user = {
+            'username': '{{ request.user.username }}',
+            'email': '{{ request.user.email }}',
+        };    
+    </script>
+    {% endif %}
+</head>
+
+<body>
+    <mobile-nav id="mobile-menu" class="hidden" trigger="#mobile-navigation-link">
+        <div class="overlay"></div>
+        <div class="links">
+            <ol id="navlinks--mobile" class="row flex-column">
+                <li>
+                    <a id="close-mobile-navigation-link" aria-label="Close Menu Button" role="button"><i class="fa-solid fa-x fa-sm"></i></a>
+                </li>
+                {% include 'certificat/includes/navigation.html' %}
+            </ol>
+        </div>
+    </mobile-nav>
+
+    <sticky-nav id="navigation-row" class="row center">
+        <div id="navigation" class="row">
+            <div class="container row">
+                <a id="mobile-navigation-link">
+                    <i class="fa fa-bars px-2 py-2 mr-2"></i>
+                </a>
+                <div id="navlogo">CertifiCat</div>
+                <ol id="navlinks" class="row">
+                    {% include 'certificat/includes/navigation.html' %}
+                </ol>
+                {% if request.user.is_authenticated %}
+                    <profile-menu id="profile"> 
+                        <i class="submenu-toggle fa-solid fa-circle-user fa-2xl"></i>
+                        <div class="submenu">
+                            <div class="submenu--header">
+                                <c-user :user="request.user" :emailIsLink="False" />
+                            </div>
+                            <a href="{% url 'logout' %}">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </profile-menu>
+                {% endif %}
+            </div>
+        </div>
+    </sticky-nav>
+
+    <div id="headline" class="container mt-5 mb-n2 row">
+        <h2 class="bold">{% block headline %}Headline{% endblock %}</h2>
+    </div>
+
+    <div class="container">
+        <ol class="breadcrumbs row">
+            {% for breadcrumb in breadcrumbs.data %}
+            <li>
+                {% if breadcrumb.link %}
+                    <a href="{{ breadcrumb.link }}">{{ breadcrumb.name }}</a>
+                {% else %}
+                    {{ breadcrumb.name }}
+                {% endif %}
+                {% if not forloop.last %}
+                    <span>/</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+
+    {% block messages %}
+        <div class="container">{% include 'certificat/includes/messages.html' %}</div>
+    {% endblock %}
+
+
+    {% block body %}
+    {% endblock %}
+
+    {% render_bundle 'main' 'js' %}
+    <div id="footer">
+       <div class="container">Footer info will go here, like links to contribute, copyright, whatever.</div> 
+    </div>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+

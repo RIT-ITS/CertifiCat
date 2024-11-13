@@ -1,4 +1,4 @@
-@import "variables/main.scss";
-@import "mixins/main.scss";
-@import "grid";
-@import "visibility"; // Visibility last for precedence
+@use "variables/main.scss" as *;
+@use "mixins/main.scss" as *;
+@use "grid";
+@use "visibility"; // Visibility last for precedence

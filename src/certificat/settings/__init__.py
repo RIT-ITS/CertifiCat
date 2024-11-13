@@ -1,10 +1,10 @@
 import inject
-from .dynamic import ApplicationSettings
+from .dynamic import ApplicationSettings, LocalACMESettings
 from acmev2.settings import ACMESettings
 
 bindings = [
-    (ApplicationSettings, ApplicationSettings()),
-    (ACMESettings, ACMESettings()),
+    (ApplicationSettings, ApplicationSettings.get()),
+    (ACMESettings, LocalACMESettings.get()),
 ]
 
 inject.configure(

@@ -101,19 +101,19 @@
       "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/adec7d6f31.ttf",
       "sourceFilename": "src/styles/fontawesome/webfonts/fa-solid-900.ttf"
     },
-    "main.28ad00b933.css": {
-      "name": "main.28ad00b933.css",
-      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.28ad00b933.css"
+    "main.370b77d079.css": {
+      "name": "main.370b77d079.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.370b77d079.css"
     },
-    "main.a7091f5f59.js": {
-      "name": "main.a7091f5f59.js",
-      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a7091f5f59.js"
+    "main.49c8592e71.js": {
+      "name": "main.49c8592e71.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.49c8592e71.js"
     }
   },
   "chunks": {
     "main": [
-      "main.28ad00b933.css",
-      "main.a7091f5f59.js"
+      "main.370b77d079.css",
+      "main.49c8592e71.js"
     ]
   }
 }

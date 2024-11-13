@@ -1,4 +1,5 @@
 @use 'theme';
+@use 'spacing' as *;
 
 fieldset {
     legend {
@@ -15,14 +16,14 @@ input[type=radio] {
     width: 24px;
     
     --tw-border-opacity: 1;
-    accent-color: $primaryColor;
+    accent-color: theme.$primaryColor;
     margin-right: .25em;
 }
 
 input, textarea {
     box-sizing: border-box;
-    font-family: $fontStack;
-    border: 1px solid $lightGrayColor;
+    font-family: theme.$fontStack;
+    border: 1px solid theme.$lightGrayColor;
     font-size: 1rem;
     padding: $spacer*.5;
     width: 100%;
@@ -33,7 +34,7 @@ select {
     width: 100%;
     border-width: 1px;
     --tw-border-opacity: 1;
-    border-color: $lightGrayColor;
+    border-color: theme.$lightGrayColor;
     --tw-bg-opacity: 1;
     background-color: #fff;
     padding: $spacer*.5;

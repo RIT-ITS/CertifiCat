@@ -1,4 +1,4 @@
-@import 'theme.scss';
+@use 'theme.scss';
 
 h1,.h1 {
     font-size: 4.25rem;
@@ -34,7 +34,7 @@ h1,.h1,h2,.h2,h3,.h3,h4,.h4,h5,.h5 {
     margin-bottom: 1rem;
 }
 
-@media (max-width: $largeSmartphone) {
+@media (max-width: theme.$largeSmartphone) {
     h2,.h2 {
         font-size:1.5rem;
         line-height: 1.75rem;
@@ -79,7 +79,7 @@ p {
 }
 
 .text-black {
-    color: $bodyTextColor;
+    color: theme.$bodyTextColor;
 }
 
 .subtext {

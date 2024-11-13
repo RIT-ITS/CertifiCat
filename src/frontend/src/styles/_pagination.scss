@@ -13,22 +13,22 @@
     padding: 0.5rem 0.75rem;
     margin-left: -1px;
     line-height: 1.25;
-    color: $primaryColor;
+    color: theme.$primaryColor;
     background-color: #fff;
-    border: 1px solid $lightGrayColor;
+    border: 1px solid theme.$lightGrayColor;
 }
 
 .page-link:hover {
     z-index: 2;
-    color: $bodyTextColor;
+    color: theme.$bodyTextColor;
     text-decoration: none;
-    background-color: $lightGrayColor;
+    background-color: theme.$lightGrayColor;
 }
 
 .page-link:focus {
     z-index: 3;
     outline: 0;
-    box-shadow: 0 0 0 0.2rem $primaryColor;
+    box-shadow: 0 0 0 0.2rem theme.$primaryColor;
 }
 
 .page-item:first-child .page-link {
@@ -45,14 +45,14 @@
 .page-item.active .page-link {
     z-index: 3;
     color: #fff;
-    background-color: $primaryColor;
-    border-color: $primaryColor;
+    background-color: theme.$primaryColor;
+    border-color: theme.$primaryColor;
 }
 
 .page-item.disabled .page-link {
-    color: $darkWarmGray;
+    color: theme.$darkWarmGray;
     pointer-events: none;
     cursor: auto;
     background-color: #fff;
-    border-color: $lightGrayColor
+    border-color: theme.$lightGrayColor
 }

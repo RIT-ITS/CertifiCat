@@ -10,7 +10,7 @@ from certificat.modules.acme.services import (
     OrderService,
 )
 
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import ApplicationSettings, LocalACMESettings
 from acmev2.settings import ACMESettings
 import inject
 import pytest
@@ -66,8 +66,8 @@ def setup():
         (IAuthorizationService, AuthorizationService()),
         (IChallengeService, ChallengeService()),
         (ICertService, CertService()),
-        (ACMESettings, ACMESettings()),
-        (ApplicationSettings, ApplicationSettings()),
+        (ACMESettings, LocalACMESettings.get(force_reload=True)),
+        (ApplicationSettings, ApplicationSettings.get(force_reload=True)),
     ]
     inject.configure(
         lambda binder: [binder.bind(api, impl) for api, impl in bindings],

@@ -12,7 +12,7 @@ from certificat.settings.dynamic import LocalCASettings
 
 class LocalFinalizer(Finalizer):
     def finalize(self, order: db.Order, pem_csr: str):
-        ca_settings = LocalCASettings()
+        ca_settings = LocalCASettings.get()
 
         ca_key = serialization.load_pem_private_key(
             ca_settings.key.encode(), password=None

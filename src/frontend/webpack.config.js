@@ -9,7 +9,7 @@ module.exports = (env) => {
     return {
         mode: env.production ? "production" : "development",
         entry: './src/index.ts',
-        devtool: 'inline-source-map',
+        devtool: env.production ? 'cheap-module-source-map' : 'inline-source-map',
         module: {
             rules: [
                 {

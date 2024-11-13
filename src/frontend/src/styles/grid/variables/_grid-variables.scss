@@ -3,10 +3,10 @@
 // Grid
 $grid-columns: 12 !default; // Set number of columns in the grid
 
-$xs-max: $smallSmartphone !default; // Set xs breakpoint's max width
-$sm-max: $largeSmartphone !default; // Set sm breakpoint's max width
-$md-max: $tinyDesktop !default; // Set md breakpoint's max width
-$lg-max: $smallDesktop !default; // Set lg breakpoint's max width
+$xs-max: theme.$smallSmartphone !default; // Set xs breakpoint's max width
+$sm-max: theme.$largeSmartphone !default; // Set sm breakpoint's max width
+$md-max: theme.$tinyDesktop !default; // Set md breakpoint's max width
+$lg-max: theme.$smallDesktop !default; // Set lg breakpoint's max width
 
 $gutter: 0 !default; // Set gutter size
 

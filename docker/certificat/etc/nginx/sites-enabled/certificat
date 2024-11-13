@@ -1,0 +1,15 @@
+server {
+    listen 80;
+    access_log /dev/fd/1;
+    error_log /dev/fd/2;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /srv/www;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/certificat/gunicorn.sock;
+    }
+}

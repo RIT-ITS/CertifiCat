@@ -1,29 +1,31 @@
-@import '_theme';
-@import '_reset';
-@import '_spacing';
-@import '_typography';
-@import 'grid/main';
-@import 'forms';
-@import 'tables';
-@import 'pagination';
-@import 'messages';
-@import 'buttons';
-@import 'tabs';
-@import 'fontawesome/scss/fontawesome';
-@import './fontawesome/scss/regular.scss';
-@import './fontawesome/scss/solid.scss';
-@import 'nav';
+@use '_theme';
+@use '_reset';
+@use '_spacing' as *;
+@use '_typography';
+@use 'grid/main';
+@use 'forms';
+@use 'tables';
+@use 'pagination';
+@use 'messages';
+@use 'buttons';
+@use 'tabs';
+@use 'fontawesome/scss/fontawesome';
+@use './fontawesome/scss/regular.scss';
+@use './fontawesome/scss/solid.scss';
+@use 'nav';
+
+@use 'sass:color';
 
 body {
     margin: 0;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    font-family: $fontStack;
+    font-family: theme.$fontStack;
     font-size: 1rem;
     font-feature-settings: "kern", "liga", "pnum";
     -webkit-font-smoothing: antialiased;
-    color: $bodyTextColor;
+    color: theme.$bodyTextColor;
     line-height: 1.5;
 
     >* {
@@ -34,11 +36,11 @@ body {
 
 // generic container, constrains content to a max-width and centers it
 .container {
-    max-width: $maxWidth;
+    max-width: theme.$maxWidth;
     margin: 0 auto;
     box-sizing: border-box;
 
-    @media(max-width: calc($maxWidth*1 + $spacer*2)) {
+    @media(max-width: calc(theme.$maxWidth*1 + $spacer*2)) {
         width: 100%;
         max-width: unset;
         padding: 0 $spacer 0 $spacer;
@@ -47,14 +49,14 @@ body {
 
 // generic default header for each page
 #headline {
-    @media (max-width: $largeSmartphone) {
+    @media (max-width: theme.$largeSmartphone) {
         margin-top: $spacer*1.5 !important;
     }
 }
 
 a {
     text-decoration: none;
-    color: $linkColor;
+    color: theme.$linkColor;
 }
 
 ul {
@@ -100,28 +102,28 @@ li {
     font-size:.8rem;
 
     &.chip-success {
-        color: mix($accentGreen, white, 10%);
-        background-color: $accentGreen;
-        border-color: mix($accentGreen, black, 70%);
+        color: color.mix(theme.$accentGreen, white, 10%);
+        background-color: theme.$accentGreen;
+        border-color: color.mix(theme.$accentGreen, black, 70%);
     }
 
     &.chip-warning {
-        color: mix($accentOrange, white, 10%);
-        background-color: $accentOrange;
-        border-color: mix($accentOrange, black, 70%);
+        color: color.mix(theme.$accentOrange, white, 10%);
+        background-color: theme.$accentOrange;
+        border-color: color.mix(theme.$accentOrange, black, 70%);
         
     }
 
     &.chip-info {
-        color: mix($accentBlue, white, 10%);
-        background-color: $accentBlue;
-        border-color: mix($accentBlue, black, 70%);
+        color: color.mix(theme.$accentBlue, white, 10%);
+        background-color: theme.$accentBlue;
+        border-color: color.mix(theme.$accentBlue, black, 70%);
     }
 
     &.chip-danger {
-        color: mix($accentRed, white, 10%);
-        background-color: $accentRed;
-        border-color: mix($accentRed, black, 70%);
+        color: color.mix(theme.$accentRed, white, 10%);
+        background-color: theme.$accentRed;
+        border-color: color.mix(theme.$accentRed, black, 70%);
     }
 }
 
@@ -131,7 +133,7 @@ editable-text {
     }
     &.horizontal {
         display: flex;
-        @media (max-width: ($largeSmartphone)) {
+        @media (max-width: (theme.$largeSmartphone)) {
             flex-direction: column;
         }
         > .edit-wrap {
@@ -142,7 +144,7 @@ editable-text {
 
         .cancel {
             margin-right: 1em;
-            color: $bodyTextColor;
+            color: theme.$bodyTextColor;
         }
     }
     > .edit-wrap {
@@ -154,8 +156,8 @@ editable-text {
         [contenteditable="plaintext-only"] {
             min-width:100px;
             outline: none;
-            background-color: mix($lightGrayColor, white, 30%);
-            border-bottom: 2px solid $primaryColor;          
+            background-color: color.mix(theme.$lightGrayColor, white, 30%);
+            border-bottom: 2px solid theme.$primaryColor;          
         }
         
        
@@ -175,14 +177,14 @@ editable-text {
         #binding-name:empty {
             &::before {
                 content: "Add a name...";
-                color: $darkGrayColor;
+                color: theme.$darkGrayColor;
             }
         }
 
         #binding-note:empty {
             &::before {
                 content: "Add a note...";
-                color: $darkGrayColor;
+                color: theme.$darkGrayColor;
             }
         }
     }
@@ -234,10 +236,10 @@ fade-on-load {
 // Left-col layout spacing. Size of the columns is handled in the html
 .layout--left {
     > div:first-of-type {
-        @media (min-width: ($tinyDesktop*1+1)) {
+        @media (min-width: (theme.$tinyDesktop*1+1)) {
             padding-right: $spacer*1.5;
         }
-        @media (max-width: $tinyDesktop) {
+        @media (max-width: theme.$tinyDesktop) {
             padding-bottom: $spacer*1.5;
         }
     }
@@ -245,15 +247,15 @@ fade-on-load {
 
 // Adds a generic light horizontal line to an element
 .divider {
-    border-top: 1px solid $lightGrayColor;
+    border-top: 1px solid theme.$lightGrayColor;
 }
 
 .divider-horizontal {
-    border-right: 1px solid $lightGrayColor;
+    border-right: 1px solid theme.$lightGrayColor;
 }
 
 .background-lightgray {
-    background-color: mix($lightGrayColor, white, 50%);
+    background-color: color.mix(theme.$lightGrayColor, white, 50%);
 }
 
 .adjustable-hex {
@@ -286,13 +288,13 @@ dl {
             font-weight: bold;
             white-space: nowrap;
             padding: $spacer*.5 $spacer*1.5 $spacer*.5 0;
-            //border-bottom: 1px solid $lightGrayColor;
+            //border-bottom: 1px solid theme.$lightGrayColor;
         }
 
         >dd {
             overflow-wrap:anywhere;
             padding: $spacer*.5 0 $spacer*.5 $spacer*.5;
-            //border-bottom: 1px solid $lightGrayColor;
+            //border-bottom: 1px solid theme.$lightGrayColor;
         }
 
         &.no-borders {
@@ -314,7 +316,7 @@ dl {
 .tooltip {
     position: relative;
     cursor: pointer;
-    color: $darkGrayColor;
+    color: theme.$darkGrayColor;
 
     &:hover::after {
         opacity: 1;
@@ -328,7 +330,7 @@ dl {
         box-sizing: border-box;
         position:absolute;
         z-index: 50;
-        font-family: $fontStack;
+        font-family: theme.$fontStack;
         
         left: 50%;
         transform:translate(-50%, 15px);

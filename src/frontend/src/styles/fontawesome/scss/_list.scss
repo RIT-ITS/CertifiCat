@@ -1,6 +1,6 @@
 // icons in a list
 // -------------------------
-
+@use 'variables' as *;
 .#{$fa-css-prefix}-ul {
   list-style-type: none;
   margin-left: var(--#{$fa-css-prefix}-li-margin, #{$fa-li-margin});

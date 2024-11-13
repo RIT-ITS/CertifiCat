@@ -1,4 +1,6 @@
 @use 'theme';
+@use 'spacing' as *;
+@use 'sass:color';
 
 .table {
     width: 100%;
@@ -8,28 +10,29 @@
     th, td {
         padding: $spacer*.75;
         vertical-align: top;
-        border-top: 1px solid $lightGrayColor;
-        
+        border-top: 1px solid theme.$lightGrayColor;
+        min-height: 1.5rem;
+
         p:last-of-type {
             margin-bottom: 0px;
         }
     }
 
     thead th {
-        border-bottom: 2px solid $lightGrayColor;
+        border-bottom: 2px solid theme.$lightGrayColor;
         font-weight: bold;
         text-align: left;
     }
 
     .thead-light th {
-        background-color: mix($lightGrayColor, white, 50%);
-        color: mix($bodyTextColor, white, 80%);
+        background-color: color.mix(theme.$lightGrayColor, white, 50%);
+        color: color.mix(theme.$bodyTextColor, white, 80%);
     }
 
     .row-button {
         position: relative;
         
-        @media (max-width: $largeSmartphone) {
+        @media (max-width: theme.$largeSmartphone) {
             height: 1rem;
             a {
                 position: absolute;
@@ -43,13 +46,13 @@
 }
 
 @mixin shrink-cell {
-    @media(min-width:($largeSmartphone*1+1))  {
+    white-space: nowrap;
+    @media(min-width:(theme.$largeSmartphone*1+1))  {
         width: 0.1%;    
     }    
-    white-space: nowrap;
 }
 
-@media (max-width: $largeSmartphone) {
+@media (max-width: theme.$largeSmartphone) {
     #add_new_binding {
       max-width: 100%;
       flex: none;
@@ -112,13 +115,12 @@ table.accounts {
         td.activated {
             @include shrink-cell;
             font-size: 1.5em;
-            
-            @media(min-width:($largeSmartphone*1+1)) {
+            color: theme.$accentGreen;
+
+            @media(min-width:(theme.$largeSmartphone*1+1)) {
                 width: 21px;
                 text-align: center;
-                
             }
-            color: $accentGreen;
         }
 
         td.edit {
@@ -151,7 +153,7 @@ table.orders {
 table.authorizations {
     tr {
         &.error-row {
-            @media(max-width:($largeSmartphone)) {
+            @media(max-width:(theme.$largeSmartphone)) {
                 td {
                     padding-left: $spacer !important;
                 }
@@ -175,13 +177,13 @@ table.authorizations {
         }
 
         div.challenge--error {
-            border-left:3px solid $accentRed;
-            background-color: mix($accentRed, #fff, 7%);
+            border-left:3px solid theme.$accentRed;
+            background-color: color.mix(theme.$accentRed, #fff, 7%);
             margin-left: $spacer;
             padding: $spacer;
             word-break: break-all;
 
-            @media(max-width:($largeSmartphone)) {
+            @media(max-width:(theme.$largeSmartphone)) {
                 margin-left:0px;   
             }
         }

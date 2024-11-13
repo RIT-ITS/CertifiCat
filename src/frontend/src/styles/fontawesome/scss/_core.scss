@@ -1,5 +1,7 @@
 // base icon class definition
 // -------------------------
+@use 'variables' as *;
+@use 'mixins' as *;
 
 .#{$fa-css-prefix} {
   font-family: var(--#{$fa-css-prefix}-style-family, '#{$fa-style-family}');

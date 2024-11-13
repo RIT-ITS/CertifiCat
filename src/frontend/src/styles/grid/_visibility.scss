@@ -1,3 +1,5 @@
+@use 'variables/grid-variables' as *;
+@use 'sass:list';
 
 .show {
   display: block !important;
@@ -28,8 +30,8 @@
   }
 } // Mixin to run inside of for loop - creates visibility classes * Not for developer use *
 
-@for $i from 1 through length($breakpoint-all-prefixes) {
-  $thisPrefix: nth($breakpoint-all-prefixes, $i);
+@for $i from 1 through list.length($breakpoint-all-prefixes) {
+  $thisPrefix: list.nth($breakpoint-all-prefixes, $i);
   @if $thisPrefix == "xs" {
     @include vis-factory($thisPrefix);
   } @else if $thisPrefix == "xs-only" {

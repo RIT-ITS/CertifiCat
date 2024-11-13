@@ -1,3 +1,4 @@
+@use 'variables' as *;
 .#{$fa-css-prefix}.#{$fa-css-prefix}-glass:before { content: unquote("\"#{ $fa-var-martini-glass-empty }\""); }
 .#{$fa-css-prefix}.#{$fa-css-prefix}-envelope-o {
   font-family: 'Font Awesome 6 Free';

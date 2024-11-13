@@ -1,4 +1,5 @@
 @use 'theme';
+@use 'spacing' as *;
 
 .btn {
     font-weight: bold;
@@ -17,8 +18,8 @@
 
     &.btn-primary { 
         color:#fff;
-        background-color: $primaryColor;
-        border-color: $primaryColor;
+        background-color: theme.$primaryColor;
+        border-color: theme.$primaryColor;
 
         &:active {
             background-color: white !important;
@@ -35,25 +36,25 @@
 
     &.btn-danger {
         color: #fff;
-        background-color: $accentRed;
-        border-color: $accentRed;
+        background-color: theme.$accentRed;
+        border-color: theme.$accentRed;
     }
 
     &.btn-secondary {
         color: #fff;
-        background-color: $darkGrayColor;
-        border-color: $darkGrayColor;
+        background-color: theme.$darkGrayColor;
+        border-color: theme.$darkGrayColor;
     }
 
     &.btn-primary-outline {
-        color:$primaryColor;
-        border-color: $primaryColor;
+        color:theme.$primaryColor;
+        border-color: theme.$primaryColor;
         background: #fff;
 
         &:hover {
             color: #fff;
-            background-color: $primaryColor;
-            border-color: $primaryColor;
+            background-color: theme.$primaryColor;
+            border-color: theme.$primaryColor;
         }
     }
 

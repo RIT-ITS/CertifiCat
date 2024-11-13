@@ -33,7 +33,7 @@ class CertificatConfig(AppConfig):
         import inject
 
         # Re-binds instances to the injector. Since it can only happen once
-        # it needs to get the settings binding sand re-apply them.
+        # it needs to get the settings bindings and re-apply them.
         bindings = settings_bindings + [
             (INonceService, NonceService()),
             (IDirectoryService, DirectoryService()),

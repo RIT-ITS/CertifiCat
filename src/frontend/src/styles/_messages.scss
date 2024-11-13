@@ -1,5 +1,6 @@
 @use 'theme';
 @use 'sass:color';
+@use 'spacing' as *;
 
 .messages {
     + .messages {
@@ -16,35 +17,35 @@
     overflow-wrap: break-word;
 
     &.messages--status {
-        color: mix($accentGreen, black, 30%);
-        border-color: $accentGreen;
-        background-color: mix($accentGreen, white, 10%);
+        color: color.mix(theme.$accentGreen, black, 30%);
+        border-color: theme.$accentGreen;
+        background-color: color.mix(theme.$accentGreen, white, 10%);
         
-        box-shadow: -8px 0 0 $accentGreen;
+        box-shadow: -8px 0 0 theme.$accentGreen;
     }
     
     &.messages--info {
-        color: mix($accentBlue, black, 30%);
-        border-color: $accentBlue;
-        background-color: mix($accentBlue, white, 10%);
+        color: color.mix(theme.$accentBlue, black, 30%);
+        border-color: theme.$accentBlue;
+        background-color: color.mix(theme.$accentBlue, white, 10%);
         
-        box-shadow: -8px 0 0 $accentBlue;
+        box-shadow: -8px 0 0 theme.$accentBlue;
     }
     
     &.messages--warning {
-        color: mix($accentOrange, black, 30%);
-        border-color: $accentOrange;
-        background-color: mix($accentOrange, white, 10%);
+        color: color.mix(theme.$accentOrange, black, 30%);
+        border-color: theme.$accentOrange;
+        background-color: color.mix(theme.$accentOrange, white, 10%);
         
-        box-shadow: -8px 0 0 $accentOrange;
+        box-shadow: -8px 0 0 theme.$accentOrange;
     }
     
     &.messages--error {
-        color: mix($accentRed, black, 30%);
-        border-color: $accentRed;
-        background-color: mix($accentRed, white, 10%);
+        color: color.mix(theme.$accentRed, black, 30%);
+        border-color: theme.$accentRed;
+        background-color: color.mix(theme.$accentRed, white, 10%);
         
-        box-shadow: -8px 0 0 $accentRed;
+        box-shadow: -8px 0 0 theme.$accentRed;
     }
 
     &.messages-small {

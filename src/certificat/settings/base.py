@@ -37,7 +37,9 @@ ALLOWED_HOSTS = ["*"]
 APPEND_SLASH = False
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "server/static")
+STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(
+    BASE_DIR, "server/static"
+)
 
 SESSION_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

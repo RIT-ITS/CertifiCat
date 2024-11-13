@@ -9,7 +9,7 @@ dynamic_settings = inject.instance(ApplicationSettings)
 BASEDIR = path.dirname(path.abspath(__file__))
 
 if dynamic_settings.login_method == "saml":
-    saml_settings = SAMLSettings()
+    saml_settings = SAMLSettings.get()
     LOGIN_URL = "/saml2/login/"
     AUTHENTICATION_BACKENDS = ["certificat.auth.Saml2Backend"]
 

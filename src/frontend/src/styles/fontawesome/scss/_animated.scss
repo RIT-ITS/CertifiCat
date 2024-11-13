@@ -1,5 +1,6 @@
 // animating icons
 // --------------------------
+@use 'variables' as *;
 
 .#{$fa-css-prefix}-beat {
   animation-name: #{$fa-css-prefix}-beat;

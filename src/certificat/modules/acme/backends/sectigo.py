@@ -90,7 +90,7 @@ class SectigoBackend:
     poll_deadline: int
 
     def __init__(self):
-        ca_settings = dynamic.SectigoSettings()
+        ca_settings = dynamic.SectigoSettings.get()
         self.api_base = ca_settings.api_base
         self.api_password = ca_settings.api_password
         self.api_user = ca_settings.api_user

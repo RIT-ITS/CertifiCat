@@ -1,4 +1,5 @@
 @use 'theme';
+@use 'spacing' as *;
 
 .tabs{
     position: relative;
@@ -8,7 +9,7 @@
     &.tabs-bordered {
         &:before {
             content: "\00a0 ";
-            border-bottom: 1px solid $lightGrayColor;
+            border-bottom: 1px solid theme.$lightGrayColor;
             position: absolute;
             padding: $spacer;
             left: 0;
@@ -33,7 +34,7 @@
             position: absolute;
             width: 0;
             transition: width 150ms ease-in-out 0s;
-            background-color: $primaryColor;
+            background-color: theme.$primaryColor;
             bottom: -2px;
             left: 50%;
             height: 3px;

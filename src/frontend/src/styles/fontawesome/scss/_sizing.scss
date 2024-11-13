@@ -1,6 +1,7 @@
 // sizing icons
 // -------------------------
-
+@use 'variables' as *;
+@use 'mixins' as *;
 // literal magnification scale
 @for $i from 1 through 10 {
   .#{$fa-css-prefix}-#{$i}x {

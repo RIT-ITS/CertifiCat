@@ -1,5 +1,7 @@
 // screen-reader utilities
 // -------------------------
+@use 'variables' as *;
+@use 'mixins' as *;
 
 // only display content to screen readers
 .sr-only,

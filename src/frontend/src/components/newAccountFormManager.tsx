@@ -10,7 +10,7 @@ export class NewAccountFormManagerElement extends LitElement {
     form!: HTMLFormElement;
 
     @query("#id_scope_1")
-    groupScope!: HTMLInputElement;
+    groupScope?: HTMLInputElement;
 
     @query("#id_group")
     group!: HTMLSelectElement;
@@ -42,8 +42,8 @@ export class NewAccountFormManagerElement extends LitElement {
     }
 
     private setGroupVisibility = () => {
-        this.group.style.display = this.groupScope.checked ? "block" : "none";
-        this.groupLabel.style.display = this.groupScope.checked
+        this.group.style.display = this.groupScope?.checked ? "block" : "none";
+        this.groupLabel.style.display = this.groupScope?.checked
             ? "block"
             : "none";
     };

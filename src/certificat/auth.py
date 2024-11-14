@@ -20,7 +20,7 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 
         # Adds the saml group prefix to an array of strings
         def _prefix_groups(groups):
-            return [f"{saml_settings.group_prefix} {g}" for g in groups]
+            return [f"{saml_settings.group_sync_prefix} {g}" for g in groups]
 
         # Gets a list of all the admins in the config file and gives them access
         # to the backend

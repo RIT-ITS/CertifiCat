@@ -19,11 +19,14 @@ if dynamic_settings.login_method == "saml":
         attr: (field,) for attr, field in saml_settings.attribute_mapping.items()
     }
 
+    if saml_settings.discovery:
+        SAML2_DISCO_URL = saml_settings.discovery.service
+
     SAML_CONFIG = {
         # full path to the xmlsec1 binary programm
         "xmlsec_binary": saml_settings.xmlsec_binary,
         # your entity id, usually your subdomain plus the url to the metadata view
-        "entityid": saml_settings.entity_id,
+        "entityid": saml_settings.sp.entity_id,
         # directory with attribute mapping
         "attribute_map_dir": path.join(path.dirname(BASEDIR), "saml/attribute_maps"),
         # Permits to have attributes not configured in attribute-mappings
@@ -33,7 +36,7 @@ if dynamic_settings.login_method == "saml":
         "service": {
             # we are just a lonely SP
             "sp": {
-                "name": saml_settings.service_name,
+                "name": saml_settings.sp.name,
                 "name_id_format": saml2.saml.NAMEID_FORMAT_TRANSIENT,
                 "endpoints": {
                     # url and binding to the assetion consumer service view
@@ -58,20 +61,15 @@ if dynamic_settings.login_method == "saml":
                         ),
                     ],
                 },
-                "signing_algorithm": saml_settings.signing_algorthm,
-                "digest_algorithm": saml_settings.digest_algorithm,
+                "signing_algorithm": saml_settings.sp.signing_algorthm,
+                "digest_algorithm": saml_settings.sp.digest_algorithm,
                 # Mandates that the identity provider MUST authenticate the
                 # presenter directly rather than rely on a previous security context.
-                "force_authn": saml_settings.force_authn,
+                "force_authn": saml_settings.sp.force_authn,
                 # Enable AllowCreate in NameIDPolicy.
                 "name_id_format_allow_create": False,
                 # attributes that this project need to identify a user
-                "required_attributes": [
-                    # "uid",
-                    # "givenName",
-                    # "sn",
-                    # "mail",
-                ],
+                "required_attributes": [],
                 # attributes that may be useful to have but not required
                 "optional_attributes": [],
                 "want_response_signed": True,
@@ -79,25 +77,30 @@ if dynamic_settings.login_method == "saml":
                 "logout_requests_signed": True,
                 "want_assertions_signed": True,
                 "only_use_keys_in_metadata": True,
-                "allow_unsolicited": True,
+                "allow_unsolicited": saml_settings.sp.allow_unsolicited,
             },
         },
         # where the remote metadata is stored, local, remote or mdq server.
         "metadata": {
-            "local": [saml_settings.idp_metadata_path],
+            "local": saml_settings.idp.local,
+            "remote": [o.model_dump() for o in saml_settings.idp.remote],
+            "mdq": [o.model_dump() for o in saml_settings.idp.mdq],
         },
         # set to 1 to output debugging information
         "debug": 1 if saml_settings.debug else 0,
         # Signing
-        "key_file": saml_settings.key_path,  # private part
-        "cert_file": saml_settings.cert_path,  # public part
+        "key_file": saml_settings.sp.key_file,  # private part
+        "cert_file": saml_settings.sp.cert_file,  # public part
         # Encryption
         "encryption_keypairs": [
             {
-                "key_file": saml_settings.key_path,  # private part
-                "cert_file": saml_settings.cert_path,  # public part
+                "key_file": saml_settings.sp.key_file,  # private part
+                "cert_file": saml_settings.sp.cert_file,  # public part
             }
         ],
+        "discovery_response": saml_settings.discovery.response
+        if saml_settings.discovery
+        else None,
         # own metadata settings
         "contact_person": [],
         # you can set multilanguage information here

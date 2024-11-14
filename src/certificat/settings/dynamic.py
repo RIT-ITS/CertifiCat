@@ -99,6 +99,39 @@ class SectigoSettings(Settings):
     poll_deadline: int = 60 * 5
 
 
+class SAMLSPSettings(Settings):
+    entity_id: str
+    name: str = "CertifiCat"
+    key_file: str
+    cert_file: str
+    signing_algorthm: str = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+    digest_algorithm: str = "http://www.w3.org/2001/04/xmlenc#sha256"
+    force_authn: bool = False
+    allow_unsolicited: bool = True
+
+
+class RemoteIdP(Settings):
+    url: str
+    cert: str
+
+
+class MDQ(Settings):
+    url: str
+    cert: str | None = None
+    freshness_period: str = "P0Y0M0DT2H0M0S"
+
+
+class SAMLIdPSettings(Settings):
+    local: List[str] = []
+    remote: List[RemoteIdP] = []
+    mdq: List[MDQ] = []
+
+
+class SAMLDiscoverySettings(Settings):
+    service: str
+    response: List[str] = []
+
+
 class SAMLSettings(Settings):
     model_config = SettingsConfigDict(
         validate_default=False, env_prefix="SAML_", from_attributes=True
@@ -112,23 +145,20 @@ class SAMLSettings(Settings):
     xmlsec_binary: str = "/usr/bin/xmlsec1"
     session_cookie: str = "snickerdoodle"
     administrators: List[str] = []
-    entity_id: str
+
+    group_attribute: str = "memberof"
+    group_sync_prefix: str = "<SAML>"
+
+    sp: SAMLSPSettings
+    idp: SAMLIdPSettings
+    discovery: SAMLDiscoverySettings | None = None
+
     attribute_mapping: Mapping[str, str] = {
         "uid": "username",
         "mail": "email",
         "givenName": "first_name",
         "sn": "last_name",
     }
-    group_attribute: str = "memberof"
-    group_prefix: str = "<SAML>"
-    service_name: str = "CertifiCat"
-    signing_algorthm: str = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
-    digest_algorithm: str = "http://www.w3.org/2001/04/xmlenc#sha256"
-    force_authn: bool = False
-
-    idp_metadata_path: str
-    key_path: str
-    cert_path: str
 
 
 class LocalACMESettings(ACMESettings):

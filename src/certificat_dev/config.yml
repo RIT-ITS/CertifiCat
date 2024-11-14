@@ -20,11 +20,25 @@ certificat:
 
 saml:
   debug: True
-  entity_id: "http://certificat.localtest.me/saml2/metadata/"
-  idp_metadata_path: "/workspaces/certificat/src/certificat_dev/saml/local-idp.xml"
-  key_path: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
-  cert_path: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
-
+  attribute_mapping:
+    eduPersonPrincipalName: username
+    mail: email
+    givenName: first_name
+    sn: last_name
+  discovery:
+    service: "https://service.seamlessaccess.org/ds"
+  sp:
+    entity_id: "http://certificat.localtest.me/saml2/metadata/"
+    key_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
+    cert_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
+  idp:
+    local: 
+      - "/workspaces/certificat/src/certificat_dev/saml/local-idp.xml"
+    mdq: 
+      - url: "https://mdq.incommon.org"
+        cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
+        freshness_period: "P0Y0M0DT2H0M0S"
+        
 local_finalizer:
   key: |
     -----BEGIN RSA PRIVATE KEY-----

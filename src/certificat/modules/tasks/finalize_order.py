@@ -9,6 +9,7 @@ from certificat.settings.dynamic import ApplicationSettings
 import inject
 from django.utils.module_loading import import_string
 from acmev2.services import IOrderService
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +17,14 @@ logger = logging.getLogger(__name__)
 def _run_task(order_name: str):
     app_settings = inject.instance(ApplicationSettings)
     log_prefix = "order " + order_name
-    # TODO: Make atomic, select_for_update
-    order = db.Order.objects.get(name=order_name)
-    if order.status != OrderStatus.processing:
-        logger.info(f"{log_prefix}: order in invalid state {order.status}")
+
+    with transaction.atomic():
+        order = db.Order.objects.select_for_update().get(name=order_name)
+        if order.status == OrderStatus.valid:
+            return True
+
+        if order.status != OrderStatus.processing:
+            logger.info(f"{log_prefix}: order in invalid state: {order.status}")
 
     csr = db.CertificateRequest.objects.get(order=order).csr
 
@@ -62,11 +67,18 @@ def finalize_order_task(order_name: str, task=None):
         except Exception:
             logger.exception("error in order finalization")
 
-        if not passed and (task.retries == 0 or HUEY.immediate):
+        if passed:
+            return True
+
+        if task.retries == 0 or HUEY.immediate:
             logger.info(f"{log_prefix}: retries exceeded, marking order and invalid")
-            order = db.Order.objects.get(name=order_name)
-            order_service = inject.instance(IOrderService)
-            order_service.update_status(db.to_pydantic(order), OrderStatus.invalid)
+            with transaction.atomic():
+                order = db.Order.objects.select_for_update().get(name=order_name)
+                if order.status == OrderStatus.valid:
+                    return
+
+                order_service = inject.instance(IOrderService)
+                order_service.update_status(db.to_pydantic(order), OrderStatus.invalid)
         else:
             task.retries -= 1
             raise RetryTask("Finalization unsuccessful")

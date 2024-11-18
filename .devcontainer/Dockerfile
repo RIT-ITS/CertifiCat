@@ -9,7 +9,8 @@ RUN apt-get update && \
     xmlsec1 \
     iputils-ping \
     jq \
-    software-properties-common
+    software-properties-common \
+    clang
 
 RUN pip install yq
 

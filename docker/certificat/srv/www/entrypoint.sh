@@ -5,6 +5,7 @@ HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 LOGLEVEL='DEBUG'
 
 CONFIG="${CERTIFICAT_CONFIG:-${HERE}/config.yml}"
+PYTHON="/srv/www/.venv/bin/python"
 
 usage() {
 	cat << EOF
@@ -54,11 +55,11 @@ function log_err {
 }
 
 migrate() {
-  python /srv/www/manage.py migrate  
+  "${PYTHON}" /srv/www/manage.py migrate  
 }
 
 manage() {
-  python /srv/www/manage.py "$@"
+  "${PYTHON}" /srv/www/manage.py "$@"
 }
 
 runserver() {
@@ -76,7 +77,7 @@ collectstatic() {
         exit 1;
     }
 
-    CERTIFICAT_STATICFILES_ROOT="/srv/www/static" python /srv/www/manage.py collectstatic --noinput
+    CERTIFICAT_STATICFILES_ROOT="/srv/www/static" "${PYTHON}" /srv/www/manage.py collectstatic --noinput
 }
 
 runhuey() {
@@ -85,7 +86,7 @@ runhuey() {
         exit 1;
     }
         
-    python /srv/www/manage.py run_huey -w4
+    "${PYTHON}" /srv/www/manage.py run_huey -w4
 }
 
 SUB_COMMAND=${1}; shift

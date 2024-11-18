@@ -1,4 +1,9 @@
-FROM python:3.11.7-slim-bookworm AS base
+FROM python:3.13.0-slim-bookworm AS base
+
+RUN cat <<EOF > /etc/apt/sources.list
+deb http://mirrors.rit.edu/debian bookworm-updates main
+deb http://mirrors.rit.edu/debian bookworm main
+EOF
 
 FROM base AS builder
 
@@ -9,19 +14,19 @@ RUN apt-get update && \
     musl-dev \
     libffi-dev \
     npm \
-    make
+    make && \
+    npm install --global yarn
 
 COPY --from=src ./ /code/
 
 WORKDIR /code/frontend
 
-RUN npm install && \
+RUN yarn && \
     ./node_modules/.bin/webpack --env production 
 
 WORKDIR /code/
- 
-RUN ls -al && curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    . $HOME/.local/bin/env && \
+
+RUN pip3 install uv && \
     uv build
 
 FROM base AS prod
@@ -38,9 +43,9 @@ RUN apt-get update && \
     xmlsec1 \
     gcc \
     pkg-config \
-    default-libmysqlclient-dev \
+    libmariadb-dev \
     nginx \
-    supervisor
+    xz-utils
 
 # Remove default nginx config
 RUN rm /etc/nginx/sites-enabled/default
@@ -52,6 +57,9 @@ ARG GUNICORN_VERSION=21.2.0
 RUN useradd -ms /bin/bash certificat && \
     mkdir /run/certificat && \
     chown certificat /run/certificat
+    
+# TODO: Look at permissions of gunicorn socket file
+# TODO: Look at making nginx run as non-root user
 
 # Install certificat and any other copied dependencies
 RUN pip3 install ./deps/* && \
@@ -61,6 +69,18 @@ RUN pip3 install ./deps/* && \
 # Overlay static configuration and runtime files
 COPY --from=dockerfiles /srv /srv/
 COPY --from=dockerfiles /etc /etc/
+
+RUN pip install supervisor && pip uninstall pip -y && \
+    apt install ncdu redis -y && \
+    apt purge -y gcc && apt clean -y && apt autoremove -y && \
+    rm -rf /var/lib/apt && rm -rf /var/lib/dpkg && \
+    rm -rf /var/cache/ && \
+    rm -rf /root/.cache && \
+    find /usr/local | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+
+FROM scratch AS prod_flattened
+
+COPY --from=prod / /
 
 ENTRYPOINT [ "/srv/www/entrypoint.sh" ]
 EXPOSE 80

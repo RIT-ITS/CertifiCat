@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json.
 {
 	"name": "Python 3 & MariaDB",
-	"dockerComposeFile": "docker-compose.yml",
+	"dockerComposeFile": "compose.yml",
 	"initializeCommand": "./.devcontainer/initialize.sh",
 	"postStartCommand": ". $HOME/.cargo/env",
 	"service": "app",

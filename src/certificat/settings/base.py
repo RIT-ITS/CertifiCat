@@ -23,6 +23,7 @@ __all__ = [
     "TEMPLATES",
     "WSGI_APPLICATION",
     "DEFAULT_AUTO_FIELD",
+    "CSRF_TRUSTED_ORIGINS",
 ]
 
 
@@ -33,6 +34,7 @@ SECRET_KEY = dynamic_settings.secret_key
 DEBUG = dynamic_settings.debug
 
 ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = [dynamic_settings.url_root]
 
 APPEND_SLASH = False
 

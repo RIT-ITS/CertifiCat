@@ -94,6 +94,6 @@ docker rm -f tmpredis
 docker run --name tmpmariadb -d --network docker_default -e MARIADB_DATABASE=certificat -e MARIADB_ROOT_PASSWORD=root mariadb:latest
 docker run --name tmpredis -d --network docker_default redis:latest --requirepass password
 
-docker run --network docker_default -e CERTIFICAT_CONFIG=/srv/www/config.yml -v"${WORKSPACE}/docker/certificat/srv/www/entrypoint.sh:/srv/www/entrypoint.sh" -v"${CONFIG_FILE}:/srv/www/config.yml" --entrypoint=/bin/sh -p8000:80 -it $LAST_IMAGE
+docker run --network docker_default -e CERTIFICAT__CONFIG=/srv/www/config.yml -v"${WORKSPACE}/docker/certificat/srv/www/entrypoint.sh:/srv/www/entrypoint.sh" -v"${CONFIG_FILE}:/srv/www/config.yml" --entrypoint=/bin/sh -p8000:80 -it $LAST_IMAGE
 
 #docker run -v"${CONFIG_FILE}:/srv/www/config.yml" -it -p8000:80 $LAST_IMAGE start_huey

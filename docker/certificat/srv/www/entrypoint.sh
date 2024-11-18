@@ -4,7 +4,7 @@ set -euo pipefail
 HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 LOGLEVEL='DEBUG'
 
-CONFIG="${CERTIFICAT_CONFIG:-${HERE}/config.yml}"
+CONFIG="${CERTIFICAT__CONFIG:-${HERE}/config.yml}"
 PYTHON="/srv/www/.venv/bin/python"
 
 usage() {

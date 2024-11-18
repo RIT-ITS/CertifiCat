@@ -35,10 +35,10 @@ services:
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
     environment:
-      CERTIFICAT_SECRET_KEY: ${_DJ_SECRET_KEY}
-      CERTIFICAT_DB_PASSWORD: ${_DJ_MYSQL_ROOT_PWD}
-      CERTIFICAT_REDIS_PASSWORD: ${_DJ_REDIS_PWD}
-      CERTIFICAT_CONFIG: "/workspaces/certificat/src/certificat_dev/config.yml"
+      CERTIFICAT__SECRET_KEY: ${_DJ_SECRET_KEY}
+      CERTIFICAT__DB__PASSWORD: ${_DJ_MYSQL_ROOT_PWD}
+      CERTIFICAT__REDIS__PASSWORD: ${_DJ_REDIS_PWD}
+      CERTIFICAT__CONFIG: "/workspaces/certificat/src/certificat_dev/config.yml"
       
     labels:
       - "traefik.enable=true"

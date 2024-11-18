@@ -31,7 +31,7 @@ class RedisSettings(Settings):
 
 class ApplicationSettings(Settings):
     model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="CERTIFICAT_", env_nested_delimiter="_"
+        validate_default=False, env_prefix="CERTIFICAT__", env_nested_delimiter="__"
     )
 
     @classmethod
@@ -68,7 +68,9 @@ class ApplicationSettings(Settings):
 
 
 class LocalCASettings(Settings):
-    model_config = SettingsConfigDict(validate_default=False, env_prefix="LOCAL_CA_")
+    model_config = SettingsConfigDict(
+        validate_default=False, env_prefix="LOCAL_CA__", env_nested_delimiter="__"
+    )
 
     @classmethod
     def get(cls, force_reload=False) -> Self:
@@ -79,7 +81,9 @@ class LocalCASettings(Settings):
 
 
 class SectigoSettings(Settings):
-    model_config = SettingsConfigDict(validate_default=False, env_prefix="SECTIGO_")
+    model_config = SettingsConfigDict(
+        validate_default=False, env_prefix="SECTIGO__", env_nested_delimiter="__"
+    )
 
     @classmethod
     def get(cls) -> Self:
@@ -134,7 +138,10 @@ class SAMLDiscoverySettings(Settings):
 
 class SAMLSettings(Settings):
     model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="SAML_", from_attributes=True
+        validate_default=False,
+        env_prefix="SAML__",
+        from_attributes=True,
+        env_nested_delimiter="__",
     )
 
     @classmethod
@@ -183,10 +190,10 @@ class ConfigFile(BaseSettings):
             _config = None
 
         if not _config:
-            config_file = os.environ.get("CERTIFICAT_CONFIG")
+            config_file = os.environ.get("CERTIFICAT__CONFIG")
             if not config_file:
                 print(
-                    "CERTIFICAT_CONFIG environment variable should contain a config path, instead was empty."
+                    "CERTIFICAT__CONFIG environment variable should contain a config path, instead was empty."
                 )
                 exit(1)
 

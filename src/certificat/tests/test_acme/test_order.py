@@ -33,7 +33,7 @@ def test_order_multiple_sans(acme_client: acme.client.ClientV2, acme_neworder):
 
 @pytest.mark.django_db
 def test_blacklisted_domain(acme_neworder, acme_newacct, acme_settings: ACMESettings):
-    acme_settings.blacklisted_domains = [".*\.acme\.edu", "acme\.edu"]
+    acme_settings.blacklisted_domains = [r".*\.acme\.edu", r"acme\.edu"]
     new_acct: NewAcctRet = acme_newacct()
 
     acct_id = new_acct.response.uri.split("/")[-1]

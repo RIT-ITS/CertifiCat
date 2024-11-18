@@ -1,20 +1,17 @@
-FROM python:3.13.0-slim-bookworm AS base
-
-RUN cat <<EOF > /etc/apt/sources.list
-deb http://mirrors.rit.edu/debian bookworm-updates main
-deb http://mirrors.rit.edu/debian bookworm main
-EOF
+FROM python:3.13.0-alpine3.20 AS base
 
 FROM base AS builder
 
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends \
+RUN apk update && \
+    apk add --no-cache \
     curl \
     gcc \        
     musl-dev \
     libffi-dev \
     npm \
-    make && \
+    make \
+    mariadb-dev \
+    py3-virtualenv && \
     npm install --global yarn
 
 COPY --from=src ./ /code/
@@ -29,54 +26,45 @@ WORKDIR /code/
 RUN pip3 install uv && \
     uv build
 
+ARG GUNICORN_VERSION=21.2.0
+
+ADD https://www-staging.rit.edu/test/clay/acme/UFUgUENQVSBXSEFUIGNhY2l0cyB0dHkyIEZyaTA3IDIyZGF5cyAzOjA4bSAw/acmev2-0.0.2.tar.gz /code/dist/acmev2-0.0.2.tar.gz
+RUN python3 -m venv /venv/ && \
+    /venv/bin/pip install --no-cache-dir /code/dist/certificat-*.whl /code/dist/acmev2* gunicorn==$GUNICORN_VERSION
+
+# Bytecode will be generated on first run
+RUN find /venv | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+
 FROM base AS prod
 
-RUN mkdir -p /srv/www/deps/
 WORKDIR /srv/www
 
-COPY --from=builder /code/dist/certificat*.whl /srv/www/deps/
-# TODO: Fix this! Push acmev2 to pypi
-ADD https://www-staging.rit.edu/test/clay/acme/UFUgUENQVSBXSEFUIGNhY2l0cyB0dHkyIEZyaTA3IDIyZGF5cyAzOjA4bSAw/acmev2-0.0.2.tar.gz /srv/www/deps/acmev2-0.0.2.tar.gz
-
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends \    
-    xmlsec1 \
-    gcc \
-    pkg-config \
-    libmariadb-dev \
-    nginx \
-    xz-utils
-
-# Remove default nginx config
-RUN rm /etc/nginx/sites-enabled/default
-
-ARG GUNICORN_VERSION=21.2.0
+RUN apk update && \
+     apk add --no-cache \
+     bash \
+     xmlsec \
+     pkgconf \
+     mariadb-dev \
+     nginx 
 
 # Django runs as the certificat user and it needs to own
 # the directory where gunicorn creates its socket
-RUN useradd -ms /bin/bash certificat && \
-    mkdir /run/certificat && \
-    chown certificat /run/certificat
-    
-# TODO: Look at permissions of gunicorn socket file
-# TODO: Look at making nginx run as non-root user
+RUN adduser -S certificat && \
+     mkdir /run/certificat && \
+     chown certificat:nginx /run/certificat && \
+     chmod 0750 /run/certificat
 
-# Install certificat and any other copied dependencies
-RUN pip3 install ./deps/* && \
-    pip3 install \
-    gunicorn==${GUNICORN_VERSION}
+# Add venv built in previous step
+COPY --from=builder /venv /srv/www/.venv
 
 # Overlay static configuration and runtime files
 COPY --from=dockerfiles /srv /srv/
 COPY --from=dockerfiles /etc /etc/
 
-RUN pip install supervisor && pip uninstall pip -y && \
-    apt install ncdu redis -y && \
-    apt purge -y gcc && apt clean -y && apt autoremove -y && \
-    rm -rf /var/lib/apt && rm -rf /var/lib/dpkg && \
-    rm -rf /var/cache/ && \
-    rm -rf /root/.cache && \
-    find /usr/local | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+RUN pip install supervisor --no-cache-dir && pip uninstall pip -y && \
+    apk add ncdu redis && \
+    find /usr/local | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf && \
+    rm -rf /usr/lib/x86_64-linux-gnu/perl-base/
 
 FROM scratch AS prod_flattened
 

@@ -77,7 +77,7 @@ collectstatic() {
         exit 1;
     }
 
-    CERTIFICAT_STATICFILES_ROOT="/srv/www/static" "${PYTHON}" /srv/www/manage.py collectstatic --noinput
+    CERTIFICAT__STATICFILES_ROOT="/srv/www/static" "${PYTHON}" /srv/www/manage.py collectstatic --noinput
 }
 
 runhuey() {

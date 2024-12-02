@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    {{- include "..selectorLabels" . | nindent 4 }}
+  annotations: 
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $value }}"
+    {{- end }}
+  name: certificat-ingress
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
+spec:
+  rules:
+  - host: {{ .Values.ingress.hostname }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: certificat-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - {{ .Values.ingress.hostname }}
+    secretName: certificat-ingress-cert

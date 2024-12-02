@@ -146,7 +146,7 @@ export class AccountAccessManagerElement extends LitElement {
                             return html`<b class='bold'>You're not in any groups</b>`;
                         }
                     }
-                }) : null
+                }) : this.renderGroupDisplay()
             }
         `
     }

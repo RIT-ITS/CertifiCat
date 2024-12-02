@@ -45,7 +45,8 @@ RUN apk update && \
      xmlsec \
      pkgconf \
      mariadb-dev \
-     nginx 
+     nginx \
+     redis
 
 # Django runs as the certificat user and it needs to own
 # the directory where gunicorn creates its socket
@@ -62,7 +63,6 @@ COPY --from=dockerfiles /srv /srv/
 COPY --from=dockerfiles /etc /etc/
 
 RUN pip install supervisor --no-cache-dir && pip uninstall pip -y && \
-    apk add ncdu redis && \
     find /usr/local | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf && \
     rm -rf /usr/lib/x86_64-linux-gnu/perl-base/
 

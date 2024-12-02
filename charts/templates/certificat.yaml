@@ -1,0 +1,161 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-deployment
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
+  labels:
+    {{- include "..labels" . | nindent 4 }}
+spec:  
+  replicas: 1  
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "..selectorLabels" . | nindent 6 }}
+      {{ include "..namespacedLabel" "component" }}: frontend
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "..selectorLabels" . | nindent 8 }}
+        {{ include "..namespacedLabel" "component" }}: frontend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}      
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.certificat_image.repository }}:{{ .Values.certificat_image.tag | default .Chart.AppVersion }}"
+          command: ["/srv/www/entrypoint.sh"]
+          args: ["start_server"]
+          env:
+            - name: CERTIFICAT__CONFIG
+              value: /srv/www/config/certificat.yml
+            - name: CERTIFICAT__URL_ROOT
+              value: https://{{ .Values.ingress.hostname }}
+            - name: SAML__SP__ENTITY_ID
+              value: https://{{ .Values.ingress.hostname }}/saml2/metadata/
+            {{- range .Values.certificat_secrets }}
+            {{- $from := .from}}
+            {{- range $key, $value := .mapping }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ $from }}"
+                  key: {{ $value }}
+            {{- end }}
+            {{- end }}
+          imagePullPolicy: {{ .Values.certificat_image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /directory/
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /directory/
+              port: 80
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /srv/www/config/
+            name: {{ .Values.secretProviders.certificat.name }}-volume
+        - name: {{ .Chart.Name }}-tasks
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.certificat_image.repository }}:{{ .Values.certificat_image.tag | default .Chart.AppVersion }}"
+          command: ["/srv/www/entrypoint.sh"]
+          args: ["start_huey"]
+          env:
+            - name: CERTIFICAT__CONFIG
+              value: /srv/www/config/certificat.yml
+            - name: CERTIFICAT__URL_ROOT
+              value: https://{{ .Values.ingress.hostname }}
+            - name: SAML__SP__ENTITY_ID
+              value: https://{{ .Values.ingress.hostname }}/saml2/metadata/
+            {{- range .Values.certificat_secrets }}
+            {{- $from := .from}}
+            {{- range $key, $value := .mapping }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ $from }}"
+                  key: {{ $value }}
+            {{- end }}
+            {{- end }}
+          imagePullPolicy: {{ .Values.certificat_image.pullPolicy }}          
+          livenessProbe:
+            exec:
+              command:
+                - /srv/www/.venv/bin/python 
+                - /srv/www/manage.py
+                - huey_healthcheck
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command:
+                - /srv/www/.venv/bin/python
+                - /srv/www/manage.py
+                - huey_healthcheck
+            failureThreshold: 10
+            periodSeconds: 6
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /srv/www/config/
+            name: {{ .Values.secretProviders.certificat.name }}-volume
+      volumes:
+      - name: "{{ .Values.secretProviders.certificat.name }}-volume"
+        secret:
+          secretName: {{ .Values.secretProviders.certificat.name }}
+      - name: "{{ .Values.secretProviders.generated.name }}-volume"
+        secret:
+          secretName: {{ .Values.secretProviders.generated.name }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: certificat-service
+  labels:
+    {{- include "..selectorLabels" . | nindent 4 }}
+    {{ include "..namespacedLabel" "component" }}: frontend
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "..selectorLabels" . | nindent 4 }}
+    {{ include "..namespacedLabel" "component" }}: frontend

@@ -1,4 +1,4 @@
-<table class="table {{ name }} collapsible">
+<table class="table {{ name }} {% if not no_collapse %}collapsible{% endif %}">
     <thead class="thead-light">
         {{ head }}
     </thead>

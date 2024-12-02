@@ -25,14 +25,11 @@
             justify-content: center;
         }
         #navlogo {
-            align-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            padding: $spacer*.5;
-            padding-left: 0;
-            @media (max-width: theme.$tinyDesktop) and (min-width: (theme.$largeSmartphone*1+1)) {
-                font-size: 1.25rem;
-            }
+            background-image: url(../images/certificat.svg);
+            background-repeat: no-repeat;
+            flex-grow: 1;
+            background-position-y: center;
+            
             @media (max-width: theme.$largeSmartphone) {
                 flex-grow: 1;
                 justify-content: center;
@@ -147,7 +144,7 @@
 #mobile-navigation-link {
     color: theme.$headerTextColor;
     display: none;
-    font-size: 2rem;
+    font-size: 1rem;
 }
 
 #mobile-menu {
@@ -222,6 +219,8 @@
 }
 
 #footer {
+    // TODO: Show again when we have footer content
+    visibility: hidden;
     flex: 1;
     margin-top:$spacer*2;
     padding-bottom:$spacer;

@@ -3,7 +3,6 @@
 	"name": "Python 3 & MariaDB",
 	"dockerComposeFile": "compose.yml",
 	"initializeCommand": "./.devcontainer/initialize.sh",
-	"postStartCommand": ". $HOME/.cargo/env",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {

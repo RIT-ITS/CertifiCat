@@ -7,6 +7,7 @@ from django.urls import reverse
 
 
 class Sections(str, Enum):
+    Dashboard = "DASHBOARD"
     Usage = "USAGE"
     Accounts = "ACCOUNTS"
     Orders = "ORDERS"
@@ -49,8 +50,9 @@ def is_admin_test(request: HttpRequest):
 
 class Navigation:
     top_level_nav = [
-        NavItem(Sections.Usage, "Usage"),
+        NavItem(Sections.Dashboard, "Dashboard"),
         NavItem(Sections.Accounts, "Accounts"),
+        NavItem(Sections.Usage, "Usage"),
         NavItem(Sections.Certificates, "Certificates"),
         NavItem(Sections.TOS, "Terms of Service"),
         NavItem(Sections.Admin, "Admin", is_admin_test),

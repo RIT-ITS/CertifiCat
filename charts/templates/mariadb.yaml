@@ -1,0 +1,79 @@
+{{- if .Values.embedded_mariadb.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: mariadb-deployment
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
+spec: 
+  selector:
+    matchLabels:
+      {{- include "..selectorLabels" . | nindent 6 }}
+      {{ include "..namespacedLabel" "component" }}: mariadb
+  replicas: 1   
+  template:     
+    metadata:
+      labels:
+        {{- include "..selectorLabels" . | nindent 8 }}
+        {{ include "..namespacedLabel" "component" }}: mariadb
+    spec:       
+      containers: 
+      - name: mariadb
+        image: {{ .Values.embedded_mariadb.image }}
+        ports:
+        - containerPort: 3306 
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+        env:        
+        - name: MARIADB_ROOT_HOST
+          value: localhost
+        - name: MARIADB_DATABASE
+          value: "certificat"
+        - name: MARIADB_USER
+          value: "certificat"
+        {{- range .Values.mariadb_secrets }}
+        {{- $from := .from}}
+        {{- range $key, $value := .mapping }}
+        - name: {{ $key }}
+          valueFrom:
+            secretKeyRef:
+              name: "{{ $from }}"
+              key: {{ $value }}
+        {{- end }}
+        {{- end }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+      - name: "{{ .Values.secretProviders.generated.name }}-volume"
+        secret:
+          secretName: {{ .Values.secretProviders.generated.name }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
+spec:
+  storageClassName: vsphere-sc-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-service
+spec:  
+  ports:
+    - port: 3306     
+  selector:
+    {{- include "..selectorLabels" . | nindent 4 }}
+    {{ include "..namespacedLabel" "component" }}: mariadb
+
+{{- end }}

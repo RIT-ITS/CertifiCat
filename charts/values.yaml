@@ -17,7 +17,7 @@ certificat_image:
   repository: "registry.code.rit.edu/its-operations-public/django-acmev2"
   pullPolicy: "Always"
   # Provide a static tag, otherwise fall back to the chart appVersion
-  tag: 0.0.2.alpha.7
+  #tag: 0.0.2.alpha.7
 
 redis:
   image: "redis:7.2.4"

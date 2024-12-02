@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: redis-deployment
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
+spec: 
+  selector:
+    matchLabels:
+      {{- include "..selectorLabels" . | nindent 6 }}
+      {{ include "..namespacedLabel" "component" }}: redis
+  replicas: 1   
+  template:     
+    metadata:
+      labels:
+        {{- include "..selectorLabels" . | nindent 8 }}
+        {{ include "..namespacedLabel" "component" }}: redis
+    spec:
+      containers: 
+      - name: redis
+        image: {{ .Values.redis.image }}
+        args: [ "--requirepass", "$(REDIS_PASSWORD)" ]
+        ports:
+        - containerPort: 6379
+        env:                  
+        {{- range .Values.redis_secrets }}
+        {{- $from := .from}}
+        {{- range $key, $value := .mapping }}
+        - name: {{ $key }}
+          valueFrom:
+            secretKeyRef:
+              name: "{{ $from }}"
+              key: {{ $value }}
+        {{- end }}
+        {{- end }}
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:  
+  ports:
+    - port: 6379
+  selector:
+    {{- include "..selectorLabels" . | nindent 4 }}
+    {{ include "..namespacedLabel" "component" }}: redis

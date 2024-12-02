@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.contrib.auth.decorators import login_required
@@ -6,6 +7,27 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from lxml_html_clean import Cleaner
 from certificat.modules.acme import models as db
+from django.db.models.functions import TruncDate
+from django.db.models import Count
+from django.utils.dateformat import format
+
+
+@require_http_methods(["GET"])
+def cert_activity(request: HttpRequest):
+    # 375 is not a typo, we get some extra days to account for the graph
+    # winding back to the first Sunday of the week.
+    start = datetime.datetime.now() - datetime.timedelta(days=375)
+    activity = (
+        db.Certificate.objects.filter(created_at__gt=start)
+        .annotate(date=TruncDate("created_at"))
+        .values("date")
+        .annotate(count=Count("id"))
+        .values("date", "count")
+    )
+
+    return JsonResponse(
+        {format(item["date"], "Y/m/d"): item["count"] for item in activity}, safe=False
+    )
 
 
 @login_required

@@ -12,6 +12,7 @@
 @use 'fontawesome/scss/fontawesome';
 @use './fontawesome/scss/regular.scss';
 @use './fontawesome/scss/solid.scss';
+@use './heatcalendar.scss';
 @use 'nav';
 
 @use 'sass:color';
@@ -233,6 +234,16 @@ fade-on-load {
     }
 }
 
+.activity-graph-headline {
+    background-color: theme.$darkGrayColor;
+    overflow-x: auto;
+}
+
+activity-graph {
+    min-height: 170px;
+    padding-bottom: $spacer*.5;
+}
+
 // Left-col layout spacing. Size of the columns is handled in the html
 .layout--left {
     > div:first-of-type {
@@ -360,3 +371,15 @@ code {
     width: auto !important;
 }
 
+.stat__block {
+    width: 50%;
+    padding: 0 $spacer;
+
+    @media (max-width: theme.$tinyDesktop) {
+        flex-basis: 100%;
+        padding: 0;
+        &:not(:first-of-type) {
+            margin-top: $spacer;
+        }
+    }
+}

@@ -1,6 +1,14 @@
 {
   "status": "done",
   "assets": {
+    "../../../../../frontend/dist/color.d.ts": {
+      "name": "../../../../../frontend/dist/color.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/color.d.ts"
+    },
+    "../../../../../frontend/dist/color.d.ts.map": {
+      "name": "../../../../../frontend/dist/color.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/color.d.ts.map"
+    },
     "../../../../../frontend/dist/components/accountAccessManager.d.ts": {
       "name": "../../../../../frontend/dist/components/accountAccessManager.d.ts",
       "path": "/workspaces/certificat/src/frontend/dist/components/accountAccessManager.d.ts"
@@ -8,6 +16,14 @@
     "../../../../../frontend/dist/components/accountAccessManager.d.ts.map": {
       "name": "../../../../../frontend/dist/components/accountAccessManager.d.ts.map",
       "path": "/workspaces/certificat/src/frontend/dist/components/accountAccessManager.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/activityGraph.d.ts": {
+      "name": "../../../../../frontend/dist/components/activityGraph.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/activityGraph.d.ts"
+    },
+    "../../../../../frontend/dist/components/activityGraph.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/activityGraph.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/activityGraph.d.ts.map"
     },
     "../../../../../frontend/dist/components/confirmButton.d.ts": {
       "name": "../../../../../frontend/dist/components/confirmButton.d.ts",
@@ -101,19 +117,426 @@
       "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/adec7d6f31.ttf",
       "sourceFilename": "src/styles/fontawesome/webfonts/fa-solid-900.ttf"
     },
-    "main.191d7a19e3.js": {
-      "name": "main.191d7a19e3.js",
-      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.191d7a19e3.js"
+    "be3a7a94a0.svg": {
+      "name": "be3a7a94a0.svg",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/be3a7a94a0.svg",
+      "sourceFilename": "src/images/certificat.svg"
     },
-    "main.370b77d079.css": {
-      "name": "main.370b77d079.css",
-      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.370b77d079.css"
+    "main.07cb3e9084.css": {
+      "name": "main.07cb3e9084.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.07cb3e9084.css"
+    },
+    "main.07ff3b6409.css": {
+      "name": "main.07ff3b6409.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.07ff3b6409.css"
+    },
+    "main.0955ad10a2.js": {
+      "name": "main.0955ad10a2.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.0955ad10a2.js"
+    },
+    "main.0d1497a216.css": {
+      "name": "main.0d1497a216.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.0d1497a216.css"
+    },
+    "main.0d3eb67703.js": {
+      "name": "main.0d3eb67703.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.0d3eb67703.js"
+    },
+    "main.0e78f3cca9.js": {
+      "name": "main.0e78f3cca9.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.0e78f3cca9.js"
+    },
+    "main.1836672df4.css": {
+      "name": "main.1836672df4.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.1836672df4.css"
+    },
+    "main.1c761788d2.js": {
+      "name": "main.1c761788d2.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.1c761788d2.js"
+    },
+    "main.1df8c629af.js": {
+      "name": "main.1df8c629af.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.1df8c629af.js"
+    },
+    "main.234b3583e4.js": {
+      "name": "main.234b3583e4.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.234b3583e4.js"
+    },
+    "main.2362d7517a.js": {
+      "name": "main.2362d7517a.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.2362d7517a.js"
+    },
+    "main.284b686f88.js": {
+      "name": "main.284b686f88.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.284b686f88.js"
+    },
+    "main.2a8b80d24c.css": {
+      "name": "main.2a8b80d24c.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.2a8b80d24c.css"
+    },
+    "main.2aad2a42f5.css": {
+      "name": "main.2aad2a42f5.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.2aad2a42f5.css"
+    },
+    "main.2b60a3ed7c.css": {
+      "name": "main.2b60a3ed7c.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.2b60a3ed7c.css"
+    },
+    "main.2e70e25eaa.js": {
+      "name": "main.2e70e25eaa.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.2e70e25eaa.js"
+    },
+    "main.2e8770e9f3.js": {
+      "name": "main.2e8770e9f3.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.2e8770e9f3.js"
+    },
+    "main.2ff0f3d8b1.css": {
+      "name": "main.2ff0f3d8b1.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.2ff0f3d8b1.css"
+    },
+    "main.31b9d2eb3e.css": {
+      "name": "main.31b9d2eb3e.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.31b9d2eb3e.css"
+    },
+    "main.31d1762063.js": {
+      "name": "main.31d1762063.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.31d1762063.js"
+    },
+    "main.35348fa8f6.js": {
+      "name": "main.35348fa8f6.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.35348fa8f6.js"
+    },
+    "main.35c93be54e.css": {
+      "name": "main.35c93be54e.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.35c93be54e.css"
+    },
+    "main.386e364539.css": {
+      "name": "main.386e364539.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.386e364539.css"
+    },
+    "main.3d214f0fe0.css": {
+      "name": "main.3d214f0fe0.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.3d214f0fe0.css"
+    },
+    "main.3d62a9d801.css": {
+      "name": "main.3d62a9d801.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.3d62a9d801.css"
+    },
+    "main.3d95b8a982.js": {
+      "name": "main.3d95b8a982.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.3d95b8a982.js"
+    },
+    "main.3fce8175b3.js": {
+      "name": "main.3fce8175b3.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.3fce8175b3.js"
+    },
+    "main.41d62b2400.js": {
+      "name": "main.41d62b2400.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.41d62b2400.js"
+    },
+    "main.42d46db5de.css": {
+      "name": "main.42d46db5de.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.42d46db5de.css"
+    },
+    "main.438a5cbd40.css": {
+      "name": "main.438a5cbd40.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.438a5cbd40.css"
+    },
+    "main.4ff40557e1.js": {
+      "name": "main.4ff40557e1.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.4ff40557e1.js"
+    },
+    "main.594c6e6661.css": {
+      "name": "main.594c6e6661.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.594c6e6661.css"
+    },
+    "main.6051264948.js": {
+      "name": "main.6051264948.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.6051264948.js"
+    },
+    "main.60fc1931b8.css": {
+      "name": "main.60fc1931b8.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.60fc1931b8.css"
+    },
+    "main.6508c800f6.js": {
+      "name": "main.6508c800f6.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.6508c800f6.js"
+    },
+    "main.71cbb3e2b7.js": {
+      "name": "main.71cbb3e2b7.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.71cbb3e2b7.js"
+    },
+    "main.722d1ad22a.js": {
+      "name": "main.722d1ad22a.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.722d1ad22a.js"
+    },
+    "main.7283b44274.js": {
+      "name": "main.7283b44274.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.7283b44274.js"
+    },
+    "main.754ab71b9c.js": {
+      "name": "main.754ab71b9c.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.754ab71b9c.js"
+    },
+    "main.78f28270e4.css": {
+      "name": "main.78f28270e4.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.78f28270e4.css"
+    },
+    "main.7d18dfe23c.css": {
+      "name": "main.7d18dfe23c.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.7d18dfe23c.css"
+    },
+    "main.7f9c47a652.css": {
+      "name": "main.7f9c47a652.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.7f9c47a652.css"
+    },
+    "main.859db888bd.css": {
+      "name": "main.859db888bd.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.859db888bd.css"
+    },
+    "main.885886da6c.js": {
+      "name": "main.885886da6c.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.885886da6c.js"
+    },
+    "main.88b5666f88.js": {
+      "name": "main.88b5666f88.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.88b5666f88.js"
+    },
+    "main.8978b6847b.css": {
+      "name": "main.8978b6847b.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.8978b6847b.css"
+    },
+    "main.8acd8b9e9b.js": {
+      "name": "main.8acd8b9e9b.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.8acd8b9e9b.js"
+    },
+    "main.8d85ec457a.css": {
+      "name": "main.8d85ec457a.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.8d85ec457a.css"
+    },
+    "main.8f3ed365e7.js": {
+      "name": "main.8f3ed365e7.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.8f3ed365e7.js"
+    },
+    "main.91ff6c433d.js": {
+      "name": "main.91ff6c433d.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.91ff6c433d.js"
+    },
+    "main.93090fb240.js": {
+      "name": "main.93090fb240.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.93090fb240.js"
+    },
+    "main.9343275fc3.css": {
+      "name": "main.9343275fc3.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.9343275fc3.css"
+    },
+    "main.9d6726814a.js": {
+      "name": "main.9d6726814a.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.9d6726814a.js"
+    },
+    "main.a03187d988.js": {
+      "name": "main.a03187d988.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a03187d988.js"
+    },
+    "main.a265b6d47e.js": {
+      "name": "main.a265b6d47e.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a265b6d47e.js"
+    },
+    "main.a26f1324b0.js": {
+      "name": "main.a26f1324b0.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a26f1324b0.js"
+    },
+    "main.a350d50400.css": {
+      "name": "main.a350d50400.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a350d50400.css"
+    },
+    "main.a45e9d16be.js": {
+      "name": "main.a45e9d16be.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a45e9d16be.js"
+    },
+    "main.a59a9d2111.css": {
+      "name": "main.a59a9d2111.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a59a9d2111.css"
+    },
+    "main.a7a0a59f46.js": {
+      "name": "main.a7a0a59f46.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a7a0a59f46.js"
+    },
+    "main.a983655789.js": {
+      "name": "main.a983655789.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.a983655789.js"
+    },
+    "main.acaf9355f9.js": {
+      "name": "main.acaf9355f9.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.acaf9355f9.js"
+    },
+    "main.ad51cd9fa3.js": {
+      "name": "main.ad51cd9fa3.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.ad51cd9fa3.js"
+    },
+    "main.ae2c116488.css": {
+      "name": "main.ae2c116488.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.ae2c116488.css"
+    },
+    "main.b3f918648a.js": {
+      "name": "main.b3f918648a.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.b3f918648a.js"
+    },
+    "main.b558807259.css": {
+      "name": "main.b558807259.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.b558807259.css"
+    },
+    "main.b5cdd3d62e.css": {
+      "name": "main.b5cdd3d62e.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.b5cdd3d62e.css"
+    },
+    "main.bb36cac1b7.css": {
+      "name": "main.bb36cac1b7.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.bb36cac1b7.css"
+    },
+    "main.bbc1efcfb7.js": {
+      "name": "main.bbc1efcfb7.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.bbc1efcfb7.js"
+    },
+    "main.bc5034f663.js": {
+      "name": "main.bc5034f663.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.bc5034f663.js"
+    },
+    "main.bcfb650f92.js": {
+      "name": "main.bcfb650f92.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.bcfb650f92.js"
+    },
+    "main.becb2c921f.js": {
+      "name": "main.becb2c921f.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.becb2c921f.js"
+    },
+    "main.c21bb21341.css": {
+      "name": "main.c21bb21341.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c21bb21341.css"
+    },
+    "main.c26b6db1ef.js": {
+      "name": "main.c26b6db1ef.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c26b6db1ef.js"
+    },
+    "main.c330c71e12.css": {
+      "name": "main.c330c71e12.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c330c71e12.css"
+    },
+    "main.c3d1497fa5.js": {
+      "name": "main.c3d1497fa5.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c3d1497fa5.js"
+    },
+    "main.c616c72054.js": {
+      "name": "main.c616c72054.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c616c72054.js"
+    },
+    "main.c6c95e2895.css": {
+      "name": "main.c6c95e2895.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c6c95e2895.css"
+    },
+    "main.c72f8ea39c.js": {
+      "name": "main.c72f8ea39c.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c72f8ea39c.js"
+    },
+    "main.c8ebaffb59.js": {
+      "name": "main.c8ebaffb59.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.c8ebaffb59.js"
+    },
+    "main.ca2bdef156.js": {
+      "name": "main.ca2bdef156.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.ca2bdef156.js"
+    },
+    "main.cbf388a7c3.css": {
+      "name": "main.cbf388a7c3.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.cbf388a7c3.css"
+    },
+    "main.cd62cd7bcf.js": {
+      "name": "main.cd62cd7bcf.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.cd62cd7bcf.js"
+    },
+    "main.d09d87396f.js": {
+      "name": "main.d09d87396f.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.d09d87396f.js"
+    },
+    "main.d364cb21ea.js": {
+      "name": "main.d364cb21ea.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.d364cb21ea.js"
+    },
+    "main.d537b4d470.css": {
+      "name": "main.d537b4d470.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.d537b4d470.css"
+    },
+    "main.d53cb499fa.css": {
+      "name": "main.d53cb499fa.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.d53cb499fa.css"
+    },
+    "main.d6839fa5d7.css": {
+      "name": "main.d6839fa5d7.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.d6839fa5d7.css"
+    },
+    "main.dcbf1bac24.css": {
+      "name": "main.dcbf1bac24.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.dcbf1bac24.css"
+    },
+    "main.dd219fadb5.js": {
+      "name": "main.dd219fadb5.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.dd219fadb5.js"
+    },
+    "main.de5cdb875c.js": {
+      "name": "main.de5cdb875c.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.de5cdb875c.js"
+    },
+    "main.e0cc4ef360.css": {
+      "name": "main.e0cc4ef360.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.e0cc4ef360.css"
+    },
+    "main.e714df6533.js": {
+      "name": "main.e714df6533.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.e714df6533.js"
+    },
+    "main.e727c28bb5.js": {
+      "name": "main.e727c28bb5.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.e727c28bb5.js"
+    },
+    "main.e7f7475b36.js": {
+      "name": "main.e7f7475b36.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.e7f7475b36.js"
+    },
+    "main.e9dc954732.js": {
+      "name": "main.e9dc954732.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.e9dc954732.js"
+    },
+    "main.eebd2d5d15.js": {
+      "name": "main.eebd2d5d15.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.eebd2d5d15.js"
+    },
+    "main.ef608f2141.js": {
+      "name": "main.ef608f2141.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.ef608f2141.js"
+    },
+    "main.f1c91c5a3a.js": {
+      "name": "main.f1c91c5a3a.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.f1c91c5a3a.js"
+    },
+    "main.f504b9c779.js": {
+      "name": "main.f504b9c779.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.f504b9c779.js"
+    },
+    "main.f9be59dd5c.css": {
+      "name": "main.f9be59dd5c.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.f9be59dd5c.css"
+    },
+    "main.fef9980f6f.js": {
+      "name": "main.fef9980f6f.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/main.fef9980f6f.js"
     }
   },
   "chunks": {
     "main": [
-      "main.370b77d079.css",
-      "main.191d7a19e3.js"
+      "main.859db888bd.css",
+      "main.dd219fadb5.js"
     ]
-  }
+  },
+  "error": "ModuleNotFoundError",
+  "message": "Module not found: Error: Package path ./directives/class-map is not exported from package /workspaces/certificat/src/frontend/node_modules/lit (see exports field in /workspaces/certificat/src/frontend/node_modules/lit/package.json)"
 }

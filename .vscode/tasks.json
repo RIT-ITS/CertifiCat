@@ -11,6 +11,9 @@
                 "${workspaceFolder}/src/certificat/manage.py",
                 "runserver"
             ],
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
             "presentation": {
                 "echo": true,
                 "reveal": "always",

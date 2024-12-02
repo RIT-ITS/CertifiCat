@@ -17,4 +17,5 @@ urlpatterns = [
         views.my_groups,
         name="fetch_user_groups",
     ),
+    path("api/cert-activity", views.cert_activity, name="cert_activity"),
 ]

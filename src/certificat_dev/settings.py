@@ -10,4 +10,4 @@ MIDDLEWARE += [
 ]
 ROOT_URLCONF = "certificat_dev.urls"
 if DEBUG:
-    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda *args, **kwargs: False}
+    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda *args, **kwargs: True}

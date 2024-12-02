@@ -53,6 +53,10 @@ class TimestampMixin(models.Model):
         abstract = True
 
 
+class TempUsageHack(TimestampMixin):
+    text = models.TextField()
+
+
 class Account(TimestampMixin):
     name = models.CharField(max_length=15, unique=True)
     status = models.CharField(max_length=15, choices=choices(AccountStatus))
@@ -145,7 +149,20 @@ class AccountBindingGroupScope(TimestampMixin):
         unique_together = ("binding", "group")
 
 
+class OrderManager(models.Manager):
+    def by_user(self, user: User):
+        if user.is_superuser:
+            return self
+
+        return self.filter(
+            models.Q(account__binding__creator=user)
+            | models.Q(account__binding__group_scopes__group__in=user.groups.all())
+        )
+
+
 class Order(TimestampMixin):
+    objects = OrderManager()
+
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="orders"
     )

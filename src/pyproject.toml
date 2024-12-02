@@ -30,6 +30,7 @@ dev-dependencies = [
     "pytest-django>=4.9.0",
     "pytest-mock>=3.14.0",
     "watchdog>=5.0.3",
+    "faker>=33.1.0"
 ]
 
 [tool.uv.sources]

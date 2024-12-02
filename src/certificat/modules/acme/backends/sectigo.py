@@ -13,7 +13,7 @@ import logging
 from certificat.modules.acme import models as db
 from datetime import datetime
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) 
 
 
 @dataclass

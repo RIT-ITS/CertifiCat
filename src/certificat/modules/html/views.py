@@ -13,6 +13,7 @@ from certificat.modules.acme.models import (
     AccountBinding,
     AccountEventType,
     OrderEventType,
+    TempUsageHack,
 )
 from certificat.modules.html.forms import NewBindingForm
 from certificat.settings.dynamic import ApplicationSettings
@@ -48,14 +49,36 @@ class ViewBase(UserPassesTestMixin, ContextMixin, View):
 
 
 class IndexView(ViewBase):
+    section = Sections.Dashboard
+
+    def get_breadcrumbs(self):
+        return build_breadcrumbs("Home")
+
+    def get(self, request):
+        recent_orders = (
+            Order.objects.by_user(request.user)
+            .order_by("-created_at")
+            .prefetch_related("identifiers")[:10]
+        )
+        recent_certificates = Certificate.objects.all().order_by("-created_at")[:10]
+
+        context = self.get_context_data(
+            recent_orders=recent_orders, recent_certificates=recent_certificates
+        )
+        return render(request, "certificat/index.html", context)
+
+
+class UsageView(ViewBase):
     section = Sections.Usage
 
     def get_breadcrumbs(self):
         return build_breadcrumbs("Usage")
 
     def get(self, request):
-        context = self.get_context_data()
-        return render(request, "certificat/index.html", context)
+        context = self.get_context_data(
+            text=TempUsageHack.objects.order_by("-created_at").first()
+        )
+        return render(request, "certificat/usage.html", context)
 
 
 class TermsOfService(ViewBase):

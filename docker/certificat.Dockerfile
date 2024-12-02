@@ -2,23 +2,32 @@ FROM python:3.13.0-alpine3.20 AS base
 
 FROM base AS builder
 
+ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v22.9.0/node-v22.9.0-linux-x64-musl.tar.gz
+
 RUN apk update && \
     apk add --no-cache \
     curl \
+    libstdc++ \
     gcc \        
     musl-dev \
     libffi-dev \
-    npm \
     make \
     mariadb-dev \
-    py3-virtualenv && \
-    npm install --global yarn
+    py3-virtualenv 
+
+RUN wget $NODE_PACKAGE_URL
+RUN mkdir -p /opt/nodejs
+RUN tar -zxvf *.tar.gz --directory /opt/nodejs --strip-components=1
+RUN rm *.tar.gz
+RUN ln -s /opt/nodejs/bin/node /usr/local/bin/node
+RUN ln -s /opt/nodejs/bin/npm /usr/local/bin/npm
+RUN npm install --global yarn
 
 COPY --from=src ./ /code/
 
 WORKDIR /code/frontend
 
-RUN yarn && \
+RUN /opt/nodejs/lib/node_modules/yarn/bin/yarn && \
     ./node_modules/.bin/webpack --env production 
 
 WORKDIR /code/

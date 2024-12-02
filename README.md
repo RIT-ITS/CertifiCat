@@ -14,11 +14,11 @@ acmetest.localhost {
 }
 
 [ ] - Add favicon.ico
-[ ] - move acmev2 to pypi
+[ ] - Move acmev2 to pypi
+[ ] - Add better SAML debugging flow. For example no attributes sent, bad assertion, etc
 add home with a dashboard of recent activity
  - heatmap calendar
  - last 7(?) days of events
 move usage after accounts
 add failed order retention time
 add https://developers.google.com/chart/interactive/docs/gallery/calendar#a-simple-example for my org's certificates and my certificates under it to dashboard
-aaron miller - handles accessibility for library websites, need someone to test the login flow

@@ -10,6 +10,7 @@ from certificat.modules.acme import models as db
 from django.db.models.functions import TruncDate
 from django.db.models import Count
 from django.utils.dateformat import format
+from django.views.decorators.csrf import csrf_exempt
 
 
 @require_http_methods(["GET"])
@@ -39,6 +40,7 @@ def my_groups(request: HttpRequest):
 
 
 @login_required
+@csrf_exempt
 @require_http_methods(["POST"])
 def edit_binding(request: HttpRequest, binding_name):
     binding = get_object_or_404(

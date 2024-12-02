@@ -112,7 +112,7 @@ export class ActivityGraphElement extends LitElement {
         while(curr.getTime() <= end.getTime()) {
             if(totalDays != 0 && totalDays % 7 == 0) {
                 if(lastMonthHeader != curr.getMonth()) {
-                    const monthAbbr:string = this.monthAbbreviations[lastMonthHeader+1];
+                    const monthAbbr:string = this.monthAbbreviations[lastMonthHeader];
                     
                     const el = document.createElement("li");
                     el.style.width = `calc(var(--week-width) * ${spannedColumns})`
@@ -121,7 +121,7 @@ export class ActivityGraphElement extends LitElement {
                     }
                     months.appendChild(el);
 
-                    lastMonthHeader = curr.getMonth();
+                    lastMonthHeader = curr.getMonth(); 
                     spannedColumns=1;
                 }else{
                     spannedColumns++;

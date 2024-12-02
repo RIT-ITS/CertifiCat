@@ -16,6 +16,7 @@ acmetest.localhost {
 [ ] - Add favicon.ico
 [ ] - Move acmev2 to pypi
 [ ] - Add better SAML debugging flow. For example no attributes sent, bad assertion, etc
+
 add home with a dashboard of recent activity
  - heatmap calendar
  - last 7(?) days of events

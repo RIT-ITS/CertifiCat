@@ -2,8 +2,8 @@ const path = require('path');
 const BundleTracker = require('webpack-bundle-tracker');
 const staticPath = path.resolve("../certificat/modules/html/static/");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-
-
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = (env) => {
     return {
@@ -35,6 +35,20 @@ module.exports = (env) => {
                     ],
                 },
             ],
+        },
+        optimization: {
+            usedExports: true,
+            splitChunks: {
+                cacheGroups: {
+                    commons: {
+                        test: /[\\/]node_modules[\\/]/,
+                        name: 'vendors',
+                        chunks: 'all',
+                    },
+                },
+            },
+            minimize: true,
+            minimizer: [new TerserPlugin()],
         },
         resolve: {
             extensions: ['.tsx', '.ts', '.js'],

@@ -2,7 +2,7 @@ FROM python:3.13.0-alpine3.20 AS base
 
 FROM base AS builder
 
-ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v22.9.0/node-v22.9.0-linux-x64-musl.tar.gz
+ARG NODE_PACKAGE_URL=http://iamtools01.rit.edu/node/node-v22.9.0-linux-x64-musl.tar.gz
 
 RUN apk update && \
     apk add --no-cache \

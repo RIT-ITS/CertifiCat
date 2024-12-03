@@ -2,26 +2,25 @@ FROM python:3.13.0-alpine3.20 AS base
 
 FROM base AS builder
 
-ARG NVM_URL=https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh
+ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v22.9.0/node-v22.9.0-linux-x64-musl.tar.gz
 
 RUN apk update && \
     apk add --no-cache \
     curl \
     libstdc++ \
-    gcc \
-    g++ \
+    gcc \        
     musl-dev \
     libffi-dev \
     make \
     mariadb-dev \
-    py3-virtualenv \
-    bash
+    py3-virtualenv 
 
-RUN curl -o- $NVM_URL | bash 
-
-RUN export NVM_DIR="$HOME/.nvm" && \
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
-    nvm install 23 && \
+RUN wget $NODE_PACKAGE_URL && \
+    mkdir -p /opt/nodejs && \
+    tar -zxvf *.tar.gz --directory /opt/nodejs --strip-components=1 && \
+    rm *.tar.gz && \
+    ln -s /opt/nodejs/bin/node /usr/local/bin/node && \
+    ln -s /opt/nodejs/bin/npm /usr/local/bin/npm && \
     npm install --global yarn
 
 COPY --from=src ./ /code/

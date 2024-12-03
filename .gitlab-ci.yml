@@ -49,6 +49,10 @@ build:
     # run the build job on tags with a major.minor.patch.commit structure
     - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+.*/              
 
+dependency_scanning:
+  before_script:
+    - apt update && apt install pkg-config libmariadb-dev -y
+
 container_scanning:
   stage: test
   needs: [build]

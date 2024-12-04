@@ -4,7 +4,7 @@ certificat:
   debug: True
   url_root: "http://certificat.localtest.me"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
-  login_method: "saml"
+  login_method: "local"
 
   db: 
     name: certificat

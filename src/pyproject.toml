@@ -42,5 +42,5 @@ where = ["."]
 exclude = ["certificat_dev", "frontend"]
 
 [tool.setuptools.package-data]
-"certificat" = ["**/*.html", "**/*.js", "**/*.json", "**/*.ttf", "**/*.woff2", "**/*.css", "**/*.svg"]
+"certificat" = ["**/*.html", "**/*.js", "**/*.json", "**/*.ttf", "**/*.woff2", "**/*.css", "**/*.svg", "**/*.ico", "**/*.png"]
 

@@ -4,7 +4,7 @@ image: docker:24.0.5
 # Deprecated, remove dind
 services:
   - name: docker:24.0.5-dind
-    command: ["--tls=false"]
+    command: ["--tls=false", "--mtu=1440"]
 
 include:
   # Run using default settings

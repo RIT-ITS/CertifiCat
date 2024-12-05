@@ -1,0 +1,30 @@
+image: curlimages/curl:latest
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/SAST-IaC.latest.gitlab-ci.yml
+
+variables:
+  SCAN_KUBERNETES_MANIFESTS: "true"
+
+package_helm:
+  stage: package
+  image: alpine/helm:latest
+  artifacts:
+    untracked: true
+  script:
+    - 'cd ./charts && helm dependency update && helm package .'
+  rules:
+    # run the build job on tags with a major.minor.patch.commit structure
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+.*/
+
+upload_helm:
+  stage: upload
+  image: curlimages/curl:latest
+  dependencies: 
+    - package
+  script:
+    - 'cd ./charts ; ls; FN=`ls certificat*tgz` ; curl --request POST --user gitlab-ci-token:$CI_JOB_TOKEN --form chart=@$FN "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/api/stable/charts"'
+  rules:
+    # run the build job on tags with a major.minor.patch.commit structure
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+.*/

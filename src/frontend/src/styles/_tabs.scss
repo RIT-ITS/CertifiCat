@@ -47,6 +47,8 @@
     .tabs--tab-content {
         transform: translateY(-10px);
         position:absolute;
+        left: 0;
+        right: 0;
         top:-99999px;
         opacity: 0;
         order: 10;

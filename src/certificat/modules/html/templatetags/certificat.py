@@ -93,4 +93,6 @@ def x509_key(cert: x509.Certificate):
 
 @register.filter
 def break_at_armor(value: str):
-    return [line for line in re.split("(-----.+-----)", value) if len(line.strip()) > 0]
+    return [
+        line for line in re.split("(-----.+-----\n)", value) if len(line.strip()) > 0
+    ]

@@ -15,14 +15,14 @@ include:
   - template: Security/Container-Scanning.gitlab-ci.yml
   # Run using default settings
   - template: Security/Secret-Detection.gitlab-ci.yml
-  #- local: '.gitlab-ci.helm.yml'
+  - local: '.gitlab-ci.helm.yml'
 
 stages:
   - build  
   - security
   - test  
-  #- package
-  #- upload
+  - package_helm
+  - upload_helm
   
 variables:
   # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled

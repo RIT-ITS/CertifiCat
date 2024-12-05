@@ -22,7 +22,7 @@ upload_helm:
   stage: upload_helm
   image: curlimages/curl:latest
   dependencies: 
-    - package
+    - package_helm
   script:
     - 'cd ./charts ; ls; FN=`ls certificat*tgz` ; curl --request POST --user gitlab-ci-token:$CI_JOB_TOKEN --form chart=@$FN "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/api/stable/charts"'
   rules:

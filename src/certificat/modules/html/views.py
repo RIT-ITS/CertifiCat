@@ -16,7 +16,7 @@ from certificat.modules.acme.models import (
     TempUsageHack,
 )
 from certificat.modules.html.forms import NewBindingForm
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import ApplicationSettings, SAMLSettings
 import inject
 from .nav import BreadCrumb, BreadCrumbs, build_breadcrumbs, Sections
 from django.contrib import messages
@@ -290,13 +290,30 @@ class LocalLoginView(LoginView):
 
 class LocalLogoutView(LogoutView):
     http_method_names = ["get", "post", "options"]
+    breadcrumbs = BreadCrumbs([BreadCrumb("Certificat", "/"), BreadCrumb("Logout")])
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(breadcrumbs=self.breadcrumbs, **kwargs)
 
     def get(self, request, *args, **kwargs):
         from django.contrib.auth import logout as auth_logout
 
         auth_logout(request)
-        redirect_to = self.get_success_url()
-        if redirect_to != request.get_full_path():
-            # Redirect to target page once the session has been cleared.
-            return HttpResponseRedirect(redirect_to)
-        return super().get(request, *args, **kwargs)
+        context = self.get_context_data()
+        return render(request, "certificat/logout.html", context=context)
+
+
+def acs_failure(request, exception, status, **kwargs):
+    attributes = kwargs.get("session_info", {}).get("ava")
+    logger.exception(exception)
+    logger.info(kwargs)
+
+    return render(
+        request,
+        "certificat/acs_error.html",
+        {
+            "attributes": attributes,
+            "exception": exception,
+            "saml_settings": SAMLSettings.get(),
+        },
+    )

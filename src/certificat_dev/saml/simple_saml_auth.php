@@ -23,6 +23,18 @@ $config = array(
             'givenName' => 'Admin',
             'sn' => 'User',
             'memberof' => array('admin-group', 'first-group', 'second-group')
+        )),
+        'invalid:invalid' => array_merge($test_user_base, array(
+            'mail' => 'admusr@idp.local',
+            'givenName' => 'Admin',
+            'sn' => 'User',
+            'memberof' => array('admin-group', 'first-group', 'second-group')
+        )),
+        'eptid:eptid' => array_merge($test_user_base, array(
+            'eduPersonTargetedID' => '123456'
+        )),
+        'eppn:eppn' => array_merge($test_user_base, array(
+            'eduPersonPrincipalName' => 'eppn@acme.edu'
         ))
     ),
 );

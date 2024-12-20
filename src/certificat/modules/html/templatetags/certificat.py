@@ -96,3 +96,8 @@ def break_at_armor(value: str):
     return [
         line for line in re.split("(-----.+-----\n)", value) if len(line.strip()) > 0
     ]
+
+
+@register.filter
+def get_key(dictionary, key):
+    return dictionary.get(key)

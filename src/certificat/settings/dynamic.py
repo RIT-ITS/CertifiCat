@@ -162,6 +162,8 @@ class SAMLSettings(Settings):
 
     attribute_mapping: Mapping[str, str] = {
         "uid": "username",
+        "eduPersonPrincipalName": "username",
+        "eduPersonTargetedID": "username",
         "mail": "email",
         "givenName": "first_name",
         "sn": "last_name",

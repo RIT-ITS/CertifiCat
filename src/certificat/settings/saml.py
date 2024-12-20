@@ -22,6 +22,8 @@ if dynamic_settings.login_method == "saml":
     if saml_settings.discovery:
         SAML2_DISCO_URL = saml_settings.discovery.service
 
+    SAML_ACS_FAILURE_RESPONSE_FUNCTION = "certificat.modules.html.views.acs_failure"
+
     SAML_CONFIG = {
         # full path to the xmlsec1 binary programm
         "xmlsec_binary": saml_settings.xmlsec_binary,

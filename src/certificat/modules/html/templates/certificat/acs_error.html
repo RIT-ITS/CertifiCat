@@ -1,0 +1,64 @@
+{% extends "certificat/base.html" %}
+{% load certificat %}
+{% block headline %}SAML Login Error{% endblock %}
+
+{% block body %}
+
+<div class="container my-4">
+    <c-message type="error">
+        {{ exception }}
+    </c-message>
+
+    {% if attributes %}
+        <p>Tried to map the following attributes in order, but could not find some of them in the assertion.</p>
+
+        <dl class="attribute-list">
+            {% for attr, value in saml_settings.attribute_mapping.items %}
+                <dt>{{ attr }}</dt>
+                <dd>
+                    {% with attr_val=attributes|get_key:attr %}
+                        <span>
+                        {% if attr_val %}
+                            {{ attr_val|join:", " }}
+                        {% else %}
+                            None
+                        {% endif %}
+                        </span>
+                        {{ value }}
+                    {% endwith %}
+                </dd>
+            {% endfor %}
+        </dl>
+
+        <div class="container my-4">
+            <c-table name="saml-attributes">
+                <c-slot name="head">
+                    <tr>
+                        <th class="shrink-cell">SAML Attribute</th>
+                        <th class="shrink-cell">Django Field</th>
+                        <th>Value</th>
+                    </tr>
+                </c-slot>
+                <c-slot name="body">
+                    {% for attr, value in saml_settings.attribute_mapping.items %}
+                        <tr>
+                            <td>{{ attr }}</td>
+                            <td>{{ value }}</td>
+                            <td>
+                                {% with attr_val=attributes|get_key:attr %}
+                                    {% if attr_val %}
+                                        {{ attr_val|join:", " }}
+                                    {% else %}
+                                        <i class='italicized'>None</i>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </c-slot>
+            </c-table>
+        </div>
+        
+    {% endif %}
+</div>
+{% endblock %}

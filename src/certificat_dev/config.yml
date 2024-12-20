@@ -4,10 +4,10 @@ certificat:
   debug: True
   url_root: "http://certificat.localtest.me"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
-  login_method: "local"
+  login_method: "saml"
 
   db: 
-    name: certificat
+    name: certificat_dev
     user: root
     # provided by env
     # password: ""
@@ -21,12 +21,14 @@ certificat:
 saml:
   debug: True
   attribute_mapping:
+    eduPersonTargetedID: username
+    uid: username
     eduPersonPrincipalName: username
     mail: email
     givenName: first_name
     sn: last_name
-  discovery:
-    service: "https://service.seamlessaccess.org/ds"
+  #discovery:
+  #  service: "https://service.seamlessaccess.org/ds"
   sp:
     entity_id: "http://certificat.localtest.me/saml2/metadata/"
     key_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"

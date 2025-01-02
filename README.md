@@ -2,6 +2,8 @@
 
 MYSQL_PWD=$CERTIFICAT__DB__PASSWORD mariadb -h mariadb. -uroot -e "CREATE DATABASE certificat;CREATE DATABASE test_certificat;"
 
+Optionally trust self-signed certificate created at .devcontainer/traefik/certs system-wide.
+
 # Testing
 
 Certbot:

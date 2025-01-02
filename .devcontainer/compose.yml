@@ -13,13 +13,18 @@ services:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.file.directory=/etc/traefik/dynamic"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
     ports:
       - "80:80"
       - "8080:8080"
+      - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/dynamic:/etc/traefik/dynamic"
+      - "./traefik/certs:/etc/certs"
   app:
     links:
       - certbot:acme.edu
@@ -43,6 +48,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.certificat.rule=Host(`certificat.localtest.me`)"
+      - "traefik.http.routers.certificat.tls=true"
       - "traefik.http.services.certificat.loadbalancer.server.port=8000"
 
   mariadb:
@@ -64,8 +70,8 @@ services:
       - "80"
     environment:
       SIMPLESAMLPHP_SP_ENTITY_ID: http://certificat.localtest.me/saml2/metadata/
-      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://certificat.localtest.me/saml2/acs/
-      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: http://certificat.localtest.me/saml2/ls/post
+      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: https://certificat.localtest.me/saml2/acs/
+      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: https://certificat.localtest.me/saml2/ls/post
     volumes:
       - "../src/certificat_dev/saml/simple_saml_auth.php:/var/www/simplesamlphp/config/authsources.php"
     labels:

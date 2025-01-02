@@ -22,6 +22,7 @@ from acmev2.services import (
     IChallengeService,
     ICertService,
     ACMEResourceType,
+    ACMEEndpoint,
 )
 from cryptography.hazmat.primitives import serialization
 from certificat.settings.dynamic import ApplicationSettings
@@ -42,6 +43,18 @@ HMACStr = str
 class DirectoryService(IDirectoryService):
     external_account_required = False
     app_settings = inject.attr(ApplicationSettings)
+
+    url_templates = {
+        ACMEEndpoint.newNonce: "newNonce",
+        ACMEEndpoint.order: "order/{identifier}",
+        ACMEEndpoint.newOrder: "newOrder",
+        ACMEEndpoint.finalize: "order/{identifier}/finalize",
+        ACMEEndpoint.newAccount: "newAccount",
+        ACMEEndpoint.account: "acct/{identifier}",
+        ACMEEndpoint.authz: "authz/{identifier}",
+        ACMEEndpoint.cert: "cert/{identifier}",
+        ACMEEndpoint.challenge: "chall/{identifier}",
+    }
 
     def __init__(self):
         self.root_url = urllib.parse.urljoin(self.app_settings.url_root, "/acme")

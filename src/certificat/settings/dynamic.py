@@ -47,6 +47,7 @@ class ApplicationSettings(Settings):
     db: DatabaseSettings
     redis: RedisSettings
 
+    trust_proxy_forwarded_proto: bool = False
     login_method: Literal["local", "saml"] = "saml"
 
     hmac_id_length: int = 40

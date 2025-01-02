@@ -171,9 +171,6 @@ class MockSectigoBackend(SectigoBackend):
 class FlakySectigoBackend(MockSectigoBackend):
     # first call always fails
     def enroll(self, order, csr):
-        import pdb
-
-        pdb.set_trace()
         setattr(self, "enroll", super().enroll)
         return FailingEnrollMockSectigoBackend().enroll(order, csr)
 

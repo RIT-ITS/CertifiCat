@@ -2,10 +2,10 @@ certificat:
   # provided by env
   # secret_key: ""
   debug: True
-  url_root: "http://certificat.localtest.me"
+  url_root: "https://certificat.localtest.me"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
   login_method: "saml"
-
+  trust_proxy_forwarded_proto: True
   db: 
     name: certificat_dev
     user: root

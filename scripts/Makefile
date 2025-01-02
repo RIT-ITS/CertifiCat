@@ -22,5 +22,5 @@ dist: setup-venv
 setup-venv:
 	@[ ! -d "${VENV_PATH}" ] && { uv venv "${VENV_PATH}"; }
 	cd "${SRC_PATH}"
-	uv sync 
+	uv sync --python-preference "only-system"
 	echo "${SRC_PATH}" > "$$(realpath "${VENV_PATH}"/lib/python*)/site-packages/local.pth"

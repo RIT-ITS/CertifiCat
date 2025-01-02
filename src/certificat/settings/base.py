@@ -24,6 +24,7 @@ __all__ = [
     "WSGI_APPLICATION",
     "DEFAULT_AUTO_FIELD",
     "CSRF_TRUSTED_ORIGINS",
+    "SECURE_PROXY_SSL_HEADER",
 ]
 
 
@@ -35,6 +36,11 @@ DEBUG = dynamic_settings.debug
 
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [dynamic_settings.url_root]
+
+if dynamic_settings.trust_proxy_forwarded_proto:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+else:
+    SECURE_PROXY_SSL_HEADER = None
 
 APPEND_SLASH = False
 
@@ -79,6 +85,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "djangosaml2.middleware.SamlSessionMiddleware",
+    "certificat.middleware.set_request_context",
 ]
 
 ROOT_URLCONF = "certificat.urls"

@@ -15,3 +15,8 @@ echo """
 _DJ_MYSQL_ROOT_PWD=${_DJ_MYSQL_ROOT_PWD:-$(gen-random 10)}
 _DJ_REDIS_PWD=${_DJ_REDIS_PWD:-$(gen-random 10)}
 _DJ_SECRET_KEY=${_DJ_SECRET_KEY:-$(gen-random 40)}""" > $ENV_FILE
+
+CERT_PATH=".devcontainer/traefik/certs/cert.pem"
+if [ ! -f "${CERT_PATH}" ]; then
+    (cd ".devcontainer/traefik/certs" && openssl req -config traefik.cnf -new -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 3650 -nodes -extensions 'req_ext')
+fi

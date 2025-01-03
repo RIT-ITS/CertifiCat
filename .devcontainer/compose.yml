@@ -1,5 +1,7 @@
 services:
   certbot:
+    links: 
+      - app:certificat.localtest.me
     build:
       context: .
       dockerfile: Dockerfile.certbot
@@ -16,6 +18,8 @@ services:
       - "--providers.file.directory=/etc/traefik/dynamic"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
     ports:
       - "80:80"

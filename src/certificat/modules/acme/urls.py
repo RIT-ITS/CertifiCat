@@ -6,7 +6,7 @@ app_name = "acme"
 acme_resource_patterns = (
     [
         path("newNonce", views.newNonce),
-        path("newAccount", views.newAccount),
+        path("newAcct", views.newAccount),
         path("newOrder", views.newOrder),
         path("authz/<authz_id>", views.authz),
         path("chall/<chall_id>", views.chall),

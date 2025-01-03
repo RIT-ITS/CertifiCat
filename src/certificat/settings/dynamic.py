@@ -29,6 +29,13 @@ class RedisSettings(Settings):
     port: int = 6379
 
 
+class LoggingSettings(Settings):
+    certificat_level: str | None = "INFO"
+    huey_level: str | None = "INFO"
+    django_level: str | None = "INFO"
+    acmev2_level: str | None = "INFO"
+
+
 class ApplicationSettings(Settings):
     model_config = SettingsConfigDict(
         validate_default=False, env_prefix="CERTIFICAT__", env_nested_delimiter="__"
@@ -46,6 +53,7 @@ class ApplicationSettings(Settings):
 
     db: DatabaseSettings
     redis: RedisSettings
+    logging: LoggingSettings | None = LoggingSettings()
 
     trust_proxy_forwarded_proto: bool = False
     login_method: Literal["local", "saml"] = "saml"

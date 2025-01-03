@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import json
 import time
 import requests
 
@@ -13,7 +14,7 @@ import logging
 from certificat.modules.acme import models as db
 from datetime import datetime
 
-logger = logging.getLogger(__name__) 
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -132,6 +133,9 @@ class SectigoBackend:
             "csr": csr,
         }
 
+        logger.debug("Enrolling certificate")
+        logger.debug(json.dumps(body))
+
         response: requests.Response = self.session.post(
             self._build_url(endpoint),
             json=body,
@@ -148,11 +152,7 @@ class SectigoBackend:
                 ),
             )
 
-        return EnrollResponse(
-            status=response.status_code,
-            ssl_id=detail.get("sslId"),
-            renew_id=detail.get("renewId"),
-        )
+        return EnrollResponse(status=response.status_code, ssl_id=detail.get("sslId"))
 
     def get(self, ssl_id: str) -> GetResponse:
         """Gets the requested certificate's status and approval. Used

@@ -35,7 +35,7 @@ dev-dependencies = [
 
 [tool.uv.sources]
 # TODO: Move to pypi after conferring with legal
-acmev2 = { url = "https://www-staging.rit.edu/test/clay/acme/UFUgUENQVSBXSEFUIGNhY2l0cyB0dHkyIEZyaTA3IDIyZGF5cyAzOjA4bSAw/acmev2-0.0.2.tar.gz" }
+acmev2 = { url = "https://www-staging.rit.edu/test/clay/acme/UFUgUENQVSBXSEFUIGNhY2l0cyB0dHkyIEZyaTA3IDIyZGF5cyAzOjA4bSAw/acmev2-0.0.3-py3-none-any.whl" }
 
 [tool.setuptools.packages.find]
 where = ["."]

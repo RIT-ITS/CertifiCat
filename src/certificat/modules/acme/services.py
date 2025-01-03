@@ -22,7 +22,6 @@ from acmev2.services import (
     IChallengeService,
     ICertService,
     ACMEResourceType,
-    ACMEEndpoint,
 )
 from cryptography.hazmat.primitives import serialization
 from certificat.settings.dynamic import ApplicationSettings
@@ -43,18 +42,6 @@ HMACStr = str
 class DirectoryService(IDirectoryService):
     external_account_required = False
     app_settings = inject.attr(ApplicationSettings)
-
-    url_templates = {
-        ACMEEndpoint.newNonce: "newNonce",
-        ACMEEndpoint.order: "order/{identifier}",
-        ACMEEndpoint.newOrder: "newOrder",
-        ACMEEndpoint.finalize: "order/{identifier}/finalize",
-        ACMEEndpoint.newAccount: "newAccount",
-        ACMEEndpoint.account: "acct/{identifier}",
-        ACMEEndpoint.authz: "authz/{identifier}",
-        ACMEEndpoint.cert: "cert/{identifier}",
-        ACMEEndpoint.challenge: "chall/{identifier}",
-    }
 
     def __init__(self):
         self.root_url = urllib.parse.urljoin(self.app_settings.url_root, "/acme")
@@ -78,9 +65,6 @@ class NonceService(INonceService):
 
 
 class AccountService(IAccountService):
-    def gen_hmac(self) -> tuple[KIDStr, HMACStr]:
-        pass
-
     def create(self, resource: AccountResource, eab_kid: str = None) -> AccountResource:
         # TODO: Add lock around this to avoid race condition. Will probably never happen
         # except in testing.
@@ -117,7 +101,12 @@ class AccountService(IAccountService):
         return db.to_pydantic(db.Account.objects.get(name=account_id))
 
     def get_by_jwk(self, jwk: JWK) -> AccountResource | None:
-        pass
+        try:
+            return db.to_pydantic(
+                db.Account.objects.get(jwk_thumbprint=jwk.thumbprint().hex())
+            )
+        except db.Account.DoesNotExist:
+            return None
 
     def get_eab_hmac(self, kid: str) -> str | None:
         return db.AccountBinding.objects.get(hmac_id=kid).hmac_key

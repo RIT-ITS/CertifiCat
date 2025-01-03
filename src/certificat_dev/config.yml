@@ -4,6 +4,7 @@ certificat:
   debug: True
   url_root: "https://certificat.localtest.me"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
+  #finalizer_module: "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
   login_method: "saml"
   trust_proxy_forwarded_proto: True
   db: 
@@ -17,6 +18,10 @@ certificat:
     host: redis.
     # provided by env
     # password: ""
+
+  logging:
+    certificat_level: DEBUG
+    acmev2_level: DEBUG
 
 saml:
   debug: True
@@ -41,6 +46,18 @@ saml:
         cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
         freshness_period: "P0Y0M0DT2H0M0S"
         
+# sectigo_finalizer:
+#   org_id: <INT_ORG_ID>
+#   cert_profile_id: 5266
+#   customer_uri: InCommon_test
+#   api_base: https://cert-manager.com/api/
+#   api_user: <API_USERNAME>
+#   api_password: <API_PASSWORD>
+#   approval_api_user: <API_APPROVER_USERNAME>
+#   approval_api_password: <API_APPROVER_PASSWORD>
+#   external_requester_override: <EMAIL>
+#   cert_validity_period: 365
+
 local_finalizer:
   key: |
     -----BEGIN RSA PRIVATE KEY-----

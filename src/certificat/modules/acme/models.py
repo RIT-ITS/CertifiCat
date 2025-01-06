@@ -208,7 +208,24 @@ class Certificate(TimestampMixin):
         metadata_version = 1
         if not self.metadata or self.metadata.get("version") != metadata_version:
             certs = x509.load_pem_x509_certificates(self.chain.encode())
-            leaf_cert = certs[0]
+            # Find the cert that is not a CA
+            leaf_cert = None
+            for cert in certs:
+                try:
+                    basic_constraints = cert.extensions.get_extension_for_class(
+                        x509.BasicConstraints
+                    )
+                    if not basic_constraints.value.ca:
+                        leaf_cert = cert
+                        break
+                except cryptography.x509.extensions.ExtensionNotFound:
+                    pass
+
+            # Hail mary
+            if not leaf_cert:
+                # The issued certificate is the last one in the chain
+                leaf_cert = certs[-1]
+
             try:
                 san_extension = leaf_cert.extensions.get_extension_for_class(
                     x509.SubjectAlternativeName

@@ -33,10 +33,12 @@ select yn in "Yes" "No"; do
     esac
 done
 
-#echo -e "\nDo you want to also push to master 'git push origin master'?"
-#select yn in "Yes" "No"; do
-#    case $yn in
-#        Yes ) git push origin master; break;;
-#        No ) exit;;
-#    esac
-#done
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+
+echo -e "\nDo you want to also push to ${CURRENT_BRANCH} 'git push origin ${CURRENT_BRANCH}'?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) git push origin "${CURRENT_BRANCH}"; break;;
+        No ) exit;;
+    esac
+done

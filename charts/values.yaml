@@ -103,7 +103,7 @@ secretProviders:
           idp:
             # Provide one or more local xml files for authorized IdPs
             #local: 
-            #  - "/workspaces/certificat/src/certificat_dev/saml/local-idp.xml"
+            #  - "/srv/www/config/local-idp.xml"
              
             # Provide one or more remote xml files for authorized IdPs with a 
             # included signing cert

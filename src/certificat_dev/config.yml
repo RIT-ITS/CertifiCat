@@ -46,17 +46,17 @@ saml:
         cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
         freshness_period: "P0Y0M0DT2H0M0S"
         
-# sectigo_finalizer:
-#   org_id: <INT_ORG_ID>
-#   cert_profile_id: 5266
-#   customer_uri: InCommon_test
-#   api_base: https://cert-manager.com/api/
-#   api_user: <API_USERNAME>
-#   api_password: <API_PASSWORD>
-#   approval_api_user: <API_APPROVER_USERNAME>
-#   approval_api_password: <API_APPROVER_PASSWORD>
-#   external_requester_override: <EMAIL>
-#   cert_validity_period: 365
+sectigo_finalizer:
+  org_id: 12345
+  cert_profile_id: 1234
+  customer_uri: InCommon_test
+  api_base: https://cert-manager.com/api/
+  api_user: user@acme.edu
+  api_password: "password"
+  approval_api_user: user@acme.edu
+  approval_api_password: "password"
+  external_requester_override: override@acme.edu
+  cert_validity_period: 365
 
 local_finalizer:
   key: |

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+WORKSPACE="$(realpath "${HERE}/../")"
+
+# If there are changes to tracked files do not allow the release 
+
+[ -z "$(git status --porcelain --untracked-files=no)" ] || {
+    git status --porcelain --untracked-files=no
+    echo -e '\nPlease check in or stash all workspace changes before making a new release.'    
+    exit 1
+}
+
+CHART="${HERE}/../charts/Chart.yaml"
+
+"${HERE}/propagate-version"
+NEW_VERSION="$(yq .version "${CHART}" -r)"
+
+git add "${CHART}"
+
+git commit --amend --no-edit
+
+echo "Creating new git tag. Release changes and start the build pipeline with 'git push <repository> ${NEW_VERSION}'"
+echo "You can delete the tag at any time before releasing with 'git tag -d ${NEW_VERSION}"
+git tag "${NEW_VERSION}"
+
+echo -e "\nDo you wish to release this tag now with 'git push origin ${NEW_VERSION}'?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) git push origin "${NEW_VERSION}"; break;;
+        No ) exit;;
+    esac
+done
+
+#echo -e "\nDo you want to also push to master 'git push origin master'?"
+#select yn in "Yes" "No"; do
+#    case $yn in
+#        Yes ) git push origin master; break;;
+#        No ) exit;;
+#    esac
+#done

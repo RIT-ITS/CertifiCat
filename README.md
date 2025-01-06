@@ -24,13 +24,11 @@ acmetest.localhost {
 The project supports creating and deploying feature variants before a version is accepted as live. 
 
 - Create a new feature branch, for example `dev`
-- Make your changes, if you need to deploy to Kubernetes run the `scripts/propagate-version` command before checking in. This will ensure the CI/CD pipeline runs and creates the correct artifacts.
-- Save the version output from propagate-version. If your branch is `dev` an example version would be `1.0.0-dev.1735857817`
-- Push your changes and create a tag. Your tag is the version that was just generated and will build the required packages for you to deploy this feature. The tag for this example would again be `1.0.0-dev.1735857817`. 
+- Update your version to the new version you're working on. For example go from `1.0.1` -> `1.0.2`.
+- Make your changes, check in and commit, then run `./scripts/release` to push out a tagged dev version
 
-- To release your changes, merge to master, update your version (`1.0.1` in this example) and run `scripts/propagate-version` to update versions in dependent files. Again create a new tag `1.0.1` and this will create a new image and helm deployment.
+- To release your changes, merge to master, ensure your version is correct (`1.0.2` in this example) and run `scripts/release` to update versions in dependent files. This will create and release a new tag.
 
 # Tasks
 
-[ ] - Move acmev2 to pypi
-[ ] - add failed order retention time
+- Move acmev2 to pypi

@@ -37,7 +37,7 @@ RUN pip3 install uv && \
 
 ARG GUNICORN_VERSION=21.2.0
 
-ADD https://www-staging.rit.edu/test/clay/acme/UFUgUENQVSBXSEFUIGNhY2l0cyB0dHkyIEZyaTA3IDIyZGF5cyAzOjA4bSAw/acmev2-0.0.2.tar.gz /code/dist/acmev2-0.0.2.tar.gz
+ADD https://www-staging.rit.edu/test/clay/acme/UFUgUENQVSBXSEFUIGNhY2l0cyB0dHkyIEZyaTA3IDIyZGF5cyAzOjA4bSAw/acmev2-0.0.3.tar.gz /code/dist/acmev2-0.0.3.tar.gz
 RUN python3 -m venv /venv/ && \
     /venv/bin/pip install --no-cache-dir /code/dist/certificat-*.whl /code/dist/acmev2* gunicorn==$GUNICORN_VERSION
 

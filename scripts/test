@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+. "${HERE}/shared"
+
+run-make setup-venv
+
+(cd "${SRC_PATH}/certificat/tests" && "${VENV_PYTEST}" "$@")

@@ -219,7 +219,9 @@ class Certificate(TimestampMixin):
                         leaf_cert = cert
                         break
                 except cryptography.x509.extensions.ExtensionNotFound:
-                    pass
+                    # CAs must have this extension, so this must be the leaf?
+                    leaf_cert = cert
+                    break
 
             # Hail mary
             if not leaf_cert:

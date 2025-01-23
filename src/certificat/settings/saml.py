@@ -15,9 +15,7 @@ if dynamic_settings.login_method == "saml":
 
     SAML_SESSION_COOKIE_NAME = saml_settings.session_cookie
 
-    SAML_ATTRIBUTE_MAPPING = {
-        attr: (field,) for attr, field in saml_settings.attribute_mapping.items()
-    }
+    SAML_ATTRIBUTE_MAPPING = saml_settings.attribute_mapping
 
     if saml_settings.discovery:
         SAML2_DISCO_URL = saml_settings.discovery.service

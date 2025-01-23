@@ -1,13 +1,13 @@
 services:
-  certbot:
-    links: 
-      - app:certificat.localtest.me
-    build:
-      context: .
-      dockerfile: Dockerfile.certbot
-    command: sleep infinity
-    ports:
-      - "80"
+  #certbot:
+  #  links: 
+  #    - app:certificat.localtest.me
+  #  build:
+  #    context: .
+  #    dockerfile: Dockerfile.certbot
+  #  command: sleep infinity
+  #  ports:
+  #    - "80"
   traefik:
     image: "traefik:v2.10"
     container_name: "traefik"
@@ -30,10 +30,10 @@ services:
       - "./traefik/dynamic:/etc/traefik/dynamic"
       - "./traefik/certs:/etc/certs"
   app:
-    links:
-      - certbot:acme.edu
-      - certbot:subdomain.acme.edu
-      - certbot:subdommain2.acme.edu
+    #links:
+    #  - certbot:acme.edu
+    #  - certbot:subdomain.acme.edu
+    #  - certbot:subdommain2.acme.edu
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -70,8 +70,8 @@ services:
 
   idp:
     image: kenchan0130/simplesamlphp
-    ports:
-      - "80"
+    ports: 
+      - 8080
     environment:
       SIMPLESAMLPHP_SP_ENTITY_ID: http://certificat.localtest.me/saml2/metadata/
       SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: https://certificat.localtest.me/saml2/acs/
@@ -81,6 +81,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.idp.rule=Host(`idp.localtest.me`)"
+      - "traefik.http.routers.idp.tls=true"
       - "traefik.http.services.idp.loadbalancer.server.port=8080"
 
 volumes:

@@ -169,13 +169,13 @@ class SAMLSettings(Settings):
     idp: SAMLIdPSettings
     discovery: SAMLDiscoverySettings | None = None
 
-    attribute_mapping: Mapping[str, str] = {
-        "uid": "username",
-        "eduPersonPrincipalName": "username",
-        "eduPersonTargetedID": "username",
-        "mail": "email",
-        "givenName": "first_name",
-        "sn": "last_name",
+    attribute_mapping: Mapping[str, List[str]] = {
+        "uid": ["username"],
+        "eduPersonPrincipalName": ["username"],
+        "eduPersonTargetedID": ["username"],
+        "mail": ["email"],
+        "givenName": ["first_name"],
+        "sn": ["last_name"],
     }
 
 

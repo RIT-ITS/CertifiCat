@@ -1,6 +1,6 @@
 [project]
 name = "certificat"
-version = "1.0.0"
+version = "1.0.1"
 description = "Web site and reference implementation for the acmev2 package"
 readme = "README.md"
 requires-python = ">=3.11"

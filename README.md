@@ -1,6 +1,12 @@
 # Setup
 
+## Add Database
+
 MYSQL_PWD=$CERTIFICAT__DB__PASSWORD mariadb -h mariadb. -uroot -e "CREATE DATABASE certificat;CREATE DATABASE test_certificat;"
+
+## Run Migrations
+
+scripts/manage migrate
 
 Optionally trust self-signed certificate created at .devcontainer/traefik/certs system-wide.
 

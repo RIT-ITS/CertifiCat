@@ -10,22 +10,25 @@
     </c-message>
 
     {% if attributes %}
-        <p>Tried to map the following attributes in order, but could not find some of them in the assertion.</p>
+        <p class="my-4">
+            Tried to map the following attributes in order, but could not find some of them in the assertion. A user
+            must map some attribute to username for login to be successful.
+        </p>
 
         <div class="container my-4">
             <c-table name="saml-attributes">
                 <c-slot name="head">
                     <tr>
                         <th class="shrink-cell">SAML Attribute</th>
-                        <th class="shrink-cell">Django Field</th>
-                        <th>Value</th>
+                        <th class="shrink-cell">Django Field(s)</th>
+                        <th>SAML Value</th>
                     </tr>
                 </c-slot>
                 <c-slot name="body">
                     {% for attr, value in saml_settings.attribute_mapping.items %}
                         <tr>
                             <td>{{ attr }}</td>
-                            <td>{{ value }}</td>
+                            <td>{{ value|join:", " }}</td>
                             <td>
                                 {% with attr_val=attributes|get_key:attr %}
                                     {% if attr_val %}

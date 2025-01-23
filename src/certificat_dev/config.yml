@@ -8,7 +8,7 @@ certificat:
   login_method: "saml"
   trust_proxy_forwarded_proto: True
   db: 
-    name: certificat_dev
+    name: certificat
     user: root
     # provided by env
     # password: ""
@@ -26,12 +26,11 @@ certificat:
 saml:
   debug: True
   attribute_mapping:
-    eduPersonTargetedID: username
-    uid: username
-    eduPersonPrincipalName: username
-    mail: email
-    givenName: first_name
-    sn: last_name
+    mail: [username, email]
+    uid: [username]
+    eduPersonPrincipalName: [username]
+    givenName: [first_name]
+    sn: [last_name]
   #discovery:
   #  service: "https://service.seamlessaccess.org/ds"
   sp:

@@ -112,7 +112,9 @@ class EditUsageView(ViewBase):
 
     def get(self, request):
         last_usage = Usage.objects.order_by("-created_at").first()
-        usage_form = UsageEditForm(initial={"usage": last_usage.text}, label_suffix="")
+        usage_form = UsageEditForm(
+            initial={"usage": last_usage.text if last_usage else ""}, label_suffix=""
+        )
         context = self.get_context_data(form=usage_form)
         return render(request, "certificat/edit-usage.html", context)
 

@@ -37,6 +37,9 @@ RUN pip3 install uv && \
 
 ARG GUNICORN_VERSION=21.2.0
 
+RUN python3 -m venv /venv/ && \
+    /venv/bin/pip install --no-cache-dir /code/dist/certificat-*.whl gunicorn==$GUNICORN_VERSION
+
 # Bytecode will be generated on first run
 RUN find /venv | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
 

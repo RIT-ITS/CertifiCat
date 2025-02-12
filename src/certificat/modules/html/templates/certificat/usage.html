@@ -4,7 +4,17 @@
 
 {% block body %}
 
-<div class="container my-4">
-    {{ text.text|safe }}
+<div class="container my-4 markdown">
+    {% if can_edit %}
+        <a class="btn btn-primary btn-sm mb-4" href="{% url 'edit-usage' %}">Edit Usage</a>
+    {% endif %}
+    {% if text %}
+        {{ text|safe }}
+    {% else %}
+        <p>Your administrators haven't added anything here. Go bug them to set this up!</p>
+    {% endif %}
 </div>
+
+<c-hljs />
+
 {% endblock %}

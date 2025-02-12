@@ -53,7 +53,7 @@ class TimestampMixin(models.Model):
         abstract = True
 
 
-class TempUsageHack(TimestampMixin):
+class Usage(TimestampMixin):
     text = models.TextField()
 
 

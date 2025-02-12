@@ -8,7 +8,7 @@
     color: theme.$headerTextColor;
 
     position: sticky;
-    z-index:10;
+    z-index:5;
     top: 0;
     @media (min-width: theme.$tinyDesktop) {
         padding-top: $spacer*1.5;

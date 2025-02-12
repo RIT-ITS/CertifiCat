@@ -9,7 +9,7 @@ services:
   #  ports:
   #    - "80"
   traefik:
-    image: "traefik:v2.10"
+    image: "traefik:v3.3"
     container_name: "traefik"
     command:
       - "--log.level=DEBUG"

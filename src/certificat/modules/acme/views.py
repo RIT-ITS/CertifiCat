@@ -26,6 +26,9 @@ def directory(request):
     )
 
 
+directory.should_append_slash = False
+
+
 def handleACMERequest(
     request: HttpRequest, ACMERequestType: ACMERequestHandler
 ) -> HttpResponse:

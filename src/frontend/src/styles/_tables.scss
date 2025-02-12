@@ -113,10 +113,9 @@ table.accounts {
         }
 
         td.activated {
-            @include shrink-cell;
             font-size: 1.5em;
             color: theme.$accentGreen;
-
+            @include shrink-cell;
             @media(min-width:(theme.$largeSmartphone*1+1)) {
                 width: 21px;
                 text-align: center;

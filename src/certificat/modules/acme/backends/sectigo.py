@@ -2,7 +2,8 @@ from dataclasses import dataclass
 import json
 import time
 import requests
-
+from cryptography import x509
+from cryptography.hazmat.primitives import serialization
 from certificat.modules.acme.backends import (
     ErrorResponse,
     FinalizeResponse,
@@ -216,7 +217,7 @@ class SectigoBackend:
         return ApproveResponse(status=response.status_code)
 
     def collect(self, ssl_id: str) -> CollectResponse:
-        """Polls the collect endpoint and returns the bundle when complete.
+        """Gets the x509 (pem) formatted bundle from the collect endpoint
 
         Args:
             ssl_id (str): Certificate unique identifier
@@ -344,12 +345,20 @@ class SectigoFinalizer(Finalizer):
                     f"Error {collect_response.error.code}: {collect_response.error.description}"
                 )
 
+            # HACK: The certs are not in reversed order. They are root -> intermediate(s) -> client
+            # and they should be reversed.
+            certs = x509.load_pem_x509_certificates(collect_response.bundle.encode())
+            certs.reverse()
+            chain = ""
+            for cert in certs:
+                chain += cert.public_bytes(encoding=serialization.Encoding.PEM).decode()
+
             # Some clients (like certbot) expect the bundle to end with a newline and will
             # fail if it doesn't.
-            if not collect_response.bundle.endswith("\n"):
-                collect_response.bundle += "\n"
+            if not chain.endswith("\n"):
+                chain += "\n"
 
-            db.Certificate.objects.create(order=order, chain=collect_response.bundle)
+            db.Certificate.objects.create(order=order, chain=chain)
             processing_state.transition_to(
                 db.SectigoOrderProcessingState.Choices.COLLECTED
             )

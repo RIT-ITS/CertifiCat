@@ -127,6 +127,16 @@ def authenticated_web_client():
 
 
 @pytest.fixture
+def authenticated_su_web_client():
+    c = Client(enforce_csrf_checks=False)
+    user = helpers.gen_user(is_superuser=True)
+    c.force_login(user)
+    c.test_user = user
+
+    return c
+
+
+@pytest.fixture
 def settings():
     return inject.instance(ApplicationSettings)
 

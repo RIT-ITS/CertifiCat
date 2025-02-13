@@ -1,6 +1,6 @@
 [project]
 name = "certificat"
-version = "1.0.2"
+version = "1.0.3"
 description = "Web site and reference implementation for the acmev2 package"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -33,6 +33,7 @@ dev-dependencies = [
     "pytest-mock>=3.14.0",
     "watchdog>=5.0.3",
     "faker>=33.1.0",
+    "pytest-cov>=5.0.0",
 ]
 
 

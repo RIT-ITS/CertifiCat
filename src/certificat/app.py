@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 from certificat.settings import bindings as settings_bindings
+from django.db.models.signals import class_prepared
+import inject
 
 
 class CertificatConfig(AppConfig):
@@ -55,3 +57,14 @@ class CertificatConfig(AppConfig):
 
         certificat.modules.tasks.deferred_task_setup()
         return super().ready()
+
+
+def add_db_prefix(sender, **kwargs):
+    from certificat.settings.dynamic import ApplicationSettings
+
+    settings = inject.instance(ApplicationSettings)
+    if settings.db.table_prefix:
+        sender._meta.db_table = settings.db.table_prefix + sender._meta.db_table
+
+
+class_prepared.connect(add_db_prefix)

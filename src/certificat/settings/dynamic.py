@@ -21,6 +21,7 @@ class DatabaseSettings(Settings):
     password: str
     host: str
     port: int = 3306
+    table_prefix: str = ""
 
 
 class RedisSettings(Settings):

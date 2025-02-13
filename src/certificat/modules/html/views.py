@@ -77,9 +77,10 @@ class UsageView(ViewBase):
     def get(self, request):
         # TODO: Maybe cache this
 
-        parsed_markdown = markdown.markdown(
-            Usage.objects.order_by("-created_at").first().text
-        )
+        last_usage = Usage.objects.order_by("-created_at").first()
+        parsed_markdown = ""
+        if last_usage:
+            parsed_markdown = markdown.markdown(last_usage.text)
         context = self.get_context_data(
             text=parsed_markdown,
             can_edit=request.user.is_superuser,

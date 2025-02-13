@@ -11,13 +11,16 @@ from django.db.models.functions import TruncDate
 from django.db.models import Count
 from django.utils.dateformat import format
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.views.decorators.cache import cache_page
 
 
 @require_http_methods(["GET"])
+@cache_page(60 * 30)  # Cached for 30 minutes
 def cert_activity(request: HttpRequest):
     # 375 is not a typo, we get some extra days to account for the graph
     # winding back to the first Sunday of the week.
-    start = datetime.datetime.now() - datetime.timedelta(days=375)
+    start = timezone.now() - datetime.timedelta(days=375)
     activity = (
         db.Certificate.objects.filter(created_at__gt=start)
         .annotate(date=TruncDate("created_at"))

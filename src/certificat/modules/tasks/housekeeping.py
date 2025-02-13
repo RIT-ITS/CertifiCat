@@ -7,7 +7,7 @@ from certificat.modules.acme.models import OrderStatus
 import inject
 from acmev2.services import IOrderService
 import logging
-
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +25,16 @@ def expire_orders_task(task=None):
         order_service.resolve_state(db.to_pydantic(order))
 
 
-@db_periodic_task(crontab(day="*"))
+@db_periodic_task(crontab(hour="*"))
 def delete_invalid_orders(task=None):
     settings = inject.instance(ApplicationSettings)
     if not settings.delete_invalid_orders:
         logger.info("skipping delete task due to settings")
         return
 
-    invalid_orders = db.Order.objects.filter(status=OrderStatus.invalid)
+    yesterday = timezone.now() - timedelta(days=1)
+    invalid_orders = db.Order.objects.filter(
+        status=OrderStatus.invalid, created_at__lte=yesterday
+    )
     logger.info(f"deleting {invalid_orders.count()} invalid orders")
     invalid_orders.delete()

@@ -8,4 +8,4 @@ HERE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 run-make setup-venv
 
-(cd "${SRC_PATH}/certificat/tests" && "${VENV_PYTEST}" "$@")
+(cd "${SRC_PATH}/certificat/tests" && DJANGO_SETTINGS_MODULE="certificat.tests.test_settings" "${VENV_PYTEST}" "$@")

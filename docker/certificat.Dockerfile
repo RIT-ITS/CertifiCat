@@ -71,7 +71,6 @@ COPY --from=dockerfiles /srv /srv/
 COPY --from=dockerfiles /etc /etc/
 
 RUN pip install supervisor --no-cache-dir && pip uninstall pip -y && \
-    find /usr/local | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf && \
     rm -rf /usr/lib/x86_64-linux-gnu/perl-base/
 
 FROM scratch AS prod_flattened

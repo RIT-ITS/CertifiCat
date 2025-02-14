@@ -25,7 +25,7 @@ def expire_orders_task(task=None):
         order_service.resolve_state(db.to_pydantic(order))
 
 
-@db_periodic_task(crontab(hour="*"))
+@db_periodic_task(crontab(minute="0"))
 def delete_invalid_orders(task=None):
     settings = inject.instance(ApplicationSettings)
     if not settings.delete_invalid_orders:

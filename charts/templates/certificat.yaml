@@ -62,10 +62,14 @@ spec:
               containerPort: 80
               protocol: TCP
           livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 60
             httpGet:
               path: /directory/
               port: 80
-          readinessProbe:
+          startupProbe:
+            # __pycache__ information needs to be regenerated on startup
+            timeoutSeconds: 10
             httpGet:
               path: /directory/
               port: 80
@@ -104,8 +108,8 @@ spec:
                 - /srv/www/.venv/bin/python 
                 - /srv/www/manage.py
                 - huey_healthcheck
-            initialDelaySeconds: 5
-            periodSeconds: 30
+            initialDelaySeconds: 30
+            periodSeconds: 60
             timeoutSeconds: 5
           startupProbe:
             exec:

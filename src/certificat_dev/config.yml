@@ -13,7 +13,7 @@ certificat:
     # provided by env
     # password: ""
     host: mariadb.
-    table_prefix: "pfx_"
+    #table_prefix: "pfx_"
 
   redis:
     host: redis.

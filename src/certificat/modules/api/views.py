@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from lxml_html_clean import Cleaner
 from certificat.modules.acme import models as db
-from django.db.models.functions import TruncDate
 from django.db.models import Count
 from django.utils.dateformat import format
 from django.views.decorators.csrf import csrf_exempt
@@ -23,14 +22,13 @@ def cert_activity(request: HttpRequest):
     start = timezone.now() - datetime.timedelta(days=375)
     activity = (
         db.Certificate.objects.filter(created_at__gt=start)
-        .annotate(date=TruncDate("created_at"))
-        .values("date")
         .annotate(count=Count("id"))
-        .values("date", "count")
+        .values("created_at", "count")
     )
 
     return JsonResponse(
-        {format(item["date"], "Y/m/d"): item["count"] for item in activity}, safe=False
+        {format(item["created_at"], "Y/m/d"): item["count"] for item in activity},
+        safe=False,
     )
 
 

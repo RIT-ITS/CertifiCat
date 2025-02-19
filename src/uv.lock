@@ -25,7 +25,7 @@ wheels = [
 
 [[package]]
 name = "acmev2"
-version = "0.0.3"
+version = "0.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "inject" },
@@ -35,9 +35,9 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/10/8905572f504d7b5e07bf5604f0fc409bd2136b01c857eaf2e721fd6676a1/acmev2-0.0.3.tar.gz", hash = "sha256:530d2bceb219d968711334af041cd7a32e947d424dab4928f98e086b0c777b26", size = 38640 }
+sdist = { url = "https://files.pythonhosted.org/packages/68/73/f93c212a869b45a91a6e6df5bc2c65f2ac80f97be23d293425dc2fd00f54/acmev2-0.0.4.tar.gz", hash = "sha256:988a43029c9050057242fac2e0c2f3a09a1a5a39b9465b312f0b8452e85dfcb3", size = 39008 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d1/df/78e9e3e98fc1c9a87d2cdcbdaf1506a2814750499e4c861104c65990c088/acmev2-0.0.3-py3-none-any.whl", hash = "sha256:ba4e541f20d1955a4f2a957fc67499737ed5535b852e8873d2b1a362dab14c93", size = 60502 },
+    { url = "https://files.pythonhosted.org/packages/46/cb/0b294d2d15e5d0eb16241514a735d9a8797a2145b3ac58c37a764c290034/acmev2-0.0.4-py3-none-any.whl", hash = "sha256:ccd46b1ef9ac14fb90729df8a6d9d7d728e99e740f52c70977da0e5a01b121c6", size = 61443 },
 ]
 
 [[package]]
@@ -90,7 +90,7 @@ wheels = [
 
 [[package]]
 name = "certificat"
-version = "1.0.7"
+version = "1.0.8"
 source = { virtual = "." }
 dependencies = [
     { name = "acmev2" },
@@ -125,7 +125,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "acmev2", specifier = "==0.0.3" },
+    { name = "acmev2", specifier = "==0.0.4" },
     { name = "asn1", specifier = ">=2.7.1" },
     { name = "django", specifier = ">=5.1.2" },
     { name = "django-cotton", specifier = ">=1.3.0" },

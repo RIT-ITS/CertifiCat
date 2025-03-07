@@ -1,45 +1,73 @@
 @use 'theme.scss';
 
-h1,.h1 {
+h1,
+.h1 {
     font-size: 4.25rem;
     line-height: 4.5rem;
 }
 
-h2,.h2 {
+h2,
+.h2 {
     font-size: 3.125rem;
     line-height: 3.375rem;
 }
 
-h3,.h3 {
+h3,
+.h3 {
     font-size: 2rem;
     line-height: 2.25rem;
 }
 
-h4,.h4 {
+h4,
+.h4 {
     font-size: 1.75rem;
     line-height: 2rem;
 }
 
-h5,.h5 {
+h5,
+.h5 {
     font-size: 1.5rem;
     line-height: 1.75rem;
 }
 
-h6,.h6 {
+h6,
+.h6 {
     font-size: 1.25rem;
     line-height: 1.5rem;
 }
 
-h1,.h1,h2,.h2,h3,.h3,h4,.h4,h5,.h5 {
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5 {
     margin-bottom: 1rem;
+
+    &.icon {
+        display: flex;
+        align-items: center;
+
+        i {
+            font-size: .75em;
+            margin: 0 .5em 0;
+        }
+    }
 }
 
 @media (max-width: theme.$largeSmartphone) {
-    h2,.h2 {
+
+    h2,
+    .h2 {
         font-size: 2rem;
-    line-height: 2.25rem;
+        line-height: 2.25rem;
     }
 }
+
 /*
     h3,.h3 {
         font-size: 1.375rem;
@@ -67,6 +95,7 @@ h1,.h1,h2,.h2,h3,.h3,h4,.h4,h5,.h5 {
 p {
     line-height: 1.75rem;
     margin-bottom: 1rem;
+
     &.lead {
         font-size: 1.75rem;
         line-height: 2.5rem;
@@ -86,8 +115,8 @@ p {
 }
 
 .subtext {
-    opacity:.8;
-    font-size:.9em;
+    opacity: .8;
+    font-size: .9em;
 }
 
 .text-lead {

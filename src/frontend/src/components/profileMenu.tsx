@@ -21,10 +21,10 @@ export class ProfileMenuElement extends LitElement {
     }
 
     private toggle = (evt: Event) => {
-        if (this.classList.contains("show")) {
-            this.classList.remove("show");
+        if (this.classList.contains("profile--show")) {
+            this.classList.remove("profile--show");
         } else {
-            this.classList.add("show");
+            this.classList.add("profile--show");
         }
 
         evt.stopPropagation();
@@ -35,6 +35,6 @@ export class ProfileMenuElement extends LitElement {
     };
 
     private hide = () => {
-        this.classList.remove("show");
+        this.classList.remove("profile--show");
     };
 }

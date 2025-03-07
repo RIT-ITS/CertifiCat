@@ -1,7 +1,9 @@
 <table class="table {{ name }} {% if not no_collapse %}collapsible{% endif %}">
+    {% if head %}
     <thead class="thead-light">
         {{ head }}
     </thead>
+    {% endif %}
     <tbody>
         {{ body }}
     </tbody>

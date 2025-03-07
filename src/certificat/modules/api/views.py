@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
+from certificat.utils import unprefix_group
 from lxml_html_clean import Cleaner
 from certificat.modules.acme import models as db
 from django.db.models import Count
@@ -35,7 +36,10 @@ def cert_activity(request: HttpRequest):
 @login_required
 @require_http_methods(["GET"])
 def my_groups(request: HttpRequest):
-    groups = request.user.groups.all().values("id", "name")
+    groups = request.user.groups.all().order_by("name").values("id", "name")
+    # remove namespace prefixes from group names
+    for group in groups:
+        group["name"] = unprefix_group(group["name"])
 
     return JsonResponse(list(groups), safe=False)
 

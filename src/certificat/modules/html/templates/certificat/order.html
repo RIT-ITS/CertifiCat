@@ -41,8 +41,7 @@
 
     </dl>
 
-    <h3 class="mt-4">Authorizations</h3>
-
+    <h4 class="mt-5 icon"><i class="fa-solid fa-list-check"></i>Authorizations</h4>
     <c-table name="authorizations">
         <c-slot name="head">
             <tr>
@@ -97,21 +96,23 @@
     </c-table>
     
     {% if order.certificate_request %}
-        <h3 class="mt-4">Certificate Signing Request</h3>
+        <h4 class="mt-5 icon"><i class="fa-solid fa-key"></i>Certificate Signing Request</h4>
+        <div class="divider mb-3"></div>
         <div class="monospaced pre-line mt-3">{{ order.certificate_request.csr }}</div>
     {% endif %}
 
     {% if not order.certificate %}
         {% with err=order.last_finalization_error %}
             {% if err %}
-                <h3 class="mt-4">Finalization</h3>
+                <h4 class="mt-5">Finalization</h4>
                 <div role="contentinfo" class="messages messages--error">
                     {{ err.error }}
                 </div>
             {% endif %}
         {% endwith %}
     {% else %}
-        <h3 class="mt-4">Certificate Chain</h3>
+        <h4 class="mt-5 icon"><i class="fa-solid fa-chain"></i>Certificate Chain</h4>
+        <div class="divider"></div>
 
         <c-tabs bordered>
             <c-tab group="cert" id="decoded" label="Data" default>

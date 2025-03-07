@@ -64,9 +64,10 @@
                 </dd>
             </dl>
         </div>
-
-        <div class="container mt-4">
-            <h3 class="bold">My Recent Orders</h3>
+        
+        <div class="container mt-5">
+            <h4 class="mt-5 icon"><i class="fa-solid fa-cart-shopping"></i>My Recent Orders</h4>
+            
             <c-table name="orders">
                 <c-slot name="head">
                     <tr>
@@ -105,8 +106,9 @@
         </div>
 
         {% if not account_invalid %}
-            <div class="container mt-4">
-                <h3 class="bold">Account Management</h3>
+            <div class="container mt-5">
+                <h4 class="mt-5 icon"><i class="fa-solid fa-user"></i>Account Management</h4>
+                <div class="divider mb-3"></div>
                 <form action="{% url 'account' binding.id %}" method="POST">
                     {% csrf_token %}
                     <confirm-button buttonType="submit" value="Disable Account" name="revoke-account" warningtext="Are you sure you want to disable this binding? Any bound accounts will lose access to the ACME service." />

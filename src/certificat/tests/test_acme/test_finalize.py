@@ -28,6 +28,28 @@ def test_finalize_local(
 
 
 @pytest.mark.django_db
+def test_finalize_fail_dispatch_task(
+    acme_client: acme.client.ClientV2,
+    settings: ApplicationSettings,
+    acme_neworder,
+    mocker,
+):
+    new_order: NewOrderRet = acme_neworder()
+
+    order = do_challenge(acme_client, new_order.response)
+    order_name = order.uri.split("/")[-1]
+    mocker.patch(
+        "certificat.modules.tasks.finalize_order.finalize_order_task",
+        side_effect=Exception(),
+    )
+    with pytest.raises(Exception):
+        finalize_order(acme_client, order)
+
+    db_order = db.Order.objects.get(name=order_name)
+    assert db_order.status == OrderStatus.ready
+
+
+@pytest.mark.django_db
 def test_finalize_mock_sectigo_fail_enroll(
     acme_client: acme.client.ClientV2,
     settings: ApplicationSettings,

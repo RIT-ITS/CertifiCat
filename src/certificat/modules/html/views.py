@@ -13,9 +13,14 @@ from certificat.modules.acme.models import (
     AccountBinding,
     AccountEventType,
     OrderEventType,
+    TermsOfService,
     Usage,
 )
-from certificat.modules.html.forms import NewBindingForm, UsageEditForm
+from certificat.modules.html.forms import (
+    NewBindingForm,
+    TermsOfServiceEditForm,
+    UsageEditForm,
+)
 from certificat.settings.dynamic import ApplicationSettings, SAMLSettings
 import inject
 from .nav import BreadCrumb, BreadCrumbs, build_breadcrumbs, Sections
@@ -120,15 +125,57 @@ class EditUsageView(ViewBase):
         return render(request, "certificat/edit-usage.html", context)
 
 
-class TermsOfService(ViewBase):
+class TermsOfServiceView(ViewBase):
     section = Sections.TOS
 
     def get_breadcrumbs(self):
         return build_breadcrumbs("Terms of Service")
 
     def get(self, request):
-        context = self.get_context_data()
+        last_tos = TermsOfService.objects.order_by("-created_at").first()
+        parsed_markdown = ""
+        if last_tos:
+            parsed_markdown = markdown.markdown(last_tos.text)
+        context = self.get_context_data(
+            text=parsed_markdown,
+            can_edit=request.user.is_superuser,
+        )
         return render(request, "certificat/terms-of-service.html", context)
+
+
+class EditTermsOfServiceView(ViewBase):
+    section = Sections.TOS
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_breadcrumbs(self):
+        return build_breadcrumbs(
+            ("Terms of Service", reverse(Sections.TOS.value)), "Edit"
+        )
+
+    def post(self, request):
+        tos_form = TermsOfServiceEditForm(request.POST)
+        if tos_form.is_valid():
+            try:
+                tos_form.save(request)
+                messages.success(request, "Successfully saved terms of service.")
+                return HttpResponseRedirect(reverse("TOS"))
+            except:  # noqa: E722
+                messages.error(request, "There was an error saving terms of service.")
+                logger.exception("Error saving tos")
+
+        context = self.get_context_data(form=tos_form)
+        return render(request, "certificat/edit-tos.html", context)
+
+    def get(self, request):
+        last_tos = TermsOfService.objects.order_by("-created_at").first()
+        tos_form = TermsOfServiceEditForm(
+            initial={"terms_of_service": last_tos.text if last_tos else ""},
+            label_suffix="",
+        )
+        context = self.get_context_data(form=tos_form)
+        return render(request, "certificat/edit-tos.html", context)
 
 
 class AccountsView(ViewBase):

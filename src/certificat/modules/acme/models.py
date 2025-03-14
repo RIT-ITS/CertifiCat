@@ -58,6 +58,10 @@ class Usage(TimestampMixin):
     text = models.TextField()
 
 
+class TermsOfService(TimestampMixin):
+    text = models.TextField()
+
+
 class Account(TimestampMixin):
     name = models.CharField(max_length=15, unique=True)
     status = models.CharField(max_length=15, choices=choices(AccountStatus))

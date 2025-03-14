@@ -13,6 +13,7 @@ HUEY = {
         "host": dynamic_settings.redis.host,
         "password": dynamic_settings.redis.password,
         "port": dynamic_settings.redis.port,
+        "health_check_interval": 10,
     },
     "consumer": {
         "workers": 1,
@@ -23,6 +24,6 @@ HUEY = {
         "scheduler_interval": 1,  # Check schedule every second, -s.
         "periodic": True,  # Enable crontab feature.
         "check_worker_health": True,  # Enable worker health checks.
-        "health_check_interval": 1,  # Check worker health every second.
+        "health_check_interval": 10,
     },
 }

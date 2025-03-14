@@ -12,6 +12,11 @@ Optionally trust self-signed certificate created at .devcontainer/traefik/certs 
 
 # Testing
 
+Provided Certbot Container:
+```trust-traefik-cert
+certbot certonly --standalone --server https://certificat.localtest.me/directory -d acme.edu
+```
+
 Certbot:
 
 sudo certbot certonly --standalone --server http://localhost:8000/directory -d testcert.localhost

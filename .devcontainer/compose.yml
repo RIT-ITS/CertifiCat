@@ -1,13 +1,13 @@
 services:
-  #certbot:
-  #  links: 
-  #    - app:certificat.localtest.me
-  #  build:
-  #    context: .
-  #    dockerfile: Dockerfile.certbot
-  #  command: sleep infinity
-  #  ports:
-  #    - "80"
+  certbot:
+    links:
+      - traefik:certificat.localtest.me
+    build:
+      context: .
+      dockerfile: Dockerfile.certbot
+    command: sleep infinity
+    ports:
+      - "80"
   traefik:
     image: "traefik:v3.3"
     container_name: "traefik"
@@ -30,8 +30,8 @@ services:
       - "./traefik/dynamic:/etc/traefik/dynamic"
       - "./traefik/certs:/etc/certs"
   app:
-    #links:
-    #  - certbot:acme.edu
+    links:
+      - certbot:acme.edu
     #  - certbot:subdomain.acme.edu
     #  - certbot:subdommain2.acme.edu
     build:

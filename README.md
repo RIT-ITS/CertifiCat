@@ -1,34 +1,47 @@
 # Setup
 
+This is intended to run in a [VSCode Dev Container](https://code.visualstudio.com/docs/devcontainers/containers). If you're not using dev containers, look at the Docker files in the .devcontainer folder for a functional dev environment.
+
 ## Add Database
 
-MYSQL_PWD=$CERTIFICAT__DB__PASSWORD mariadb -h mariadb. -uroot -e "CREATE DATABASE certificat;CREATE DATABASE test_certificat;"
+Set up local databases for development and testing.
 
+```bash
+MYSQL_PWD=$CERTIFICAT__DB__PASSWORD mariadb -h mariadb. -uroot -e "CREATE DATABASE certificat;CREATE DATABASE test_certificat;"
+```
 ## Run Migrations
 
+```bash
 scripts/manage migrate
+```
 
-Optionally trust self-signed certificate created at .devcontainer/traefik/certs system-wide.
+Optionally trust self-signed certificate created at .devcontainer/traefik/certs system-wide to avoid browser errors using the following command.
+
+```bash
+.devcontainer/trust-traefik-cert
+```
+
+This relies on the `update-ca-certificates` command being installed on your machine.
 
 # Testing
 
-Provided Certbot Container:
-```trust-traefik-cert
+Manually using the provided Certbot Container:
+```bash
+trust-traefik-cert
 certbot certonly --standalone --server https://certificat.localtest.me/directory -d acme.edu
 ```
 
-Certbot:
+Using pytest
 
-sudo certbot certonly --standalone --server http://localhost:8000/directory -d testcert.localhost
+```bash
+./scripts/test
+```
 
-Caddyfile:
+Adding coverage report and adjusting params forwarded to pytest
 
-acmetest.localhost {
-  tls {
-    ca http://localhost:8000/directory
-    eab hmac_id hmac_key
-  }
-}
+```bash
+./scripts/test --cov=certificat
+```
 
 # Deployment
 
@@ -40,6 +53,4 @@ The project supports creating and deploying feature variants before a version is
 
 - To release your changes, merge to master, ensure your version is correct (`1.0.2` in this example) and run `scripts/release` to update versions in dependent files. This will create and release a new tag.
 
-# Tasks
 
-- Move acmev2 to pypi

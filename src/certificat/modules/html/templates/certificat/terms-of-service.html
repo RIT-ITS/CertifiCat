@@ -5,11 +5,14 @@
 {% block body %}
 
 <div class="container my-4">
-    <p>
-        RIT adheres to the <a href="https://secure.trust-provider.com/repository/docs/Legacy/20230516_Certificate_Subscriber_Agreement_v_2_6_click.pdf" target="_blank" rel="noopener">Sectigo subscriber agreement.</a> If you have any questions or concerns please read over the document.
-    </p>
-    <p>
-        For more directed help, contact the Identity and Access Management team.
-    </p>  
+    {% if can_edit %}
+        <a class="btn btn-primary btn-sm mb-4" href="{% url 'edit-tos' %}">Edit Terms of Service</a>
+    {% endif %}
+    {% if text %}
+        {{ text|safe }}
+    {% else %}
+        <p>Your administrators haven't added anything here. Go bug them to set this up!</p>
+    {% endif %}
 </div>
+
 {% endblock %}

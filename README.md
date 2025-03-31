@@ -61,7 +61,7 @@ Navigate to https://certificat.localtest.me and log in with one of the passwords
 Run tests with the included run-tests script:
 
 ```bash
-./scripts/run-tests
+./scripts/test
 ```
 
 any additional parameters will be forwarded to `pytest`.

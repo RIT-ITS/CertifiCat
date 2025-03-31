@@ -5,6 +5,7 @@ from enum import Enum
 from typing import List, Mapping, Self
 
 from django.core.serializers.json import DjangoJSONEncoder
+from certificat.utils import unprefix_group
 import cryptography
 import cryptography.x509
 import cryptography.x509.extensions
@@ -53,7 +54,11 @@ class TimestampMixin(models.Model):
         abstract = True
 
 
-class TempUsageHack(TimestampMixin):
+class Usage(TimestampMixin):
+    text = models.TextField()
+
+
+class TermsOfService(TimestampMixin):
     text = models.TextField()
 
 
@@ -143,10 +148,11 @@ class AccountBindingGroupScope(TimestampMixin):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def friendly_name(self):
-        return self.group.name
+        return unprefix_group(self.group.name)
 
     class Meta:
         unique_together = ("binding", "group")
+        ordering = ("group__name",)
 
 
 class OrderManager(models.Manager):
@@ -219,7 +225,9 @@ class Certificate(TimestampMixin):
                         leaf_cert = cert
                         break
                 except cryptography.x509.extensions.ExtensionNotFound:
-                    pass
+                    # CAs must have this extension, so this must be the leaf?
+                    leaf_cert = cert
+                    break
 
             # Hail mary
             if not leaf_cert:

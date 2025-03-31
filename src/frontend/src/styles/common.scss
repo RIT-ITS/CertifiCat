@@ -67,13 +67,13 @@ ul {
 
         li {
             &:not(:last-of-type):after {
-                content:",";
+                content: ",";
                 padding-right: $spacer*.25;
             }
         }
     }
 
-    
+
 }
 
 li {
@@ -81,6 +81,7 @@ li {
 }
 
 #add_new_binding_form {
+
     /*label[for=id_group], label[for=id_name], label[for=id_note] {
         display: none;
     }*/
@@ -88,7 +89,7 @@ li {
         display: none;
     }
 
-    > div {
+    >div {
         margin-bottom: $spacer*.5;
     }
 }
@@ -99,8 +100,8 @@ li {
     border: 1px solid;
     border-radius: 10px;
     font-weight: bold;
-   
-    font-size:.8rem;
+
+    font-size: .8rem;
 
     &.chip-success {
         color: color.mix(theme.$accentGreen, white, 10%);
@@ -112,7 +113,7 @@ li {
         color: color.mix(theme.$accentOrange, white, 10%);
         background-color: theme.$accentOrange;
         border-color: color.mix(theme.$accentOrange, black, 70%);
-        
+
     }
 
     &.chip-info {
@@ -128,16 +129,19 @@ li {
     }
 }
 
-editable-text {    
+editable-text {
     [data-editable-id] {
         white-space: pre-wrap;
     }
+
     &.horizontal {
         display: flex;
+
         @media (max-width: (theme.$largeSmartphone)) {
             flex-direction: column;
         }
-        > .edit-wrap {
+
+        >.edit-wrap {
             margin-bottom: 0;
             margin-right: 1em;
             max-width: 400px;
@@ -148,30 +152,32 @@ editable-text {
             color: theme.$bodyTextColor;
         }
     }
-    > .edit-wrap {
+
+    >.edit-wrap {
         [data-editable-id] {
-            border-bottom: 2px solid transparent;    
-            display: inline-block;   
+            border-bottom: 2px solid transparent;
+            display: inline-block;
         }
 
-        [contenteditable="plaintext-only"] {
-            min-width:100px;
+        [contenteditable="plaintext-only"],
+        [contenteditable="true"] {
+            min-width: 100px;
             outline: none;
             background-color: color.mix(theme.$lightGrayColor, white, 30%);
-            border-bottom: 2px solid theme.$primaryColor;          
+            border-bottom: 2px solid theme.$primaryColor;
         }
-        
-       
+
+
         display: block;
         margin-bottom: 1em;
     }
 
     input {
         display: inline-block;
-    }    
+    }
 
     .buttons {
-        white-space:normal;        
+        white-space: normal;
     }
 
     &:not(.editing) {
@@ -194,41 +200,49 @@ editable-text {
 account-access-manager {
     display: block;
     max-width: 500px;
-    .accessmanager--edit, .accessmanager--cancel {
+
+    .accessmanager--edit,
+    .accessmanager--cancel {
         margin-left: $spacer;
     }
+
     .accessmanager--add {
         margin-top: $spacer*.5;
         padding-top: $spacer*.5;
         display: flex;
+
         a {
             margin-left: $spacer*.5;
             white-space: nowrap;
         }
     }
+
     ul {
         list-style-type: none;
-        
+
         li {
             display: flex;
-            margin-top:$spacer*.5;
+            margin-top: $spacer*.5;
+
             .accessmanager--groupname {
                 flex: 1;
             }
-            
+
         }
     }
 }
 
 confirm-button {
     input {
-        display:inline-block;
+        display: inline-block;
         width: auto;
     }
 }
 
 fade-on-load {
+    transition: opacity 250ms ease-in-out 0s;
     opacity: 0;
+
     &.loaded {
         opacity: 1;
     }
@@ -246,10 +260,11 @@ activity-graph {
 
 // Left-col layout spacing. Size of the columns is handled in the html
 .layout--left {
-    > div:first-of-type {
+    >div:first-of-type {
         @media (min-width: (theme.$tinyDesktop*1+1)) {
             padding-right: $spacer*1.5;
         }
+
         @media (max-width: theme.$tinyDesktop) {
             padding-bottom: $spacer*1.5;
         }
@@ -279,8 +294,8 @@ dl {
     &.indented-list {
         dt {
             font-weight: bold;
-            
-            
+
+
         }
 
         dd {
@@ -292,7 +307,7 @@ dl {
     &.field-list {
         display: inline-grid;
         grid-template-columns: min-content auto;
-        
+
         width: 100%;
 
         >dt {
@@ -303,13 +318,15 @@ dl {
         }
 
         >dd {
-            overflow-wrap:anywhere;
+            overflow-wrap: anywhere;
             padding: $spacer*.5 0 $spacer*.5 $spacer*.5;
             //border-bottom: 1px solid theme.$lightGrayColor;
         }
 
         &.no-borders {
-            dt,dd {
+
+            dt,
+            dd {
                 border-bottom: none;
             }
         }
@@ -331,36 +348,36 @@ dl {
 
     &:hover::after {
         opacity: 1;
-        
+
         visibility: visible;
         transition: all 250ms ease-in-out .1s;
     }
 
     &::after {
-        content: attr(data-text); 
+        content: attr(data-text);
         box-sizing: border-box;
-        position:absolute;
+        position: absolute;
         z-index: 50;
         font-family: theme.$fontStack;
-        
+
         left: 50%;
-        transform:translate(-50%, 15px);
-        
+        transform: translate(-50%, 15px);
+
         max-width: 500px;
-        padding:$spacer*.5 $spacer;
-        border-radius:2px;
-        background:#000;
+        padding: $spacer*.5 $spacer;
+        border-radius: 2px;
+        background: #000;
         color: #fff;
-        text-align:center;
+        text-align: center;
         display: block;
         font-size: 1rem;
         line-height: 1.5rem;
         opacity: 0;
-        visibility:hidden;
-        
+        visibility: hidden;
+
         transition: all 250ms ease-in-out .2s;
     }
-    
+
 }
 
 code {
@@ -378,8 +395,57 @@ code {
     @media (max-width: theme.$tinyDesktop) {
         flex-basis: 100%;
         padding: 0;
+
         &:not(:first-of-type) {
             margin-top: $spacer;
         }
+    }
+}
+
+.markdown,
+.EasyMDEContainer .editor-preview {
+    pre {
+        margin-bottom: $spacer;
+    }
+
+    li {
+        margin-left: $spacer*1.5;
+    }
+
+    ul,
+    ol {
+        margin-bottom: $spacer;
+    }
+
+    ol li {
+        list-style-type: decimal;
+    }
+
+    ul li {
+        list-style-type: disc;
+    }
+
+    blockquote {
+        border-left: 5px solid theme.$lightGrayColor;
+        padding-left: $spacer;
+        color: color.mix(theme.$bodyTextColor, white, 70%);
+        margin-bottom: $spacer;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid theme.$lightGrayColor;
+        margin-top: $spacer;
+        margin-bottom: $spacer;
+    }
+
+    strong,
+    b {
+        font-weight: bold;
+    }
+
+    em,
+    i {
+        font-style: italic;
     }
 }

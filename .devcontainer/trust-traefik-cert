@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+</dev/null openssl s_client -connect certificat.localtest.me:443 -servername certificat.localtest.me | openssl x509 > /usr/local/share/ca-certificates/certificat.localtest.me.crt
+update-ca-certificates 

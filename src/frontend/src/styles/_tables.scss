@@ -18,10 +18,14 @@
         }
     }
 
+    th {
+        font-weight: bold;
+        text-align: left;
+    }
+
     thead th {
         border-bottom: 2px solid theme.$lightGrayColor;
         font-weight: bold;
-        text-align: left;
     }
 
     .thead-light th {
@@ -106,17 +110,18 @@ table.accounts {
             p {
                 display: -webkit-box;
                 -webkit-line-clamp: 3;
+                line-clamp: 3;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                line-break: anywhere;
             }
         }
 
         td.activated {
-            @include shrink-cell;
             font-size: 1.5em;
             color: theme.$accentGreen;
-
+            @include shrink-cell;
             @media(min-width:(theme.$largeSmartphone*1+1)) {
                 width: 21px;
                 text-align: center;

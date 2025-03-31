@@ -42,7 +42,7 @@ if dynamic_settings.trust_proxy_forwarded_proto:
 else:
     SECURE_PROXY_SSL_HEADER = None
 
-APPEND_SLASH = False
+APPEND_SLASH = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(

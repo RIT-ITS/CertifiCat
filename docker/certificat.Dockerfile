@@ -37,9 +37,8 @@ RUN pip3 install uv && \
 
 ARG GUNICORN_VERSION=21.2.0
 
-ADD https://www-staging.rit.edu/test/clay/acme/UFUgUENQVSBXSEFUIGNhY2l0cyB0dHkyIEZyaTA3IDIyZGF5cyAzOjA4bSAw/acmev2-0.0.3.tar.gz /code/dist/acmev2-0.0.3.tar.gz
 RUN python3 -m venv /venv/ && \
-    /venv/bin/pip install --no-cache-dir /code/dist/certificat-*.whl /code/dist/acmev2* gunicorn==$GUNICORN_VERSION
+    /venv/bin/pip install --no-cache-dir /code/dist/certificat-*.whl gunicorn==$GUNICORN_VERSION
 
 # Bytecode will be generated on first run
 RUN find /venv | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
@@ -72,7 +71,6 @@ COPY --from=dockerfiles /srv /srv/
 COPY --from=dockerfiles /etc /etc/
 
 RUN pip install supervisor --no-cache-dir && pip uninstall pip -y && \
-    find /usr/local | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf && \
     rm -rf /usr/lib/x86_64-linux-gnu/perl-base/
 
 FROM scratch AS prod_flattened

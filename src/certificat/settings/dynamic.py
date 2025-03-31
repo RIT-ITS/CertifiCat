@@ -21,6 +21,7 @@ class DatabaseSettings(Settings):
     password: str
     host: str
     port: int = 3306
+    table_prefix: str = ""
 
 
 class RedisSettings(Settings):
@@ -163,7 +164,7 @@ class SAMLSettings(Settings):
     administrators: List[str] = []
 
     group_attribute: str = "memberof"
-    group_sync_prefix: str = "<SAML>"
+    group_sync_prefix: str = "SAML/"
 
     sp: SAMLSPSettings
     idp: SAMLIdPSettings

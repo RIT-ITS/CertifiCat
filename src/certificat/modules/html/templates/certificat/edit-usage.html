@@ -1,0 +1,36 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Usage and Documentation{% endblock %}
+
+{% block body %}
+
+<div class="container my-4">
+    {% if form.errors %}
+        <div role="contentinfo" class="messages messages--error mb-4">
+            {{ form.errors }}
+        </div>
+    {% endif %}
+    <fade-on-load>
+        <form action="{% url 'edit-usage' %}" method="POST">
+            {% csrf_token %}
+            
+            {{ form.usage }}
+
+            <div class="row">
+                <a href="{% url 'USAGE' %}" class="btn btn-light mr-3">Cancel</a>
+                <button name="submit" type="submit" class="btn btn-primary" >Save</button>
+            </div>
+        </form>
+    </fade-on-load>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+<script>
+    new EasyMDE({
+        element: document.getElementById("id_usage"),
+        autofocus: true,
+        forceSync: true
+    })
+</script>
+{% endblock %}

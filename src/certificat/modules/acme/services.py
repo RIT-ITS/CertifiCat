@@ -31,6 +31,7 @@ from django.db.models import Subquery
 from . import models as db
 import json
 from certificat.modules import tasks
+from django.db import transaction
 from django.utils.timezone import make_aware
 from django.utils import timezone
 
@@ -50,12 +51,18 @@ class DirectoryService(IDirectoryService):
         return self.root_url
 
 
+ONE_HOUR = 60 * 60
+
+
 class NonceService(INonceService):
     nonce_prefix = "nonce:"
 
     def generate(self) -> str:
         nonce = uuid.uuid4().hex
-        while not cache.add(f"{self.nonce_prefix}{nonce}", 0, timeout=60):
+        # Some providers will hold onto nonces for a very long time. I'd love to
+        # make this shorter, like 60 seconds, but it will fail and certs will
+        # not be issued. Hopefully an hour is long enough.
+        while not cache.add(f"{self.nonce_prefix}{nonce}", 0, timeout=ONE_HOUR):
             nonce = uuid.uuid4().hex
 
         return nonce
@@ -177,13 +184,16 @@ class OrderService(IOrderService):
         return db.to_pydantic(db.Order.objects.get(name=order_id))
 
     def process_finalization(self, order, csr):
-        self.update_status(order, OrderStatus.processing)
+        with transaction.atomic():
+            self.update_status(order, OrderStatus.processing)
 
-        db.CertificateRequest.objects.create(
-            order_id=Subquery(db.Order.objects.filter(name=order.id).values("id")[:1]),
-            csr=csr.public_bytes(encoding=serialization.Encoding.PEM).decode(),
-        )
-        tasks.finalize_order.finalize_order_task(order.id)
+            db.CertificateRequest.objects.create(
+                order_id=Subquery(
+                    db.Order.objects.filter(name=order.id).values("id")[:1]
+                ),
+                csr=csr.public_bytes(encoding=serialization.Encoding.PEM).decode(),
+            )
+            tasks.finalize_order.finalize_order_task(order.id)
 
         return order
 
@@ -273,8 +283,9 @@ class ChallengeService(IChallengeService):
         return db.to_pydantic(db.Challenge.objects.get(name=chall_id))
 
     def queue_validation(self, chall):
-        self.update_status(chall, ChallengeStatus.processing)
-        tasks.validate_challenge.validate_challenge_task(chall.id)
+        with transaction.atomic():
+            self.update_status(chall, ChallengeStatus.processing)
+            tasks.validate_challenge.validate_challenge_task(chall.id)
 
         return chall
 

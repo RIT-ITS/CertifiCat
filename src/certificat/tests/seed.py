@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+"""
+Before using this, you have to change the config.yml to make the url_root parameter
+agree with the seed.py domain. Likely you will have to change it to http://certificat.localtest.me
+
+If you don't, you will get unauthorized errors
+"""
 
 import datetime
 from certificat.settings.dynamic import ApplicationSettings

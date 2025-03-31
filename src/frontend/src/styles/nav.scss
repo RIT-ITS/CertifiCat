@@ -2,17 +2,21 @@
 @use 'sass:color';
 @use 'spacing' as *;
 
+$topBorderHeight: 6px !default;
+
 #navigation-row {
-    border-top:6px solid theme.$primaryColor;
+    border-top:$topBorderHeight solid theme.$primaryColor;
     background-color: theme.$headerColor;
     color: theme.$headerTextColor;
 
     position: sticky;
-    z-index:10;
+    z-index:5;
     top: 0;
+    padding-top: $spacer*.5;
+    top: calc($spacer*-.5 - $topBorderHeight);
     @media (min-width: theme.$tinyDesktop) {
         padding-top: $spacer*1.5;
-        top: -$spacer*1.5;
+        top: calc($spacer*-1.5 - $topBorderHeight);
     }
 
     &.minimized {
@@ -23,6 +27,18 @@
         padding: $spacer*.5 0 $spacer*.5 0;
         @media(max-width: theme.$largeSmartphone) {
             justify-content: center;
+        }
+        > .row > * {
+            align-content: center;
+            margin: 0 $spacer 0 $spacer;
+
+            &:first-child {
+                margin-left: 0;
+            }
+
+            &:last-child {
+                margin-right: 0;
+            }
         }
         #navlogo {
             background-image: url(../images/certificat.svg);
@@ -89,14 +105,15 @@
         }
 
         #profile {
-            align-content: center;
+            display: flex;
+            align-items: center;
             position: relative;
-            
+
             .submenu-toggle {
                 cursor: pointer;
             }
 
-            &.show {
+            &.profile--show {
                 .submenu {
                     transform: translateY(0);
                     opacity: 100;
@@ -114,6 +131,7 @@
                 white-space: nowrap;
                 transform: translateY(-20px);
                 right: 0;
+                top: 2em;
                 border: 1px solid theme.$lightGrayColor;
                 box-sizing: border-box;
                 border-radius: 4px;

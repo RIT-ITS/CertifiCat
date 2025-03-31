@@ -64,3 +64,19 @@ class NewBindingForm(forms.Form):
                 db.AccountBindingGroupScope(binding=binding, group=group).save()
 
             return binding
+
+
+class UsageEditForm(forms.Form):
+    usage = forms.CharField(widget=forms.Textarea())
+
+    def save(self, request) -> db.Usage:
+        return db.Usage.objects.create(text=self.cleaned_data["usage"])
+
+
+class TermsOfServiceEditForm(forms.Form):
+    terms_of_service = forms.CharField(widget=forms.Textarea())
+
+    def save(self, request) -> db.Usage:
+        return db.TermsOfService.objects.create(
+            text=self.cleaned_data["terms_of_service"]
+        )

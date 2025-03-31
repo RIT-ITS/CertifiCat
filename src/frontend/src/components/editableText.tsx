@@ -52,7 +52,11 @@ export class EditableTextElement extends LitElement {
         this.editMode = true;
         this.editableElements().forEach((value, key) => {
             this.contentBeforeEditing.set(key, value.innerHTML || "");
-            value.contentEditable = "plaintext-only";
+            try {
+                value.contentEditable = "plaintext-only";
+            }catch{
+                value.contentEditable = "true";
+            }
             value.focus();
         });
     };
@@ -103,7 +107,11 @@ export class EditableTextElement extends LitElement {
         this.saving = false;
         if (error) {
             this.editableElements().forEach((value) => {
-                value.contentEditable = "plaintext-only";
+                try {
+                    value.contentEditable = "plaintext-only";
+                }catch{
+                    value.contentEditable = "true";
+                }
             });
             alert("There was an error saving");
         } else {

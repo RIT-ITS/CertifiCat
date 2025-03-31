@@ -13,6 +13,7 @@ certificat:
     # provided by env
     # password: ""
     host: mariadb.
+    #table_prefix: "pfx_"
 
   redis:
     host: redis.
@@ -25,6 +26,8 @@ certificat:
 
 saml:
   debug: True
+  administrators:
+    - admusr
   attribute_mapping:
     mail: [username, email]
     uid: [username]

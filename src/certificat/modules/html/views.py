@@ -13,9 +13,14 @@ from certificat.modules.acme.models import (
     AccountBinding,
     AccountEventType,
     OrderEventType,
-    TempUsageHack,
+    TermsOfService,
+    Usage,
 )
-from certificat.modules.html.forms import NewBindingForm
+from certificat.modules.html.forms import (
+    NewBindingForm,
+    TermsOfServiceEditForm,
+    UsageEditForm,
+)
 from certificat.settings.dynamic import ApplicationSettings, SAMLSettings
 import inject
 from .nav import BreadCrumb, BreadCrumbs, build_breadcrumbs, Sections
@@ -24,7 +29,7 @@ import logging
 from acmev2.models import AccountStatus
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
-
+import markdown
 
 logger = logging.getLogger(__name__)
 
@@ -75,21 +80,102 @@ class UsageView(ViewBase):
         return build_breadcrumbs("Usage")
 
     def get(self, request):
+        # TODO: Maybe cache this
+
+        last_usage = Usage.objects.order_by("-created_at").first()
+        parsed_markdown = ""
+        if last_usage:
+            parsed_markdown = markdown.markdown(last_usage.text)
         context = self.get_context_data(
-            text=TempUsageHack.objects.order_by("-created_at").first()
+            text=parsed_markdown,
+            can_edit=request.user.is_superuser,
         )
         return render(request, "certificat/usage.html", context)
 
 
-class TermsOfService(ViewBase):
+class EditUsageView(ViewBase):
+    section = Sections.Usage
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_breadcrumbs(self):
+        return build_breadcrumbs(("Usage", reverse(Sections.Usage.value)), "Edit")
+
+    def post(self, request):
+        usage_form = UsageEditForm(request.POST)
+        if usage_form.is_valid():
+            try:
+                usage_form.save(request)
+                messages.success(request, "Successfully saved usage.")
+                return HttpResponseRedirect(reverse("USAGE"))
+            except:  # noqa: E722
+                messages.error(request, "There was an error saving usage.")
+                logger.exception("Error saving usage")
+
+        context = self.get_context_data(form=usage_form)
+        return render(request, "certificat/edit-usage.html", context)
+
+    def get(self, request):
+        last_usage = Usage.objects.order_by("-created_at").first()
+        usage_form = UsageEditForm(
+            initial={"usage": last_usage.text if last_usage else ""}, label_suffix=""
+        )
+        context = self.get_context_data(form=usage_form)
+        return render(request, "certificat/edit-usage.html", context)
+
+
+class TermsOfServiceView(ViewBase):
     section = Sections.TOS
 
     def get_breadcrumbs(self):
         return build_breadcrumbs("Terms of Service")
 
     def get(self, request):
-        context = self.get_context_data()
+        last_tos = TermsOfService.objects.order_by("-created_at").first()
+        parsed_markdown = ""
+        if last_tos:
+            parsed_markdown = markdown.markdown(last_tos.text)
+        context = self.get_context_data(
+            text=parsed_markdown,
+            can_edit=request.user.is_superuser,
+        )
         return render(request, "certificat/terms-of-service.html", context)
+
+
+class EditTermsOfServiceView(ViewBase):
+    section = Sections.TOS
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_breadcrumbs(self):
+        return build_breadcrumbs(
+            ("Terms of Service", reverse(Sections.TOS.value)), "Edit"
+        )
+
+    def post(self, request):
+        tos_form = TermsOfServiceEditForm(request.POST)
+        if tos_form.is_valid():
+            try:
+                tos_form.save(request)
+                messages.success(request, "Successfully saved terms of service.")
+                return HttpResponseRedirect(reverse("TOS"))
+            except:  # noqa: E722
+                messages.error(request, "There was an error saving terms of service.")
+                logger.exception("Error saving tos")
+
+        context = self.get_context_data(form=tos_form)
+        return render(request, "certificat/edit-tos.html", context)
+
+    def get(self, request):
+        last_tos = TermsOfService.objects.order_by("-created_at").first()
+        tos_form = TermsOfServiceEditForm(
+            initial={"terms_of_service": last_tos.text if last_tos else ""},
+            label_suffix="",
+        )
+        context = self.get_context_data(form=tos_form)
+        return render(request, "certificat/edit-tos.html", context)
 
 
 class AccountsView(ViewBase):
@@ -317,3 +403,11 @@ def acs_failure(request, exception, status, **kwargs):
             "saml_settings": SAMLSettings.get(),
         },
     )
+
+
+def handler404(request, *args, **argv):
+    return render(request, "certificat/404.html", {}, status=404)
+
+
+def handler500(request, *args, **argv):
+    return render(request, "certificat/500.html", {}, status=500)

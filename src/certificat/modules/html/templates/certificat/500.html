@@ -1,0 +1,24 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Server Error{% endblock %}
+
+{% block body %}
+
+<div class="container my-4">
+    <p>
+        There was an error serving the request. If you report the error to server administrators, please reference the following:
+    </p>
+    <dl class="field-list">
+        <dt>Time of Error</dt>
+        <dd>
+            {% now "Y-m-d G:i:s" %}
+        </dd>
+        
+        <dt>URL</dt>
+        <dd>
+            {{ request.build_absolute_uri }}
+        </dd>
+    </dl>
+    
+</div>
+{% endblock %}

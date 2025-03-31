@@ -10,10 +10,10 @@
         <activity-graph url="{% url 'api:cert_activity' %}" noActivityColor="#89939a" startActivityColor="#a6c45d" endActivityColor="#e6f7bc"></activity-graph>
     </div>
 </div>
-<div class="container my-4">
+<div class="container mt-5">
     <div class="row m">
         <div class="col stat__block">
-            <h3 class="bold">Recent Orders</h3>
+            <h4 class="icon"><i class="fa-solid fa-cart-shopping"></i>Recent Orders</h4>
             <c-table name="orders">
                 <c-slot name="body">
                     {% for order in recent_orders %}
@@ -44,7 +44,7 @@
             </c-table>
         </div>
         <div class="col stat__block">
-            <h3 class="bold">Recent Certificates</h3>
+            <h4 class="icon"><i class="fa-solid fa-scroll"></i>Recent Certificates</h4>
             <c-table name="certificates">
                 <c-slot name="body">
                     {% for cert in recent_certificates %}

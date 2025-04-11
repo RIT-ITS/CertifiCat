@@ -91,14 +91,13 @@ wheels = [
 
 [[package]]
 name = "certificat"
-version = "1.0.13"
+version = "1.0.14"
 source = { virtual = "." }
 dependencies = [
     { name = "acmev2" },
     { name = "asn1" },
     { name = "django" },
     { name = "django-cotton" },
-    { name = "django-csp" },
     { name = "django-huey" },
     { name = "django-webpack-loader" },
     { name = "djangosaml2" },
@@ -130,7 +129,6 @@ requires-dist = [
     { name = "asn1", specifier = ">=2.7.1" },
     { name = "django", specifier = ">=5.1.2" },
     { name = "django-cotton", specifier = ">=1.3.0" },
-    { name = "django-csp", specifier = ">=3.8" },
     { name = "django-huey", specifier = ">=1.2.1" },
     { name = "django-webpack-loader", specifier = ">=3.1.1" },
     { name = "djangosaml2", specifier = ">=1.9.3" },
@@ -380,18 +378,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ba/6f/59a3da4823c5ffefc96afc38c69839897b62a9e3c3b6201fc61d81edcf3d/django_cotton-1.3.0.tar.gz", hash = "sha256:8f4a15dd55c8ee9182cf7234c228ea45d9fcdec1de125221bce8d05af035730a", size = 20903 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/dc/81/3216a0e2c7581948d249253e34e89c4716283a5371a804c21aab060db725/django_cotton-1.3.0-py3-none-any.whl", hash = "sha256:a23f29b759c43423e2f901352c0810388839cc412f6985614153c6ccfcfc2595", size = 20147 },
-]
-
-[[package]]
-name = "django-csp"
-version = "3.8"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/68/16/c3c65ad59997284402e54d00797c7aca96572df911aede3e1f2cc2e029f8/django_csp-3.8.tar.gz", hash = "sha256:ef0f1a9f7d8da68ae6e169c02e9ac661c0ecf04db70e0d1d85640512a68471c0", size = 13341 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/ff/2c7a4b6706125a17bd0071802e4894c28772cfcdea20a086a2be3c5fafda/django_csp-3.8-py3-none-any.whl", hash = "sha256:19b2978b03fcd73517d7d67acbc04fbbcaec0facc3e83baa502965892d1e0719", size = 17410 },
 ]
 
 [[package]]

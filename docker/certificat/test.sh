@@ -88,12 +88,14 @@ docker buildx build \
 LAST_IMAGE="$(docker images --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | awk 'NR==1{print $1}')"
 echo "Last image: ${LAST_IMAGE}"
 
+docker network create --driver bridge certificat_test || true
+
 docker rm -f tmpmariadb
 docker rm -f tmpredis
 
-docker run --name tmpmariadb -d --network docker_default -e MARIADB_DATABASE=certificat -e MARIADB_ROOT_PASSWORD=root mariadb:latest
-docker run --name tmpredis -d --network docker_default redis:latest --requirepass password
+docker run --name tmpmariadb --network certificat_test -d -e MARIADB_DATABASE=certificat -e MARIADB_ROOT_PASSWORD=root mariadb:latest
+docker run --name tmpredis --network certificat_test -d redis:latest --requirepass password
 
-docker run --network docker_default -e CERTIFICAT__CONFIG=/srv/www/config.yml -v"${WORKSPACE}/docker/certificat/srv/www/entrypoint.sh:/srv/www/entrypoint.sh" -v"${CONFIG_FILE}:/srv/www/config.yml" --entrypoint=/bin/sh -p8000:80 -it $LAST_IMAGE
+docker run --network certificat_test -e CERTIFICAT__CONFIG=/srv/www/config.yml -v"${WORKSPACE}/docker/certificat/srv/www/entrypoint.sh:/srv/www/entrypoint.sh" -v"${CONFIG_FILE}:/srv/www/config.yml" --entrypoint=/bin/sh -p8000:80 -it $LAST_IMAGE
 
 #docker run -v"${CONFIG_FILE}:/srv/www/config.yml" -it -p8000:80 $LAST_IMAGE start_huey

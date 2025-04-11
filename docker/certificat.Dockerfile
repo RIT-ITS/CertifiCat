@@ -1,4 +1,4 @@
-FROM python:3.13.0-alpine3.20 AS base
+FROM python:3.13.3-alpine AS base
 
 FROM base AS builder
 
@@ -33,12 +33,16 @@ RUN /opt/nodejs/lib/node_modules/yarn/bin/yarn && \
 WORKDIR /code/
 
 RUN pip3 install uv && \
-    uv build
+    uv build && \
+    uv export --no-emit-workspace --no-hashes -o requirements-frozen.txt
 
 ARG GUNICORN_VERSION=21.2.0
 
 RUN python3 -m venv /venv/ && \
-    /venv/bin/pip install --no-cache-dir /code/dist/certificat-*.whl gunicorn==$GUNICORN_VERSION
+    /venv/bin/pip install \
+        --no-cache-dir \
+        -c requirements-frozen.txt \
+        /code/dist/certificat-*.whl gunicorn==$GUNICORN_VERSION
 
 # Bytecode will be generated on first run
 RUN find /venv | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf

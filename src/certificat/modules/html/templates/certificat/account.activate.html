@@ -25,12 +25,20 @@
     --email "{{ request.user.email }}"</code></pre>
         </c-tab>
         <c-tab group="clients" id="posh" label="Posh-ACME">
+            <div class="my-3"><a href="https://github.com/rmbolger/Posh-ACME">How to install the client</a></div>
             <pre><code data-trim class='language-bash'>Set-PAServer "{{ request.scheme }}://{{ request.get_host }}{% url 'acme:directory' %}"
 
 New-PAAccount -ExtAcctKID "{{ binding.hmac_id }}" `
               -ExtAcctHMACKey "{{ binding.hmac_key }}" `
               -AcceptTOS `
               -WarningAction SilentlyContinue</code></pre>
+        </c-tab>
+        <c-tab group="clients" id="ps" label="CertifiCat-PS">
+            <div class="my-3"><a href="https://github.com/RIT-ITS/CertifiCat-PS">How to install the client</a></div>
+            <pre><code data-trim class='language-bash'>Initialize-ACMEEnvironment `
+    -ACMEServer "{{ request.scheme }}://{{ request.get_host }}{% url 'acme:directory' %}" `
+    -PAUserID "{{ binding.hmac_id }}" `
+    -PAUserKey "{{ binding.hmac_key }}"</code></pre>
         </c-tab>
     </c-tabs>
 

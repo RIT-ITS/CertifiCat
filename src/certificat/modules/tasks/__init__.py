@@ -10,7 +10,9 @@ from . import housekeeping
 logger = logging.getLogger(__name__)
 
 
-@task()
+# The ping task must happen immediately or the app will be marked
+# as unhealthy and may restart.
+@task(priority=100)
 def ping(pong_text: str) -> str:
     return pong_text
 

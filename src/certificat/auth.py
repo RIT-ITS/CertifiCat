@@ -23,7 +23,10 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
         """
         # Lookup key
         user_lookup_key = self._user_lookup_attribute
+        if attributes.get("uid") == []:
+            del attributes["uid"]
 
+        logger.debug(f"SAML login raw attributes: {attributes}")
         # Lookup value
         if getattr(settings, "SAML_USE_NAME_ID_AS_USERNAME", False):
             if session_info.get("name_id"):
@@ -57,7 +60,6 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
         # to the backend
 
         _reconcile_superuser(user, attributes)
-
         user = super()._update_user(
             user, attributes, attribute_mapping, force_save=force_save
         )

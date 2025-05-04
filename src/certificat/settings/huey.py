@@ -6,7 +6,7 @@ from .dynamic import ApplicationSettings
 dynamic_settings = inject.instance(ApplicationSettings)
 
 HUEY = {
-    "huey_class": "huey.RedisHuey",  # Huey implementation to use.
+    "huey_class": "huey.PriorityRedisHuey",  # Huey implementation to use.
     "name": "huey",  # Use db name for huey.
     "immediate": False,
     "connection": {
@@ -16,7 +16,7 @@ HUEY = {
         "health_check_interval": 10,
     },
     "consumer": {
-        "workers": 1,
+        "workers": dynamic_settings.task_queue.workers,
         "worker_type": "thread",
         "initial_delay": 0.1,  # Smallest polling interval, same as -d.
         "backoff": 1.15,  # Exponential backoff using this rate, -b.

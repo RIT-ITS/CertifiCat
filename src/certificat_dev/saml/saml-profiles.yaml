@@ -1,0 +1,29 @@
+genusr:
+    user: 'genusr'
+    mail: 'genusr@idp.local'
+    givenName: 'Generic'
+    sn: 'User'
+    memberof: ['first-group', 'second-group', 'third-group']
+admusr:
+    user: 'admusr'
+    mail: 'admusr@idp.local'
+    givenName: 'Admin'
+    sn: 'User'
+    memberof: ['admin-group', 'first-group', 'second-group']
+invalid:    
+    user: null
+    email: 'admusr@idp.local'
+    givenName: 'Admin'
+    sn: 'User'
+    memberof: ['admin-group', 'first-group', 'second-group']
+eptid:
+    user: null
+    eduPersonTargetedID: '123456'
+external:
+    user: null
+    mail: 'socialuser@idp.local'
+    givenName: 'External'
+    sn: 'User'
+eppn:
+    user: null
+    eduPersonPrincipalName: 'eppn@acme.edu'

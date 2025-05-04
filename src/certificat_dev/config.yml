@@ -41,8 +41,8 @@ saml:
     key_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
     cert_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
   idp:
-    local: 
-      - "/workspaces/certificat/src/certificat_dev/saml/local-idp.xml"
+    remote: 
+      - url: "http://idp./saml2/metadata"
     mdq: 
       - url: "https://mdq.incommon.org"
         cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"

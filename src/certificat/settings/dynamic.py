@@ -8,6 +8,7 @@ from pydantic_settings import (
 import os
 import yaml
 from acmev2.settings import ACMESettings
+import multiprocessing
 
 
 class Settings(BaseSettings):
@@ -22,6 +23,10 @@ class DatabaseSettings(Settings):
     host: str
     port: int = 3306
     table_prefix: str = ""
+
+
+class TaskQueueSettings(Settings):
+    workers: int = max(25, min(multiprocessing.cpu_count() * 25, 100))
 
 
 class RedisSettings(Settings):
@@ -53,6 +58,7 @@ class ApplicationSettings(Settings):
     staticfiles_root: str | None = None
 
     db: DatabaseSettings
+    task_queue: TaskQueueSettings | None = TaskQueueSettings()
     redis: RedisSettings
     logging: LoggingSettings | None = LoggingSettings()
 
@@ -126,7 +132,7 @@ class SAMLSPSettings(Settings):
 
 class RemoteIdP(Settings):
     url: str
-    cert: str
+    cert: str | None = None
 
 
 class MDQ(Settings):

@@ -50,7 +50,7 @@ app.kubernetes.io/name: {{ include "..name" . }}
 {{- end }}
 
 {{/*
-Certificat label namespace
+CertifiCat label namespace
 */}}
 {{- define "..namespacedLabel" -}}
 certificat/{{ . }}

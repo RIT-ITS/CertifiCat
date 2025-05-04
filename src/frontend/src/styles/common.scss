@@ -314,6 +314,7 @@ dl {
             font-weight: bold;
             white-space: nowrap;
             padding: $spacer*.5 $spacer*1.5 $spacer*.5 0;
+            min-width:130px;
             //border-bottom: 1px solid theme.$lightGrayColor;
         }
 

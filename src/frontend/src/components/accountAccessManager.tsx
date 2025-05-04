@@ -20,6 +20,8 @@ export class AccountAccessManagerElement extends LitElement {
     accessor groupUpdateUrl!: string;
     @property({type: Array})
     accessor accessibleBy!: Set<Group>;
+    @property({type: Boolean})
+    accessor clientIsOwner: boolean = false;
     @state()
     accessor editMode = false;
     @state()
@@ -57,7 +59,7 @@ export class AccountAccessManagerElement extends LitElement {
             const [operation, groupId] = args;
             const group = this.loadGroupsTask.value!.find((group) => group.id == groupId);
             if(!group) {
-                throw Error("Unknown error");
+                throw Error("You're not allowed to remove that group.");
             }
 
             const existingGroup = Array.from(this.accessibleBy).find((group) => group.id == groupId);
@@ -139,6 +141,7 @@ export class AccountAccessManagerElement extends LitElement {
                     complete: (groups) => {
                         if(groups.length > 0) {
                             return html`
+                                ${!this.clientIsOwner ? html`<div class='messages messages--info messages-small mb-2'>You are not the owner of this account. If you edit groups you could remove your access to this resource.</div>` : null}
                                 ${this.renderGroupDisplay()}
                                 ${this.renderAdd()}
                             `;
@@ -158,7 +161,7 @@ export class AccountAccessManagerElement extends LitElement {
     }
 
     protected renderHeader() {
-        return html`<div class="accessmanager--header">${this.accessibleBy.size > 0 ? 'Group Membership' : 'Creator Only'}</div>`
+        return html`<div class="accessmanager--header">${this.accessibleBy.size > 0 ? 'Owner & Group Membership' : 'Owner Only'}</div>`
     }
 
     protected renderGroupDisplay() {
@@ -173,12 +176,16 @@ export class AccountAccessManagerElement extends LitElement {
                                     class="accessmanager--edit"
                                     @click="${() => this.removeGroup(group.id)}"
                                 >
-                                    &nbsp;<span class="fa-solid fa-trash fa-lg"></span>
+                                   &nbsp;<span class="fa-solid fa-trash fa-lg"></span>
                                 </a>` : null}
                             </li>`
             })}
             </ul>
         `
+    }
+
+    protected canRemove(testGroup:Group) {
+        return !!this.loadGroupsTask.value!.find((group) => group.id == testGroup.id);
     }
 
     protected renderEditButton() {

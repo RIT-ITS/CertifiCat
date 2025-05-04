@@ -1,0 +1,3 @@
+prune certificat_dev
+prune frontend
+global-exclude .gitignore __pycache__ *.py[cod]

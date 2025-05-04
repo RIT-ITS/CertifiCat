@@ -1,35 +1,21 @@
 services:
   certbot:
-    links:
-      - traefik:certificat.localtest.me
+    networks: 
+      - proxy
+    #links:
+    #  - traefik:certificat.localtest.me
     build:
       context: .
       dockerfile: Dockerfile.certbot
     command: sleep infinity
     ports:
       - "80"
-  traefik:
-    image: "traefik:v3.3"
-    container_name: "traefik"
-    command:
-      - "--log.level=DEBUG"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.file.directory=/etc/traefik/dynamic"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-    ports:
-      - "80:80"
-      - "8080:8080"
-      - "443:443"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./traefik/dynamic:/etc/traefik/dynamic"
-      - "./traefik/certs:/etc/certs"
+  
   app:
+    networks: 
+      - proxy
+      - backend
+      
     links:
       - certbot:acme.edu
     #  - certbot:subdomain.acme.edu
@@ -48,14 +34,16 @@ services:
       CERTIFICAT__DB__PASSWORD: ${_DJ_MYSQL_ROOT_PWD}
       CERTIFICAT__REDIS__PASSWORD: ${_DJ_REDIS_PWD}
       CERTIFICAT__CONFIG: "/workspaces/certificat/src/certificat_dev/config.yml"
-      
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.certificat.rule=Host(`certificat.localtest.me`)"
       - "traefik.http.routers.certificat.tls=true"
       - "traefik.http.services.certificat.loadbalancer.server.port=8000"
+      - "traefik.docker.network=traefik.proxy"
 
   mariadb:
+    networks: 
+      - backend
     image: mariadb:10.5.23-focal
     restart: unless-stopped
     volumes:
@@ -64,25 +52,96 @@ services:
       - MARIADB_ROOT_PASSWORD=${_DJ_MYSQL_ROOT_PWD}
 
   redis:
+    networks:
+      - backend
     image: redis:7.2.4
     restart: unless-stopped
     command: redis-server --save 60 1 --requirepass ${_DJ_REDIS_PWD}
 
   idp:
-    image: kenchan0130/simplesamlphp
+    networks: 
+      - proxy
+    image: ghcr.io/rit-its/pyidp:v0.0.12
+    command: start_server
     ports: 
-      - 8080
+      - 8000
     environment:
-      SIMPLESAMLPHP_SP_ENTITY_ID: http://certificat.localtest.me/saml2/metadata/
-      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: https://certificat.localtest.me/saml2/acs/
-      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: https://certificat.localtest.me/saml2/ls/post
+      SECRET_KEY: "${_PYIDP_SECRET_KEY}"
+      BASE_URL: "https://idp.localtest.me"
+      IDP_CRT: "${_PYIDP_CERT}"
+      IDP_KEY: "${_PYIDP_KEY}"
+      SP_METADATA: |
+        <md:EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+            xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+            xmlns:ns1="urn:oasis:names:tc:SAML:metadata:algsupport"
+            entityID="http://certificat.localtest.me/saml2/metadata/">
+            <md:Extensions>
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#md5" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#ripemd160" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha224" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha384" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2000/09/xmldsig#dsa-sha1" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2009/xmldsig11#dsa-sha256" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha224" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-md5" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-ripemd160" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha224" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha384" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha512" />
+            </md:Extensions>
+            <md:SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol"
+                AuthnRequestsSigned="false" WantAssertionsSigned="false">
+                <md:KeyDescriptor use="signing">
+                    <ds:KeyInfo>
+                        <ds:X509Data>
+                            <ds:X509Certificate>
+                                MIIDJTCCAg2gAwIBAgIUaDa+5WyBCxgfVR+wxeYHx2TSAQUwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAwwXY2VydGlmaWNhdC5sb2NhbHRlc3QubWUwHhcNMjQxMTExMTU0NDE3WhcNMjUxMTExMTU0NDE3WjAiMSAwHgYDVQQDDBdjZXJ0aWZpY2F0LmxvY2FsdGVzdC5tZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJ1edG3d7096rafKEtzUKrfc4hgZZhvqBWTV2R4iiUT8zosNMnYx7xE+ckLss8tWoSm0spRzdcUD2ITjBH9SQ0aLgUZJHFgxw2iidLKDHmjO9Xr7f79zL5ftBuerQXfrh+heeMoIWsQ+uhfOYDCe6JJyJ4kPW4xtqlEJVTcZuhna3Jsv9w1VQ4yKppVj0HgcLJn7ROMQ7c94qoXUsYyc8VIgU4cJT+nZXPOFjI3CWfRP+2XtPduZfkB4F1JeJPLeain+OdrI974f/T47G338Wq3eHtLc6OL82hsaovZSrkBfU/ruWBRlEtDg53pIutNn+vYqJmVfS94ORya0kJdUk7kCAwEAAaNTMFEwHQYDVR0OBBYEFCEqWULm8JZOZi8OPcNqWrEkvnjPMB8GA1UdIwQYMBaAFCEqWULm8JZOZi8OPcNqWrEkvnjPMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFG8LYRL78XCrrqVPRc4i/h5NSLAQzsJzIwFstnrcPhVvTDl2ArOBMB8zeQHM0kj+KU6DOX2Skk6pYk4B9lAW9KZUb/TqVwiq1xuakwJ8DA1wPhS59ZGcENmQ/r5oMIiN/QqKCVIAVUkg1yqzq2RcRTW0i+NST7mVq1pa8aid9VYU26haWAIewNpU/080/4UIpkCgsIIjLgqSYT/lM4kjnlpm3z9JmFHLwQ89/+MqQyyxtyEse2vXA9t3g4nRzFNyLGXNzhshKHZu6k/MxTp8JeRhjhnWPVcRrTo36bHWtXVYG705ySdCad5MLL2ZN8VHioTz9MQPObr3yTxZ/QJhf0=</ds:X509Certificate>
+                        </ds:X509Data>
+                    </ds:KeyInfo>
+                </md:KeyDescriptor>
+                <md:KeyDescriptor use="encryption">
+                    <ds:KeyInfo>
+                        <ds:X509Data>
+                            <ds:X509Certificate>
+                                MIIDJTCCAg2gAwIBAgIUaDa+5WyBCxgfVR+wxeYHx2TSAQUwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAwwXY2VydGlmaWNhdC5sb2NhbHRlc3QubWUwHhcNMjQxMTExMTU0NDE3WhcNMjUxMTExMTU0NDE3WjAiMSAwHgYDVQQDDBdjZXJ0aWZpY2F0LmxvY2FsdGVzdC5tZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJ1edG3d7096rafKEtzUKrfc4hgZZhvqBWTV2R4iiUT8zosNMnYx7xE+ckLss8tWoSm0spRzdcUD2ITjBH9SQ0aLgUZJHFgxw2iidLKDHmjO9Xr7f79zL5ftBuerQXfrh+heeMoIWsQ+uhfOYDCe6JJyJ4kPW4xtqlEJVTcZuhna3Jsv9w1VQ4yKppVj0HgcLJn7ROMQ7c94qoXUsYyc8VIgU4cJT+nZXPOFjI3CWfRP+2XtPduZfkB4F1JeJPLeain+OdrI974f/T47G338Wq3eHtLc6OL82hsaovZSrkBfU/ruWBRlEtDg53pIutNn+vYqJmVfS94ORya0kJdUk7kCAwEAAaNTMFEwHQYDVR0OBBYEFCEqWULm8JZOZi8OPcNqWrEkvnjPMB8GA1UdIwQYMBaAFCEqWULm8JZOZi8OPcNqWrEkvnjPMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFG8LYRL78XCrrqVPRc4i/h5NSLAQzsJzIwFstnrcPhVvTDl2ArOBMB8zeQHM0kj+KU6DOX2Skk6pYk4B9lAW9KZUb/TqVwiq1xuakwJ8DA1wPhS59ZGcENmQ/r5oMIiN/QqKCVIAVUkg1yqzq2RcRTW0i+NST7mVq1pa8aid9VYU26haWAIewNpU/080/4UIpkCgsIIjLgqSYT/lM4kjnlpm3z9JmFHLwQ89/+MqQyyxtyEse2vXA9t3g4nRzFNyLGXNzhshKHZu6k/MxTp8JeRhjhnWPVcRrTo36bHWtXVYG705ySdCad5MLL2ZN8VHioTz9MQPObr3yTxZ/QJhf0=</ds:X509Certificate>
+                        </ds:X509Data>
+                    </ds:KeyInfo>
+                </md:KeyDescriptor>
+                <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                    Location="https://certificat.localtest.me/saml2/ls/" />
+                <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                    Location="https://certificat.localtest.me/saml2/ls/post" />
+                <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat>
+                <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                    Location="https://certificat.localtest.me/saml2/acs/" index="1" />
+            </md:SPSSODescriptor>
+        </md:EntityDescriptor>
     volumes:
-      - "../src/certificat_dev/saml/simple_saml_auth.php:/var/www/simplesamlphp/config/authsources.php"
+      - "../src/certificat_dev/saml/saml-profiles.yaml:/etc/pyidp/profiles.yaml:ro"
+      # Later
+      #- pyidp-sessions:/tmp/flask-sessions
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.idp.rule=Host(`idp.localtest.me`)"
       - "traefik.http.routers.idp.tls=true"
-      - "traefik.http.services.idp.loadbalancer.server.port=8080"
+      - "traefik.http.services.idp.loadbalancer.server.port=80"
 
 volumes:
   mariadb-data:
+  # Later
+  #pyidp-sessions:
+
+networks:
+  proxy:
+    name: traefik.proxy
+    external: true
+  backend:

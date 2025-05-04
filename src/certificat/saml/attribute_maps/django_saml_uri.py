@@ -9,11 +9,6 @@ MAP = {
         X500ATTR_OID + "4": "last_name",  # sn
         PKCS_9 + "1": "email",
         UCL_DIR_PILOT + "1": "uid",
-    },
-    "to": {
-        "first_name": X500ATTR_OID + "3",
-        "last_name": X500ATTR_OID + "4",
-        "email": PKCS_9 + "1",
-        "uid": UCL_DIR_PILOT + "1",
+        "1.2.840.113556.1.2.102": "memberof",
     },
 }

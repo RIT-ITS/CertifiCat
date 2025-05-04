@@ -8,6 +8,7 @@ from certificat.modules.acme.backends import (
     ErrorResponse,
     FinalizeResponse,
     Finalizer,
+    NotReadyException,
 )
 
 from certificat.settings import dynamic
@@ -341,9 +342,13 @@ class SectigoFinalizer(Finalizer):
 
             collect_response = self.backend.collect(processing_state.ssl_id)
             if not collect_response.ok():
-                raise Exception(
-                    f"Error {collect_response.error.code}: {collect_response.error.description}"
-                )
+                # This is not actually an error, but Sectigo reports it as one
+                if collect_response.status == 0:
+                    raise NotReadyException()
+                else:
+                    raise Exception(
+                        f"Error {collect_response.error.code}: {collect_response.error.description}"
+                    )
 
             # HACK: The certs are not in reversed order. They are root -> intermediate(s) -> client
             # and they should be reversed.

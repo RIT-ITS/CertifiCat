@@ -8,7 +8,11 @@ const TerserPlugin = require("terser-webpack-plugin");
 module.exports = (env) => {
     return {
         mode: env.production ? "production" : "development",
-        entry: './src/index.ts',
+        entry: {
+            app: './src/app.ts',
+            vendor: './src/vendor.ts',
+            easymde: './src/easymde.ts'
+        },
         devtool: env.production ? 'cheap-module-source-map' : 'inline-source-map',
         module: {
             rules: [
@@ -41,8 +45,27 @@ module.exports = (env) => {
             splitChunks: {
                 cacheGroups: {
                     commons: {
-                        test: /[\\/]node_modules[\\/]/,
-                        name: 'vendors',
+                        test(mod/* , chunk */) {
+                            if(!mod.context) return;
+
+                            // Only node_modules are needed
+                            if (!mod.context.includes('node_modules')) {
+                              return false;
+                            }
+                            
+                            // Splitchunks will add these to the cache file and I want to control them
+                            // more granularly. 
+                            //
+                            // codemirror + easymde are a package deal and are split out separately
+                            //
+                            // highlight.js is included in a separate entrypoint and only the specific
+                            // functions we need are loaded. Then the rest of the languages are tree-shaken
+                            if (['codemirror', 'easymde', 'highlight.js'].some(str => mod.context.includes(str))) {
+                              return false;
+                            }
+                            return true;
+                        },
+                        name: 'cache',
                         chunks: 'all',
                     },
                 },

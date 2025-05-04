@@ -1,6 +1,10 @@
 import logging
 
-from certificat.modules.acme.backends import FinalizeResponse, Finalizer
+from certificat.modules.acme.backends import (
+    FinalizeResponse,
+    Finalizer,
+    NotReadyException,
+)
 from huey.contrib.djhuey import HUEY
 from huey import RetryTask
 from certificat.modules.acme import models as db
@@ -45,6 +49,9 @@ def _run_task(order_name: str):
             )
 
         return finalize_response.ok()
+    except NotReadyException:
+        # Don't log this as an error, the order is just in a processing state
+        logger.info(f"{log_prefix}: order was not ready, will be retried if possible")
     except Exception as exc:
         logger.exception(f"{log_prefix}: exception finalizing order")
         db.OrderFinalizationError.objects.create(order=order, error=str(exc))
@@ -71,7 +78,7 @@ def finalize_order_task(order_name: str, task=None):
             return True
 
         if task.retries == 0 or HUEY.immediate:
-            logger.info(f"{log_prefix}: retries exceeded, marking order and invalid")
+            logger.info(f"{log_prefix}: retries exceeded, marking order as invalid")
             with transaction.atomic():
                 order = db.Order.objects.select_for_update().get(name=order_name)
                 if order.status == OrderStatus.valid:

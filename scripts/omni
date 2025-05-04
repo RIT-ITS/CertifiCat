@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+LOGLEVEL='DEBUG'
+
+ROOT="$(realpath ${HERE}/../)"
+SRC_PATH="${ROOT}/src"
+LIB_PATH="${SRC_PATH}/certificat"
+TESTS_PATH="${LIB_PATH}/tests"
+VENV_PATH="${ROOT}/.venv"
+VENV_PYTHON="${VENV_PATH}/bin/python3"
+VENV_PYTEST="${VENV_PATH}/bin/pytest"
+ACTIVATE_VENV="${ROOT}/.venv/bin/activate"
+
+function log_output {
+  echo $(date "+%Y/%m/%d %H:%M:%S")" $1"
+}
+
+function log_debug {
+  if [[ "$LOGLEVEL" =~ ^(DEBUG)$ ]]; then
+    log_output "DEBUG $1"
+  fi
+}
+
+function log_info {
+  if [[ "$LOGLEVEL" =~ ^(DEBUG|INFO)$ ]]; then
+    log_output "INFO $1"
+  fi
+}
+
+function log_warn {
+  if [[ "$LOGLEVEL" =~ ^(DEBUG|INFO|WARN)$ ]]; then
+    log_output "WARN $1"
+  fi
+}
+
+function log_err {
+  if [[ "$LOGLEVEL" =~ ^(DEBUG|INFO|WARN|ERROR)$ ]]; then
+    log_output "ERROR $1"
+  fi
+}
+
+usage() {
+  cat <<EOF
+Usage: COMMAND [OPTIONS] 
+
+Dev Commands:
+  django            Execute Django management command
+  start-services    Start all development services
+  test              Run pytest
+  
+Release Commands:
+  build             Build distribution files
+  bump-version      Automatically bumps and propagates the version 
+                    according to the versioning scheme
+  gen-bom           Generate software BOM
+  gen-tag           Bumps the version and generates a new local tag
+EOF
+}
+
+[ -z "${1:-}" ] && {
+  usage
+  exit 1
+}
+
+sync_venv() {
+  [ ! -d "${VENV_PATH}" ] && { uv venv "${VENV_PATH}"; }
+  (
+    cd "${SRC_PATH}" &&
+      uv sync --python-preference "only-system"
+    echo "${SRC_PATH}" >"$(realpath "${VENV_PATH}"/lib/python*)/site-packages/local.pth"
+  )
+}
+
+start_services() {
+  # Start django, huey, and webpack
+  start_django="${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py runserver"
+  start_huey="${VENV_PATH}/bin/watchmedo auto-restart --directory '${SRC_PATH}' --recursiv --patterns *.py -- ${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py run_huey"
+  start_webpack="cd ${SRC_PATH}/frontend && ${SRC_PATH}/frontend/node_modules/.bin/webpack --watch"
+
+  npx concurrently -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_webpack}" --names=django,huey,webpack --kill-others
+}
+
+manage() {
+  "${VENV_PYTHON}" "${SRC_PATH}/certificat/manage.py" "$@"
+}
+
+test() {
+  (cd "${SRC_PATH}/certificat/tests" && DJANGO_SETTINGS_MODULE="certificat.tests.test_settings" "${VENV_PYTEST}" "$@")
+}
+
+gen_bom() {
+  uv pip compile "${SRC_PATH}/pyproject.toml" -o "${SRC_PATH}/requirements.txt"
+}
+
+build() {
+  (
+    cd "${SRC_PATH}" &&
+      uv build -o "${ROOT}/dist"
+  )
+}
+
+bump_version() {
+  PYPROJECT_FILE="${SRC_PATH}/pyproject.toml"
+
+  CURRENT_VERSION="$(tomlq -r ".project.version" "${PYPROJECT_FILE}")"
+  NEW_VERSION=$(date '+%Y.%m.%d.%s')
+
+  log_info "Current version: ${CURRENT_VERSION}"
+  log_info "Setting new version: ${NEW_VERSION}"
+  sed -i "s/version = \"${CURRENT_VERSION}\"/version = \"${NEW_VERSION}\"/g" "${PYPROJECT_FILE}"
+
+  CHART="${ROOT}/charts/Chart.yaml"
+  yq -yi ".appVersion |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
+  yq -yi ".version |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
+}
+
+gen_tag() {
+  [ ! -z "$(git status --untracked-files=no --porcelain)" ] && {
+    log_err "Working directory must be clean before creating a new tag."
+    exit 1
+  }
+
+  CHART="${HERE}/../charts/Chart.yaml"
+  NEW_VERSION="$(yq .version "${CHART}" -r)"
+
+  log_info "Creating new git tag. Release changes and start the build pipeline with 'git push <repository> ${NEW_VERSION}'"
+  log_info "You can delete the tag at any time before releasing with 'git tag -d ${NEW_VERSION}"
+  git tag "${NEW_VERSION}"
+}
+
+sync_venv
+
+SUB_COMMAND=${1}
+shift
+case "$SUB_COMMAND" in
+start-services)
+  while getopts ":" flag; do
+    case "${flag}" in
+    *)
+      usage
+      exit 1
+      ;;
+    esac
+  done
+
+  log_info "Starting all dev services"
+  start_services
+  ;;
+
+django)
+  manage "$@"
+  ;;
+
+test)
+  test "$@"
+  ;;
+
+gen-bom)
+  gen_bom "$@"
+  ;;
+
+build)
+  build "$@"
+  ;;
+
+bump-version)
+  bump_version "$@"
+  ;;
+
+gen-tag)
+  gen_tag "$@"
+  ;;
+
+*) usage ;;
+esac

@@ -1,3 +1,6 @@
+/*
+ * Main entrypoint for the app, contains all bespoke logic.
+ */
 import "./styles/common.scss";
 import "./components/stickyNav";
 import "./components/mobileNav";

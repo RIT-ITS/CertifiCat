@@ -1,3 +1,6 @@
+# Requirements are handled by uv
+requirements.txt
+
 # node
 node_modules/
 

@@ -22,3 +22,7 @@ class Finalizer(abc.ABC):
     @abc.abstractmethod
     def finalize(self, order: db.Order, pem_csr: str) -> FinalizeResponse:
         pass
+
+
+class NotReadyException(Exception):
+    pass

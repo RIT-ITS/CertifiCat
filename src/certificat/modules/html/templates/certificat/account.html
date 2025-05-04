@@ -26,20 +26,6 @@
                     <c-user :user="binding.creator" />
                 </dd>
 
-                <dt>Name</dt>
-                <dd>
-                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
-                        <span id="binding-name" data-editable-id="name">{{ binding.name }}</span>
-                    </editable-text>
-                </dd>
-
-                <dt>Note</dt>
-                <dd>
-                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
-                        <span id="binding-note" data-editable-id="note">{{ binding.note }}</span>
-                    </editable-text>
-                </dd>
-
                 {% if binding_event %}
                 <dt>Registered</dt>
                 <dd class="row flex-column">
@@ -54,12 +40,37 @@
                 <dt>Account KID</dt>
                 <dd>{{ binding.bound_to.fully_qualified_name }}</dd>
 
+                <dt>Name</dt>
+                <dd>
+                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                        <span id="binding-name" data-editable-id="name">{{ binding.name }}</span>
+                    </editable-text>
+                </dd>
+
+                <dt>Note</dt>
+                <dd>
+                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                        <span id="binding-note" data-editable-id="note">{{ binding.note }}</span>
+                    </editable-text>
+                </dd>
+            </dl>
+        </div>
+
+        <div class="container mt-5">
+            <h4 class="mt-5 icon"><i class="fa-solid fa-lock"></i>Permissions</h4>
+            <div class="divider mb-3"></div>
+            <dl class="field-list">
+                <dt>Owner</dt>
+                <dd>
+                    <c-user :user="binding.owner" />
+                </dd>
                 <dt>Access</dt>
                 <dd>
                     <account-access-manager 
                         groupFetchUrl="{% url 'api:fetch_user_groups' %}" 
                         groupUpdateUrl="{% url 'api:edit_binding' binding.id %}" 
-                        accessibleBy="{{ access_group_json }}">
+                        accessibleBy="{{ access_group_json }}"
+                        {% if request.user.is_superuser or request.user.id == binding.owner.id %}clientIsOwner{% endif %}>
                     </account-access-manager>
                 </dd>
             </dl>

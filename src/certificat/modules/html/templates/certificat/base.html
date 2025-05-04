@@ -3,12 +3,13 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr" xml:lang="en">
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}CertifiCat{% endblock %}</title>
     <meta name="description" content="CertifiCat ACME server" />
+    <meta http-equiv="Content-Language" content="en">
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/vnd.microsoft.icon" />
     <meta charset="UTF-8" />
     <style>
@@ -19,7 +20,8 @@
             --header-text-color: #212529;
         }
     </style>
-    {% render_bundle 'main' 'css' %}
+    {% render_bundle 'app' 'css' %}
+    {% render_bundle 'vendor' 'css' %}
 
     {% if request.user.is_authenticated %}
     <script>
@@ -101,7 +103,8 @@
     {% block body %}
     {% endblock %}
 
-    {% render_bundle 'main' 'js' %}
+    {% render_bundle 'app' 'js' %}
+    {% render_bundle 'vendor' 'js' %}
     <div id="footer">
        <div class="container">Footer info will go here, like links to contribute, copyright, whatever.</div> 
     </div>

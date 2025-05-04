@@ -162,6 +162,36 @@ def test_finalize_mock_sectigo_fail_collect(
 
 
 @pytest.mark.django_db
+def test_finalize_mock_sectigo_slow_collect(
+    acme_client: acme.client.ClientV2,
+    settings: ApplicationSettings,
+    acme_neworder,
+    mocker,
+):
+    settings.finalizer_module = (
+        "certificat.tests.test_acme.finalizer_mocks.SlowCollectMockSectigoFinalizer"
+    )
+
+    new_order: NewOrderRet = acme_neworder()
+
+    order = do_challenge(acme_client, new_order.response)
+
+    with pytest.raises(errors.TimeoutError):
+        # This always errors, so make it happen fast
+        finalize_order(acme_client, order, timeout=0)
+
+    order_name = order.uri.split("/")[-1]
+    processing_state = db.SectigoOrderProcessingState.for_order(
+        db.Order.objects.get(name=order_name)
+    )
+
+    # State should still be approved, the order was not successfully collected
+    assert processing_state.state == db.SectigoOrderProcessingState.Choices.APPROVED
+    # The error should not be recorded
+    assert db.OrderFinalizationError.objects.count() == 0
+
+
+@pytest.mark.django_db
 def test_flaky_sectigo_api(
     acme_client: acme.client.ClientV2,
     settings: ApplicationSettings,

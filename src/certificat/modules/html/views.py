@@ -22,6 +22,7 @@ from certificat.modules.html.forms import (
     UsageEditForm,
 )
 from certificat.settings.dynamic import ApplicationSettings, SAMLSettings
+from certificat.utils import unprefix_group
 import inject
 from .nav import BreadCrumb, BreadCrumbs, build_breadcrumbs, Sections
 from django.contrib import messages
@@ -278,7 +279,7 @@ class AccountView(ViewBase):
             binding_event=binding_event,
             access_group_json=json.dumps(
                 [
-                    {"id": g.group.id, "name": g.group.name}
+                    {"id": g.group.id, "name": unprefix_group(g.group.name)}
                     for g in binding.group_scopes.all().order_by("group__name")
                 ]
             ),
@@ -368,7 +369,7 @@ class CertificateView(ViewBase):
 
 
 class LocalLoginView(LoginView):
-    breadcrumbs = BreadCrumbs([BreadCrumb("Certificat", "/"), BreadCrumb("Login")])
+    breadcrumbs = BreadCrumbs([BreadCrumb("CertifiCat", "/"), BreadCrumb("Login")])
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(breadcrumbs=self.breadcrumbs, **kwargs)
@@ -376,7 +377,7 @@ class LocalLoginView(LoginView):
 
 class LocalLogoutView(LogoutView):
     http_method_names = ["get", "post", "options"]
-    breadcrumbs = BreadCrumbs([BreadCrumb("Certificat", "/"), BreadCrumb("Logout")])
+    breadcrumbs = BreadCrumbs([BreadCrumb("CertifiCat", "/"), BreadCrumb("Logout")])
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(breadcrumbs=self.breadcrumbs, **kwargs)

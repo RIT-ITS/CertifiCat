@@ -1,5 +1,6 @@
 {% extends "certificat/base.html" %}
 
+{% load render_bundle from webpack_loader %}
 {% block headline %}Terms of Service{% endblock %}
 
 {% block body %}
@@ -24,13 +25,16 @@
     </fade-on-load>
 </div>
 
-<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
-<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+{% render_bundle 'easymde' 'js' %}
+{% render_bundle 'easymde' 'css' %}
+
 <script>
-    new EasyMDE({
-        element: document.getElementById("id_terms_of_service"),
-        autofocus: true,
-        forceSync: true
-    })
+    document.addEventListener("DOMContentLoaded", function() {
+        new EasyMDE({
+            element: document.getElementById("id_terms_of_service"),
+            autofocus: true,
+            forceSync: true
+        })
+    });
 </script>
 {% endblock %}

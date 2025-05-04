@@ -107,6 +107,10 @@ class AccountBinding(TimestampMixin):
     name = models.CharField(max_length=100)
     note = models.TextField(null=True)
 
+    @property
+    def owner(self):
+        return self.creator
+
     @classmethod
     def generate(cls, creator: User, name: str = None, note: str = None) -> Self:
         app_settings = inject.instance(ApplicationSettings)

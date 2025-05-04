@@ -197,6 +197,19 @@ class FailingCollectMockSectigoBackend(MockSectigoBackend):
         return CollectResponse(500, ErrorResponse(4337, "Failure collecting"))
 
 
+class SlowCollectMockSectigoBackend(MockSectigoBackend):
+    coll_cnt = 0
+
+    def collect(self, ssl_id):
+        if self.coll_cnt == 0:
+            self.coll_cnt += 1
+            return CollectResponse(
+                0, ErrorResponse(6337, "Slow collection, should poll again")
+            )
+
+        return super().collect(ssl_id)
+
+
 class MockSectigoFinalizer(SectigoFinalizer):
     def __init__(self):
         self.backend = MockSectigoBackend()
@@ -220,6 +233,11 @@ class FailingApproveMockSectigoFinalizer(SectigoFinalizer):
 class FailingCollectMockSectigoFinalizer(SectigoFinalizer):
     def __init__(self):
         self.backend = FailingCollectMockSectigoBackend()
+
+
+class SlowCollectMockSectigoFinalizer(SectigoFinalizer):
+    def __init__(self):
+        self.backend = SlowCollectMockSectigoBackend()
 
 
 class FlakyMockSectigoFinalizer(SectigoFinalizer):

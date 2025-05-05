@@ -13,6 +13,8 @@ gen-random() {
 IDP_KEY_PATH=".devcontainer/pyidp/idp.key"
 IDP_CERT_PATH=".devcontainer/pyidp/idp.crt"
 if [ ! -f "${IDP_KEY_PATH}" ]; then
+    echo "Generating pyIdP keypair..."
+    mkdir -p ".devcontainer/pyidp"
     (cd ".devcontainer/pyidp" && openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout "idp.key" -out "idp.crt" -subj "/CN=pyidp.localtest.me" <<< "y")
 fi
 
@@ -26,3 +28,18 @@ _PYIDP_KEY=\"$(cat "$IDP_KEY_PATH")\"
 _PYIDP_CERT=\"$(cat "$IDP_CERT_PATH")\"
 """ > $ENV_FILE
 
+echo """
+
+ ██████╗███████╗██████╗ ████████╗██╗███████╗██╗ ██████╗ █████╗ ████████╗
+██╔════╝██╔════╝██╔══██╗╚══██╔══╝██║██╔════╝██║██╔════╝██╔══██╗╚══██╔══╝
+██║     █████╗  ██████╔╝   ██║   ██║█████╗  ██║██║     ███████║   ██║
+██║     ██╔══╝  ██╔══██╗   ██║   ██║██╔══╝  ██║██║     ██╔══██║   ██║
+╚██████╗███████╗██║  ██║   ██║   ██║██║     ██║╚██████╗██║  ██║   ██║
+ ╚═════╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝     ╚═╝ ╚═════╝╚═╝  ╚═╝   ╚═╝
+
+Thanks for your involvement! Consult the README for a quickstart guide.
+Additionally, the scripts/omni script contains a collection of useful development commands.
+
+If you find any issues don't hesitate to reach out: https://github.com/RIT-ITS/CertifiCat/issues
+We also accept pull requests: https://github.com/RIT-ITS/CertifiCat/pulls
+"""

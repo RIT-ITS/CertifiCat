@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+HERE="$(dirname "$(readlink -f "$0")")"
 LOGLEVEL='DEBUG'
 
 ROOT="$(realpath ${HERE}/../)"
@@ -78,7 +78,7 @@ start_services() {
   # Start django, huey, and webpack
   start_django="${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py runserver"
   start_huey="${VENV_PATH}/bin/watchmedo auto-restart --directory '${SRC_PATH}' --recursiv --patterns *.py -- ${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py run_huey"
-  start_webpack="cd ${SRC_PATH}/frontend && ${SRC_PATH}/frontend/node_modules/.bin/webpack --watch"
+  start_webpack="cd ${SRC_PATH}/frontend && yarn && ${SRC_PATH}/frontend/node_modules/.bin/webpack --watch"
 
   npx concurrently -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_webpack}" --names=django,huey,webpack --kill-others
 }

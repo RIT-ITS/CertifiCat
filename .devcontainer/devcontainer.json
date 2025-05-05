@@ -3,10 +3,12 @@
 	"name": "Python 3 & MariaDB",
 	"dockerComposeFile": "compose.yml",
 	"initializeCommand": "./.devcontainer/initialize.sh",
+	"postStartCommand": "${containerWorkspaceFolder}/.devcontainer/postStart.sh",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
-		"ghcr.io/devcontainers/features/node": {}
+		"ghcr.io/devcontainers/features/node": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
 	},
 	"remoteEnv": {
 		"VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv",

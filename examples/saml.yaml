@@ -1,0 +1,162 @@
+# This is a simple configuration with saml auth and a local issuer. 
+
+# docker-compose -f saml.yaml up
+# Log in at http://localhost:8000
+# Use "password" when prompted for a secret token on PyIDP
+# After creating and registering your account:
+# certbot certonly --standalone --server "http://localhost:8000/directory" -d host.docker.internal
+
+services:
+  web:
+    image: certificat:latest
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_started
+    ports:
+      - "8000:80"
+    command: start_server
+    volumes:
+      - ./saml:/etc/certificat
+    environment:
+      - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
+    
+  tasks:
+    image: certificat:latest
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_started
+    command: start_huey
+    volumes:
+      - ./simple:/etc/certificat
+    environment:
+      - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+  mariadb:
+    image: mariadb:10.5.23-focal
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      - MARIADB_ROOT_PASSWORD=m@ri@dbr00t
+      - MARIADB_DATABASE=certificat
+
+  redis:
+    image: redis:7.2.4
+    command: redis-server --save 60 1 --requirepass "r3d1s"
+
+  idp:
+    image: ghcr.io/rit-its/pyidp:v0.0.12
+    command: start_server
+    ports: 
+      - 8001:80
+    environment:
+      SECRET_KEY: "password"
+      BASE_URL: "http://localhost:8001"
+      IDP_CRT: |
+        -----BEGIN CERTIFICATE-----
+        MIIDGzCCAgOgAwIBAgIURi50F+f9rZj/93Q/GPxnqovz2wEwDQYJKoZIhvcNAQEL
+        BQAwHTEbMBkGA1UEAwwScHlpZHAubG9jYWx0ZXN0Lm1lMB4XDTI1MDUwNTAwMzQz
+        NFoXDTI2MDUwNTAwMzQzNFowHTEbMBkGA1UEAwwScHlpZHAubG9jYWx0ZXN0Lm1l
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4keIF2NPkW/VQ+M0f4aG
+        c4qX0NYejTbP3wYx+F25acIjGXLm5vQ9T0ezQGqBXzUNSqzsuqE4JwYAQ8IToQg3
+        e4vZNghloZGPs0Sw3CsNK9/5G/YLHfw31neFBKWiFrpqci/U/QMK1qQJKZzg3rYz
+        Js2KN/ZcwnaSz6uNx0w1wyV2Ys0o9HoXmKS8G/rPiPpjdg0EX/EO3d/Ls1hevO5D
+        Ad66Gxxd528LGwuYBeUVNdEBJrf0zzmYn/W62qm6U5zwUvFJjXt6VeArWmqzonkS
+        VemcbLbVKYtlXAUjSsu2WY/Cl3STAcxPiwXlsGN9ET1qWyNiIF87DEmtsIL9/4Wu
+        RQIDAQABo1MwUTAdBgNVHQ4EFgQUP+GV45IkIP/4L58LKuuK5plkGHAwHwYDVR0j
+        BBgwFoAUP+GV45IkIP/4L58LKuuK5plkGHAwDwYDVR0TAQH/BAUwAwEB/zANBgkq
+        hkiG9w0BAQsFAAOCAQEAbE+nEj5soWGLNuMdXt3Boro++UqV1h9ghK/ejToGQPrn
+        YWQn9l92MyMAnrOJLSndJqRejuB7+ZPr6DCDGDvHte72ADsALRXaNQqC4G+8RHGd
+        OJ/BkIpZMsjXwvFTffJZSZvtS3m3YzRsH/wKI8t4Coy3ueVYTTTblkV9vz/U4BlS
+        zG65c8CCgwPml9KPjijGrno+HgfipHgIwzdlb4p7qEcrkac6ErYWel2pJv6tSwXy
+        BgCtKcNjQzUBgRZnl3es31un6VM9GFdcHKal6OmGEKfzNkCEgKxA1aOTYlAyLPYd
+        RZQWcGab4BrCBlNbHH7GxD3uG00bqfzEow+01o+N2Q==
+        -----END CERTIFICATE-----
+      IDP_KEY: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDiR4gXY0+Rb9VD
+        4zR/hoZzipfQ1h6NNs/fBjH4XblpwiMZcubm9D1PR7NAaoFfNQ1KrOy6oTgnBgBD
+        whOhCDd7i9k2CGWhkY+zRLDcKw0r3/kb9gsd/DfWd4UEpaIWumpyL9T9AwrWpAkp
+        nODetjMmzYo39lzCdpLPq43HTDXDJXZizSj0eheYpLwb+s+I+mN2DQRf8Q7d38uz
+        WF687kMB3robHF3nbwsbC5gF5RU10QEmt/TPOZif9braqbpTnPBS8UmNe3pV4Cta
+        arOieRJV6ZxsttUpi2VcBSNKy7ZZj8KXdJMBzE+LBeWwY30RPWpbI2IgXzsMSa2w
+        gv3/ha5FAgMBAAECggEACp9KA7MNRqoFzGiLi9sAT8c3Rj3u9DkY/AK58MtRi2Xq
+        KOUscrYPdLvMbd8yEIqYg6Nnf4FW9foBpCylqD8O/7U6bp9pSfLf2I4GcWdx+FfM
+        xWPA9NjktCQrMeMmn0OEALU/Hdt5NEdCCNqM8deCwjUO4n6lrxlK3gXTI4Jv2ae/
+        bmdpDWQ/h3mWEf99W8az563WNV9+OvOCcXs47mCnL+5Zj+T5cY99Wib27KTQHcQk
+        oj6AOx5PR+ktQuUwo5JxiBcS4MFOPwUQWcjKbDoxfCpcAwmcbgJfyB2qpyp/gj7A
+        qEDrS/LdxdXdgfGsuEl8LDIs00l9mBiojHEcz5kG1wKBgQD8IOTqdPJM4bE09giX
+        kySB7qNYBg1O2jPIsldk/qnv1sSWTEZ43fJ3KPQXrgrry+Pwp5VYCAeM+gfjR6ii
+        tYJ0FC1DSCgL/3d6HHyHeObOJNNhquAu5p+Onrfnwm2Z86pBY/2pKxUmAh4YpV4R
+        I2R64SZrf5d8DZosvOynIIdNbwKBgQDlwQaetQKo/tYb4bUx58SELPEb9jooEyvA
+        BPvy1A+wMRcabSRrC9J1mnGc6tNRGVsUCuCrXy2E08g3WDgs5d3QyQNEkZ2SgecZ
+        7z3/JLxFPl87mQ3839/VCNIEAMMSzviG0TofkA4u1/Hh8eryXEB+1bMnL2DdcWnC
+        riJHquANiwKBgG9/RHyClxx0ul8HZqlRQtXK6KVml8AFMt1QMOHS1OfhfDJTLN8K
+        l80maTuHlgDMu9KS6bJyapRnhdF2wRajWjtnKNUWNc+IfBeePVvTlY4YLvqEDHvx
+        NSJnAkEVdE6euO4OAAEtsj6KtTCFAOJnWmoU416qoB0WDtY1/hmyguM1AoGBAI4M
+        TJJ9KVrgy/HLF6L2P5rUynFWR9iVGbyLmFYm5Fgz0avmBNkmIwXQ6iNxUBtZCOWY
+        YBW0L8lqwuPs6DZiHEVEsn+HZBu7su1m7Da+OKS7DlgjpfFNXO8yl94ftnv/eMqp
+        uzzebNZrbsIaNv+HJ90DNNOqSEJBJ3lU/h6/N+1HAoGBAOT0RU1oxOPKAKTvdhNX
+        AyHuPs2Yfw7PK/YWyhJv71Yo1FCtOXjdo05FoZYsvW9g1orwiwniDplhlf9lffa8
+        E7RcTWD6nob1DH7sNCx7WNvNqrss1aR7wvi7SpvAQh14JYpZUr+tlQ775eZY7ne8
+        Hqepyh4rGHWahEqtewEb7dy5
+        -----END PRIVATE KEY-----
+      SP_METADATA: |
+        <md:EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+            xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+            xmlns:ns1="urn:oasis:names:tc:SAML:metadata:algsupport"
+            entityID="http://certificat.localtest.me/saml2/metadata/">
+            <md:Extensions>
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#md5" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#ripemd160" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha224" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha384" />
+                <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2000/09/xmldsig#dsa-sha1" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2009/xmldsig11#dsa-sha256" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha224" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-md5" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-ripemd160" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha224" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha384" />
+                <ns1:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha512" />
+            </md:Extensions>
+            <md:SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol"
+                AuthnRequestsSigned="false" WantAssertionsSigned="false">
+                <md:KeyDescriptor use="signing">
+                    <ds:KeyInfo>
+                        <ds:X509Data>
+                            <ds:X509Certificate>
+                                MIIDJTCCAg2gAwIBAgIUaDa+5WyBCxgfVR+wxeYHx2TSAQUwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAwwXY2VydGlmaWNhdC5sb2NhbHRlc3QubWUwHhcNMjQxMTExMTU0NDE3WhcNMjUxMTExMTU0NDE3WjAiMSAwHgYDVQQDDBdjZXJ0aWZpY2F0LmxvY2FsdGVzdC5tZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJ1edG3d7096rafKEtzUKrfc4hgZZhvqBWTV2R4iiUT8zosNMnYx7xE+ckLss8tWoSm0spRzdcUD2ITjBH9SQ0aLgUZJHFgxw2iidLKDHmjO9Xr7f79zL5ftBuerQXfrh+heeMoIWsQ+uhfOYDCe6JJyJ4kPW4xtqlEJVTcZuhna3Jsv9w1VQ4yKppVj0HgcLJn7ROMQ7c94qoXUsYyc8VIgU4cJT+nZXPOFjI3CWfRP+2XtPduZfkB4F1JeJPLeain+OdrI974f/T47G338Wq3eHtLc6OL82hsaovZSrkBfU/ruWBRlEtDg53pIutNn+vYqJmVfS94ORya0kJdUk7kCAwEAAaNTMFEwHQYDVR0OBBYEFCEqWULm8JZOZi8OPcNqWrEkvnjPMB8GA1UdIwQYMBaAFCEqWULm8JZOZi8OPcNqWrEkvnjPMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFG8LYRL78XCrrqVPRc4i/h5NSLAQzsJzIwFstnrcPhVvTDl2ArOBMB8zeQHM0kj+KU6DOX2Skk6pYk4B9lAW9KZUb/TqVwiq1xuakwJ8DA1wPhS59ZGcENmQ/r5oMIiN/QqKCVIAVUkg1yqzq2RcRTW0i+NST7mVq1pa8aid9VYU26haWAIewNpU/080/4UIpkCgsIIjLgqSYT/lM4kjnlpm3z9JmFHLwQ89/+MqQyyxtyEse2vXA9t3g4nRzFNyLGXNzhshKHZu6k/MxTp8JeRhjhnWPVcRrTo36bHWtXVYG705ySdCad5MLL2ZN8VHioTz9MQPObr3yTxZ/QJhf0=</ds:X509Certificate>
+                        </ds:X509Data>
+                    </ds:KeyInfo>
+                </md:KeyDescriptor>
+                <md:KeyDescriptor use="encryption">
+                    <ds:KeyInfo>
+                        <ds:X509Data>
+                            <ds:X509Certificate>
+                                MIIDJTCCAg2gAwIBAgIUaDa+5WyBCxgfVR+wxeYHx2TSAQUwDQYJKoZIhvcNAQELBQAwIjEgMB4GA1UEAwwXY2VydGlmaWNhdC5sb2NhbHRlc3QubWUwHhcNMjQxMTExMTU0NDE3WhcNMjUxMTExMTU0NDE3WjAiMSAwHgYDVQQDDBdjZXJ0aWZpY2F0LmxvY2FsdGVzdC5tZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJ1edG3d7096rafKEtzUKrfc4hgZZhvqBWTV2R4iiUT8zosNMnYx7xE+ckLss8tWoSm0spRzdcUD2ITjBH9SQ0aLgUZJHFgxw2iidLKDHmjO9Xr7f79zL5ftBuerQXfrh+heeMoIWsQ+uhfOYDCe6JJyJ4kPW4xtqlEJVTcZuhna3Jsv9w1VQ4yKppVj0HgcLJn7ROMQ7c94qoXUsYyc8VIgU4cJT+nZXPOFjI3CWfRP+2XtPduZfkB4F1JeJPLeain+OdrI974f/T47G338Wq3eHtLc6OL82hsaovZSrkBfU/ruWBRlEtDg53pIutNn+vYqJmVfS94ORya0kJdUk7kCAwEAAaNTMFEwHQYDVR0OBBYEFCEqWULm8JZOZi8OPcNqWrEkvnjPMB8GA1UdIwQYMBaAFCEqWULm8JZOZi8OPcNqWrEkvnjPMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFG8LYRL78XCrrqVPRc4i/h5NSLAQzsJzIwFstnrcPhVvTDl2ArOBMB8zeQHM0kj+KU6DOX2Skk6pYk4B9lAW9KZUb/TqVwiq1xuakwJ8DA1wPhS59ZGcENmQ/r5oMIiN/QqKCVIAVUkg1yqzq2RcRTW0i+NST7mVq1pa8aid9VYU26haWAIewNpU/080/4UIpkCgsIIjLgqSYT/lM4kjnlpm3z9JmFHLwQ89/+MqQyyxtyEse2vXA9t3g4nRzFNyLGXNzhshKHZu6k/MxTp8JeRhjhnWPVcRrTo36bHWtXVYG705ySdCad5MLL2ZN8VHioTz9MQPObr3yTxZ/QJhf0=</ds:X509Certificate>
+                        </ds:X509Data>
+                    </ds:KeyInfo>
+                </md:KeyDescriptor>
+                <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                    Location="http://localhost:8000/saml2/ls/post" />
+                <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat>
+                <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                    Location="http://localhost:8000/saml2/acs/" index="1" />
+            </md:SPSSODescriptor>
+        </md:EntityDescriptor>
+    
+volumes:
+  mariadb-data:

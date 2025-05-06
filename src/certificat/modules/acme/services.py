@@ -41,7 +41,7 @@ HMACStr = str
 
 
 class DirectoryService(IDirectoryService):
-    external_account_required = False
+    external_account_required = True
     app_settings = inject.attr(ApplicationSettings)
 
     def __init__(self):

@@ -1,0 +1,51 @@
+# This is a simple configuration with local auth and a local issuer. The app does not
+# support local authentication, but we can create a local user for an example.
+
+# docker-compose -f simple.yaml up
+# docker-compose -f simple.yaml exec web /bin/bash
+#   /srv/www/.venv/bin/python /srv/www/manage.py createsuperuser
+# Log in at http://localhost:8000
+
+services:
+  web:
+    image: certificat:latest
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_started
+    ports:
+      - "8000:80"
+    command: start_server
+    volumes:
+      - ./simple:/etc/certificat
+    environment:
+      - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
+    
+  tasks:
+    image: certificat:latest
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_started
+    command: start_huey
+    volumes:
+      - ./simple:/etc/certificat
+    environment:
+      - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+  mariadb:
+    image: mariadb:10.5.23-focal
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      - MARIADB_ROOT_PASSWORD=m@ri@dbr00t
+      - MARIADB_DATABASE=certificat
+
+  redis:
+    image: redis:7.2.4
+    command: redis-server --save 60 1 --requirepass "r3d1s"
+
+volumes:
+  mariadb-data:

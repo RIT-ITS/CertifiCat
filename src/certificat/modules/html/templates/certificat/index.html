@@ -27,7 +27,7 @@
                             <td label="Identifiers" class="identifiers">
                                 {{ order.identifiers.all.0.value }}
                                 {% if order.identifiers.all.1 %}
-                                    (+{{ order.identifiers.all|slice:"1:"|length }} SAN)
+                                    (+{{ order.identifiers.all|slice:"1:"|length }} SANs)
                                 {% endif %}
                             </td>
                             <td class="edit row-button">
@@ -55,7 +55,7 @@
                             <td label="SANs" class="sans">
                                 {{ cert.metadata.sans.0 }}
                                 {% if cert.metadata.sans.1 %}
-                                    (+{{ cert.metadata.sans|slice:"1:"|length }} SAN)
+                                    (+{{ cert.metadata.sans|slice:"1:"|length }} SANs)
                                 {% endif %}
                             </td>
                             <td class="edit row-button">

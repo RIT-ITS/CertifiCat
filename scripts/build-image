@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+HERE="$(dirname "$(readlink -f "$0")")"
+ROOT="$(realpath ${HERE}/../)"
+TAG="certificat:latest"
+
+docker buildx build \
+    --build-context "src=${ROOT}/src/" \
+    --build-context "dockerfiles=${ROOT}/docker/certificat" \
+    -f "${ROOT}/docker/certificat.Dockerfile" . --tag "${TAG}" "$@"
+    

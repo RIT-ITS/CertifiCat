@@ -7,14 +7,12 @@ LOGLEVEL='DEBUG'
 
 ROOT="$(realpath ${HERE}/../)"
 SRC_PATH="${ROOT}/src"
-LIB_PATH="${SRC_PATH}/certificat"
-TESTS_PATH="${LIB_PATH}/tests"
 VENV_PATH="${ROOT}/.venv"
 VENV_PYTHON="${VENV_PATH}/bin/python3"
 VENV_PYTEST="${VENV_PATH}/bin/pytest"
-ACTIVATE_VENV="${ROOT}/.venv/bin/activate"
 
 function log_output {
+  # shellcheck disable=SC2046
   echo $(date "+%Y/%m/%d %H:%M:%S")" $1"
 }
 
@@ -56,7 +54,7 @@ Release Commands:
   bump-version      Automatically bumps and propagates the version 
                     according to the versioning scheme
   gen-bom           Generate software BOM
-  gen-tag           Bumps the version and generates a new local tag
+  gen-tag           Generates a new local tag
 EOF
 }
 
@@ -80,7 +78,7 @@ start_services() {
   start_huey="${VENV_PATH}/bin/watchmedo auto-restart --directory '${SRC_PATH}' --recursiv --patterns *.py -- ${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py run_huey"
   start_webpack="cd ${SRC_PATH}/frontend && yarn && ${SRC_PATH}/frontend/node_modules/.bin/webpack --watch"
 
-  npx concurrently -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_webpack}" --names=django,huey,webpack --kill-others
+  npx concurrently --handle-input -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_webpack}" --names=django,huey,webpack --kill-others
 }
 
 manage() {

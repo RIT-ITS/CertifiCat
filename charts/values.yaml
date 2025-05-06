@@ -90,8 +90,8 @@ secretProviders:
             sn: last_name
 
           # Use a discovery service to select an IdP when logging in
-          discovery:
-            service: "https://service.seamlessaccess.org/ds"
+          #discovery:
+          #  service: "https://service.seamlessaccess.org/ds"
 
           sp:
             # Provide your entity ID here. A good rule of thumb is

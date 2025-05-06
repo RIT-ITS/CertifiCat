@@ -1,5 +1,6 @@
-from typing import Any, List, Literal, Mapping, Self
-from pydantic import Field, ValidationError
+from typing import List, Literal, Mapping, Self, Optional
+
+from pydantic import Field, ValidationError, BaseModel
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -15,27 +16,34 @@ class Settings(BaseSettings):
     pass
 
 
-class DatabaseSettings(Settings):
+class DatabaseSettings(BaseModel):
     engine: str = "django.db.backends.mysql"
-    name: str
-    user: str
-    password: str
-    host: str
+    name: str = Field(
+        description="The database to use after a connection is established."
+    )
+    user: str = Field(description="User for the database connection.")
+    password: str = Field(description="Password for the database connection")
+    host: str = Field(description="Host for the database connection")
     port: int = 3306
-    table_prefix: str = ""
+    table_prefix: str = Field(
+        "", description="An optional table prefix for every table in the database."
+    )
 
 
-class TaskQueueSettings(Settings):
-    workers: int = max(25, min(multiprocessing.cpu_count() * 25, 100))
+class TaskQueueSettings(BaseModel):
+    workers: int = Field(
+        max(25, min(multiprocessing.cpu_count() * 25, 100)),
+        description="Number of workers in the Huey task queue.",
+    )
 
 
-class RedisSettings(Settings):
-    host: str
-    password: str
+class RedisSettings(BaseModel):
+    host: str = Field(description="Host for the redis connection.")
+    password: str = Field(description="Password for the Redis connection")
     port: int = 6379
 
 
-class LoggingSettings(Settings):
+class LoggingSettings(BaseModel):
     certificat_level: str | None = "INFO"
     huey_level: str | None = "INFO"
     django_level: str | None = "INFO"
@@ -51,39 +59,73 @@ class ApplicationSettings(Settings):
     def get(cls, force_reload=False) -> Self:
         return ConfigFile.load(force_reload=force_reload).certificat
 
-    debug: bool = False
-    secret_key: str
+    debug: Optional[bool] = Field(
+        False,
+        description="Debug mode for the application. This should never be True for production.",
+    )
+    secret_key: str = Field(
+        description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
+    )
     time_zone: str = "America/New_York"
-    url_root: str
-    staticfiles_root: str | None = None
-
+    url_root: str = Field(
+        description="The url root is used to generate absolute urls to the application.",
+        examples=["https://acme.edu"],
+    )
+    staticfiles_root: Optional[str] = Field(None, description="Location of static files. This usually doesn't have to be changed.", required=False)
+    logging: LoggingSettings = LoggingSettings()
     db: DatabaseSettings
-    task_queue: TaskQueueSettings | None = TaskQueueSettings()
     redis: RedisSettings
-    logging: LoggingSettings | None = LoggingSettings()
+    task_queue: TaskQueueSettings = TaskQueueSettings()
 
-    trust_proxy_forwarded_proto: bool = False
-    login_method: Literal["local", "saml"] = "saml"
+    trust_proxy_forwarded_proto: Optional[bool] = Field(
+        False,
+        description="Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True.",
+    )
+    login_method: Literal["local", "saml"] = Field(
+        "saml",
+        description="Default login method for the app. This defaults to saml, the app has minimal support for local outside of debugging.",
+    )
 
-    hmac_id_length: int = 40
-    hmac_key_length: int = 90
+    hmac_id_length: int = Field(
+        40,
+        description="The length of the hmac id generated for an ACME external account binding.",
+    )
+    hmac_key_length: int = Field(
+        90,
+        description="The length of the hmac key generated for an ACME external account binding.",
+    )
 
-    challenge_retry_delay: int = 2
-    challenge_max_retries: int = 5
-    finalize_retry_delay: int = 10
-    finalize_max_retries: int = 10
+    challenge_retry_delay: int = Field(
+        2, description="How long to wait between challenge retries in seconds."
+    )
+    challenge_max_retries: int = Field(
+        5,
+        description="How many challenge retries to perform before marking the challenge invalid.",
+    )
+    finalize_retry_delay: int = Field(
+        10,
+        description="How long to wait between order finalization retries in seconds.",
+    )
+    finalize_max_retries: int = Field(
+        10,
+        description="How many order finalization retries to perform before marking the order invalid.",
+    )
 
-    finalizer_module: (
-        Literal[
+    finalizer_module: str = Field(
+        "certificat.modules.acme.backends.local.LocalFinalizer",
+        description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
+        examples=[
             "certificat.modules.acme.backends.local.LocalFinalizer",
             "certificat.modules.acme.backends.sectigo.SectigoFinalizer",
-        ]
-        | Any
-    ) = "certificat.modules.acme.backends.local.LocalFinalizer"
-    delete_invalid_orders: bool = True
+        ],
+    )
+    delete_invalid_orders: bool = Field(
+        True,
+        description="If set to True, invalid orders will be purged after some time.",
+    )
 
 
-class LocalCASettings(Settings):
+class LocalCASettings(BaseModel):
     model_config = SettingsConfigDict(
         validate_default=False, env_prefix="LOCAL_CA__", env_nested_delimiter="__"
     )
@@ -92,11 +134,11 @@ class LocalCASettings(Settings):
     def get(cls, force_reload=False) -> Self:
         return ConfigFile.load(force_reload=force_reload).local_finalizer
 
-    key: str
-    cert: str
+    key: str = Field(description="PEM-formatted private key for the CA")
+    cert: str = Field(description="PEM-formatted public key for the CA")
 
 
-class SectigoSettings(Settings):
+class SectigoSettings(BaseModel):
     model_config = SettingsConfigDict(
         validate_default=False, env_prefix="SECTIGO__", env_nested_delimiter="__"
     )
@@ -105,54 +147,100 @@ class SectigoSettings(Settings):
     def get(cls) -> Self:
         return ConfigFile.load().sectigo_finalizer
 
-    org_id: int
-    cert_profile_id: int
-    customer_uri: str
-    api_base: str
-    api_user: str
-    api_password: str
-    approval_api_user: str
-    approval_api_password: str
-    external_requester_override: str | None
-    cert_validity_period: int = 90
+    org_id: int = Field(description="Organization or department ID")
+    cert_profile_id: int = Field(description="Certificate profile ID")
+    cert_validity_period: int = Field(
+        90,
+        description="This must be set to one of the valid lifetimes for your certificate profile id.",
+    )
+    customer_uri: str = Field(
+        description="Customer URI, found in the cert-manager URL.",
+        examples=["InCommon", "InCommon_test"],
+    )
+    api_base: str = Field(
+        "https://cert-manager.com/api/", description="Base URL of the cert-manager API."
+    )
+    api_user: str = Field(description="The API user performing the requests.")
+    api_password: str = Field(description="The password for the API user.")
+    approval_api_user: str = Field(
+        description="If your API user is unable to approve requests you will need to provide a separate user."
+    )
+    approval_api_password: str = Field(
+        description="The password for the approval API user."
+    )
+    external_requester_override: Optional[str] = Field(
+        None,
+        description="This email address will receive all Sectigo certificate lifecycle emails instead of the registered account email.",
+        required=False,
+    )
 
-    poll_deadline: int = 60 * 5
+    poll_deadline: int = Field(
+        60 * 5,
+        description="The finalizer task will continue to poll the Sectigo backend to check if the certificate is ready for approval or approved until hitting this deadline in seconds.",
+    )
 
 
-class SAMLSPSettings(Settings):
-    entity_id: str
-    name: str = "CertifiCat"
-    key_file: str
-    cert_file: str
-    signing_algorthm: str = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
-    digest_algorithm: str = "http://www.w3.org/2001/04/xmlenc#sha256"
-    force_authn: bool = False
-    allow_unsolicited: bool = True
+class SAMLSPSettings(BaseModel):
+    entity_id: str = Field(
+        description="SAML service entity id. It should be unique and a URI."
+    )
+    name: str = Field("CertifiCat", description="The SP name")
+    key_file: str = Field(
+        description="The location of the PEM-formatted private key file"
+    )
+    cert_file: str = Field(
+        description="The location of the PEM-formatted public key file"
+    )
+    signing_algorthm: str = Field(
+        "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+        description="The default signing algorithm.",
+    )
+    digest_algorithm: str = Field(
+        "http://www.w3.org/2001/04/xmlenc#sha256",
+        description="The default digest algorithm",
+    )
+    force_authn: bool = Field(False, description="Disable SSO session reuse on login")
+    allow_unsolicited: bool = Field(True, description="Allow IdP-initiated SSO.")
 
 
-class RemoteIdP(Settings):
-    url: str
-    cert: str | None = None
+class RemoteIdP(BaseModel):
+    url: str = Field(description="IdP metadata URL.")
+    cert: Optional[str] = Field(
+        None, required=False, description="Signing certificate for the remote metadata."
+    )
 
 
-class MDQ(Settings):
-    url: str
-    cert: str | None = None
+class MDQ(BaseModel):
+    url: str = Field(description="Metadata query URL.")
+    cert: Optional[str] = Field(
+        None,
+        required=False,
+        description="Signing certificate for the metadata query URL.",
+    )
     freshness_period: str = "P0Y0M0DT2H0M0S"
 
 
-class SAMLIdPSettings(Settings):
-    local: List[str] = []
-    remote: List[RemoteIdP] = []
-    mdq: List[MDQ] = []
+class SAMLIdPSettings(BaseModel):
+    local: List[str] = Field([], description="A list of local metadata files.")
+    remote: List[RemoteIdP] = Field(
+        [], description="A list of remote metadata providers.", required=False
+    )
+    mdq: List[MDQ] = Field(
+        [], description="A list of metadata query providers.", required=False
+    )
 
 
-class SAMLDiscoverySettings(Settings):
-    service: str
-    response: List[str] = []
+class SAMLDiscoverySettings(BaseModel):
+    service: str = Field(
+        description="SAML discovery service. This feature is experimental and subject to change."
+    )
+    response: List[str] = Field(
+        [],
+        description="Discovery response endpoints. This feature is experimental and subject to change.",
+    )
 
 
-class SAMLSettings(Settings):
+class SAMLSettings(BaseModel):
     model_config = SettingsConfigDict(
         validate_default=False,
         env_prefix="SAML__",
@@ -164,26 +252,44 @@ class SAMLSettings(Settings):
     def get(cls, force_reload=False) -> Self:
         return ConfigFile.load(force_reload=force_reload).saml
 
-    debug: bool = False
-    xmlsec_binary: str = "/usr/bin/xmlsec1"
-    session_cookie: str = "snickerdoodle"
-    administrators: List[str] = []
+    debug: bool = Field(
+        False, description="The debug setting for the Django SAML plugin."
+    )
+    xmlsec_binary: str = Field(
+        "/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary."
+    )
+    session_cookie: str = Field(
+        "snickerdoodle", description="The name of the session cookie."
+    )
+    administrators: List[str] = Field(
+        [],
+        description="A list of user principals who will automatically be given administrator privileges on login.",
+    )
 
-    group_attribute: str = "memberof"
-    group_sync_prefix: str = "SAML/"
+    group_attribute: str = Field(
+        "memberof",
+        description="The name (or translated name) of the group attribute in the returned SAML assertion",
+    )
+    group_sync_prefix: str = Field(
+        "SAML/",
+        description="New groups synced from SAML will be prefixed with this identifier.",
+    )
 
     sp: SAMLSPSettings
     idp: SAMLIdPSettings
     discovery: SAMLDiscoverySettings | None = None
 
-    attribute_mapping: Mapping[str, List[str]] = {
-        "uid": ["username"],
-        "eduPersonPrincipalName": ["username"],
-        "eduPersonTargetedID": ["username"],
-        "mail": ["email"],
-        "givenName": ["first_name"],
-        "sn": ["last_name"],
-    }
+    attribute_mapping: Mapping[str, List[str]] = Field(
+        {
+            "uid": ["username"],
+            "eduPersonPrincipalName": ["username"],
+            "eduPersonTargetedID": ["username"],
+            "mail": ["email"],
+            "givenName": ["first_name"],
+            "sn": ["last_name"],
+        },
+        description="A dictionary mapping of src:[target] where attributes are mapped from SAML responses to Django attributes. This is designed to work with a yaml config, not environment variables.",
+    )
 
 
 class LocalACMESettings(ACMESettings):
@@ -197,9 +303,9 @@ class ConfigFile(BaseSettings):
 
     certificat: ApplicationSettings
     acme: LocalACMESettings = Field(default=ACMESettings())
-    saml: SAMLSettings | None = None
-    sectigo_finalizer: SectigoSettings | None = None
-    local_finalizer: LocalCASettings | None = None
+    saml: Optional[SAMLSettings] = None
+    sectigo_finalizer: Optional[SectigoSettings] = None
+    local_finalizer: Optional[LocalCASettings] = None
 
     @classmethod
     def load(cls, force_reload=False):
@@ -248,7 +354,8 @@ class ConfigFile(BaseSettings):
             except ValidationError as err:
                 print("Fatal error loading config at " + config_file)
                 for err in err.errors():
-                    print(f"  {'.'.join(err.get('loc'))}: {err.get('msg')}")
+                    str_loc = [str(p) for p in err.get("loc")]
+                    print(f"  {'.'.join(str_loc)}: {err.get('msg')}")
 
                 exit(1)
             except Exception as err:

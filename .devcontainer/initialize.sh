@@ -38,7 +38,7 @@ echo """
  ╚═════╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝     ╚═╝ ╚═════╝╚═╝  ╚═╝   ╚═╝
 
 Thanks for your involvement! Consult the README for a quickstart guide.
-Additionally, the scripts/omni script contains a collection of useful development commands.
+Additionally, the scripts/omnidev script contains a collection of useful development commands.
 
 If you find any issues don't hesitate to reach out: https://github.com/RIT-ITS/CertifiCat/issues
 We also accept pull requests: https://github.com/RIT-ITS/CertifiCat/pulls

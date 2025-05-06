@@ -1,4 +1,5 @@
 name: "Build and Push"
+on: workflow_dispatch
 
 env:
   REGISTRY: "ghcr.io"

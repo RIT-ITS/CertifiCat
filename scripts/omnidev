@@ -104,7 +104,7 @@ bump_version() {
   PYPROJECT_FILE="${SRC_PATH}/pyproject.toml"
 
   CURRENT_VERSION="$(tomlq -r ".project.version" "${PYPROJECT_FILE}")"
-  NEW_VERSION=$(date '+%Y.%m.%d.%s')
+  NEW_VERSION=$(date '+%Y.%m.%s')
 
   log_info "Current version: ${CURRENT_VERSION}"
   log_info "Setting new version: ${NEW_VERSION}"
@@ -113,6 +113,9 @@ bump_version() {
   CHART="${ROOT}/charts/Chart.yaml"
   yq -yi ".appVersion |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
   yq -yi ".version |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
+
+  # Update uv lock
+  sync_venv
 }
 
 gen_tag() {

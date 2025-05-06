@@ -104,7 +104,9 @@ bump_version() {
   PYPROJECT_FILE="${SRC_PATH}/pyproject.toml"
 
   CURRENT_VERSION="$(tomlq -r ".project.version" "${PYPROJECT_FILE}")"
-  NEW_VERSION=$(date '+%Y.%-m.%-d+%s')
+  # Makes a version like 2025.5.1746545274
+  # This needs to be a valid python, helm, and docker version
+  NEW_VERSION=$(date '+%Y.%-m.%s')
 
   log_info "Current version: ${CURRENT_VERSION}"
   log_info "Setting new version: ${NEW_VERSION}"

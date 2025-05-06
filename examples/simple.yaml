@@ -5,6 +5,8 @@
 # docker-compose -f simple.yaml exec web /bin/bash
 #   /srv/www/.venv/bin/python /srv/www/manage.py createsuperuser
 # Log in at http://localhost:8000
+# After creating and registering your account:
+# certbot certonly --standalone --server "http://localhost:8000/directory" -d host.docker.internal
 
 services:
   web:
@@ -18,6 +20,7 @@ services:
     command: start_server
     volumes:
       - ./simple:/etc/certificat
+      - ./nginx-hack:/etc/nginx/httpd.d
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     

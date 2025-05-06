@@ -86,7 +86,7 @@ runhuey() {
         exit 1;
     }
         
-    "${PYTHON}" /srv/www/manage.py run_huey -w4
+    "${PYTHON}" /srv/www/manage.py run_huey
 }
 
 SUB_COMMAND=${1}; shift

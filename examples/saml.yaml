@@ -18,6 +18,7 @@ services:
     command: start_server
     volumes:
       - ./saml:/etc/certificat
+      - ./nginx-hack:/etc/nginx/httpd.d
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     

@@ -104,7 +104,7 @@ bump_version() {
   PYPROJECT_FILE="${SRC_PATH}/pyproject.toml"
 
   CURRENT_VERSION="$(tomlq -r ".project.version" "${PYPROJECT_FILE}")"
-  NEW_VERSION=$(date '+%Y.%m.%s')
+  NEW_VERSION=$(date '+%Y.%-m.%-d+%s')
 
   log_info "Current version: ${CURRENT_VERSION}"
   log_info "Setting new version: ${NEW_VERSION}"

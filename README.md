@@ -235,3 +235,16 @@ omnidev test
 
 any additional parameters will be forwarded to `pytest`.
 
+# Releasing a New Version
+
+Bump the version 
+
+```bash
+omnidev bump-version
+```
+
+Check everything in, then generate a new tag.
+
+```bash
+omnidev gen-tag
+```

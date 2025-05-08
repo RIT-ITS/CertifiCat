@@ -10,7 +10,7 @@
 
 services:
   web:
-    image: certificat:latest
+    image: ghcr.io/rit-its/certificat:latest
     restart: always
     depends_on:
       mariadb:
@@ -20,12 +20,11 @@ services:
     command: start_server
     volumes:
       - ./simple:/etc/certificat
-      - ./nginx-hack:/etc/nginx/httpd.d
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     
   tasks:
-    image: certificat:latest
+    image: ghcr.io/rit-its/certificat:latest
     restart: always
     depends_on:
       mariadb:

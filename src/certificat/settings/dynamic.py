@@ -63,6 +63,7 @@ class ApplicationSettings(Settings):
         False,
         description="Debug mode for the application. This should never be True for production.",
     )
+    proto: Optional[Literal["http", "https"]] = Field("https")
     secret_key: str = Field(
         description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
     )

@@ -68,6 +68,12 @@ runserver() {
         exit 1;
     }
         
+    export CERTIFICAT__PROTO="$(yq eval '.certificat.proto // "https"' "${CONFIG}")"
+    
+    # Set the X-Forwarded-Proto header in the NGINX config
+    envsubst '$CERTIFICAT__PROTO' < /etc/nginx/http.d/default.conf > /etc/nginx/http.d/default.conf.replaced
+    mv /etc/nginx/http.d/default.conf.replaced /etc/nginx/http.d/default.conf
+
     supervisord -c /etc/supervisor/supervisord.web.conf
 }
 

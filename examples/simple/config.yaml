@@ -1,5 +1,6 @@
 certificat:
   debug: False
+  proto: "http"
   secret_key: "wanQstjc85VEMRouW8ZQJLeBtdm84W2B"
   time_zone: "America/New_York"
   url_root: "http://localhost:8000"

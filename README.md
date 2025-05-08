@@ -36,7 +36,12 @@ GitHub pull requests are welcomed. If you have an idea, submit it as an issue, a
 
 # Getting Started
 
-Container quickstart coming soon.
+The CertifiCat service is composed of two distinct parts:
+
+- An ACME and HTML frontend.
+- An asynchronous task queue for background and periodic tasks.
+
+CertifiCat also has dependencies on Redis and MariaDB. Refer to the examples directory for full compose files detailing how to set up a local environment.
 
 # Full Config
 ```yaml

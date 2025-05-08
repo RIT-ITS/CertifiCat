@@ -58,7 +58,9 @@ RUN apk update && \
      pkgconf \
      mariadb-dev \
      nginx \
-     redis
+     redis \
+     yq \
+     envsubst
 
 # Django runs as the certificat user and it needs to own
 # the directory where gunicorn creates its socket

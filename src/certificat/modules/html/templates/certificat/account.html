@@ -83,9 +83,12 @@
                 <div class="search mb-3">
                     <div class="input--icon">
                         <i class="fa fa-magnifying-glass icon"></i>
-                        <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by identifier, separated by ','" class="search--box" />
+                        <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by identifier, separated by ','. Surround each identifier in '/' to use regular expressions." class="search--box" />
                     </div>
                     <button class="btn btn-secondary search--button">Search</button>
+                    {% if request.GET.filter %}
+                        <a href="{% url 'account' binding.id %}" class="btn btn-secondary-outline"><i class="fa-solid fa-xmark"></i></a>
+                    {% endif %}
                 </div>
             </form>
             <c-table name="orders">

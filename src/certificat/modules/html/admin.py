@@ -80,7 +80,7 @@ class CertificateAdmin(ImportExportModelAdmin):
     ]
     date_hierarchy = "created_at"
     search_fields = ["order__name"]
-    search_help_text = "Search by comma-separated identifier or order name."
+    search_help_text = "Search by comma-separated identifier or order name. You may surround your search term with '/' to search identifiers by regular expression."
     readonly_fields = [field.name for field in Certificate._meta.get_fields()]
     resource_classes = [CertificateExportResource]
 
@@ -93,7 +93,16 @@ class CertificateAdmin(ImportExportModelAdmin):
         if search_term:
             query_filter = Q()
             for identifier in search_term.split(","):
-                query_filter |= Q(order__identifiers__value__iexact=identifier.strip())
+                identifier = identifier.strip()
+                if identifier.startswith("/") and identifier.endswith("/"):
+                    # This doesn't add the anchor, so a search for
+                    # /t.*\.acme\.ed/ will return better.acme.edu.
+                    # Consider adding anchors or changing search.
+                    query_filter |= Q(
+                        order__identifiers__value__iregex=identifier[1:-1]
+                    )
+                else:
+                    query_filter |= Q(order__identifiers__value__iexact=identifier)
 
             queryset |= self.model.objects.filter(query_filter)
 

@@ -36,6 +36,12 @@ input, textarea {
     }
 }
 
+input, textarea {
+    &:focus {
+        box-shadow: none;
+        border: 1px solid theme.$bodyTextColor;
+    }
+}
 select {
     margin: 0;
     width: 100%;

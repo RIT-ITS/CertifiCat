@@ -258,7 +258,11 @@ class AccountView(ViewBase):
         if filter:
             query_filter = Q()
             for identifier in filter.split(","):
-                query_filter |= Q(identifiers__value__iexact=identifier.strip())
+                identifier = identifier.strip()
+                if identifier.startswith("/") and identifier.endswith("/"):
+                    query_filter |= Q(identifiers__value__iregex=identifier[1:-1])
+                else:
+                    query_filter |= Q(identifiers__value__iexact=identifier.strip())
 
             orders = orders.filter(query_filter)
 
@@ -334,7 +338,7 @@ class OrderView(ViewBase):
         return build_breadcrumbs(
             ("Accounts", reverse(Sections.Accounts.value)),
             (
-                f"Account [{order.account.binding.name}]",
+                "Account",
                 reverse("account", args=[order.account.binding.id]),
             ),
             "Order Detail",
@@ -376,7 +380,15 @@ class CertificatesView(ViewBase):
         if filter:
             query_filter = Q()
             for identifier in filter.split(","):
-                query_filter |= Q(order__identifiers__value__iexact=identifier.strip())
+                identifier = identifier.strip()
+                if identifier.startswith("/") and identifier.endswith("/"):
+                    query_filter |= Q(
+                        order__identifiers__value__iregex=identifier[1:-1]
+                    )
+                else:
+                    query_filter |= Q(
+                        order__identifiers__value__iexact=identifier.strip()
+                    )
 
             certificates_queryset = certificates_queryset.filter(query_filter)
 

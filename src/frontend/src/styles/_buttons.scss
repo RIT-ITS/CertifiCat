@@ -46,6 +46,18 @@
         border-color: theme.$darkGrayColor;
     }
 
+    &.btn-secondary-outline {
+        color: theme.$darkGrayColor;
+        border-color: theme.$darkGrayColor;
+        background: transparent;
+
+        &:hover {
+            color: #fff;
+            background-color: theme.$darkGrayColor;
+            border-color: theme.$darkGrayColor;
+        }
+    }
+
     &.btn-primary-outline {
         color:theme.$primaryColor;
         border-color: theme.$primaryColor;

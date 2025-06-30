@@ -41,11 +41,13 @@ class ViewBase(UserPassesTestMixin, ContextMixin, View):
     def test_func(self):
         return self.request.user.is_authenticated
 
-    def get_breadcrumbs(self) -> BreadCrumbs:
+    def get_breadcrumbs(self, **kwargs) -> BreadCrumbs:
         return BreadCrumbs()
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(breadcrumbs=self.get_breadcrumbs(), **kwargs)
+        return super().get_context_data(
+            breadcrumbs=self.get_breadcrumbs(**kwargs), **kwargs
+        )
 
     def handle_no_permission(self):
         if self.request.user.is_authenticated:
@@ -57,7 +59,7 @@ class ViewBase(UserPassesTestMixin, ContextMixin, View):
 class IndexView(ViewBase):
     section = Sections.Dashboard
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs("Home")
 
     def get(self, request):
@@ -77,7 +79,7 @@ class IndexView(ViewBase):
 class UsageView(ViewBase):
     section = Sections.Usage
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs("Usage")
 
     def get(self, request):
@@ -100,7 +102,7 @@ class EditUsageView(ViewBase):
     def test_func(self):
         return self.request.user.is_superuser
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs(("Usage", reverse(Sections.Usage.value)), "Edit")
 
     def post(self, request):
@@ -129,7 +131,7 @@ class EditUsageView(ViewBase):
 class TermsOfServiceView(ViewBase):
     section = Sections.TOS
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs("Terms of Service")
 
     def get(self, request):
@@ -150,7 +152,7 @@ class EditTermsOfServiceView(ViewBase):
     def test_func(self):
         return self.request.user.is_superuser
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs(
             ("Terms of Service", reverse(Sections.TOS.value)), "Edit"
         )
@@ -185,7 +187,7 @@ class AccountsView(ViewBase):
     def get_context_data(self, **kwargs):
         return super().get_context_data(bindings=self.get_bindings(), **kwargs)
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs("Accounts")
 
     def get_bindings(self):
@@ -196,6 +198,13 @@ class AccountsView(ViewBase):
             .prefetch_related("group_scopes", "group_scopes__group")
             .order_by("-created_at")
         )
+
+        filter = self.request.GET.get("filter")
+        if filter:
+            bindings_queryset = bindings_queryset.filter(
+                Q(name__icontains=filter) | Q(note__icontains=filter)
+            )
+
         bindings_paginator = Paginator(bindings_queryset, 20)
         try:
             bindings_page = bindings_paginator.page(self.request.GET.get("page", 1))
@@ -230,27 +239,52 @@ class AccountsView(ViewBase):
 
 class AccountView(ViewBase):
     section = Sections.Accounts
+    binding: AccountBinding = None
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        return super().get_context_data(**kwargs)
+        return super().get_context_data(orders=self.get_orders(), **kwargs)
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs(
             ("Accounts", reverse(Sections.Accounts.value)), "Details"
         )
 
+    def get_orders(self):
+        orders = Order.objects.filter(account=self.binding.bound_to).order_by(
+            "-created_at"
+        )
+
+        filter = self.request.GET.get("filter")
+        if filter:
+            query_filter = Q()
+            for identifier in filter.split(","):
+                query_filter |= Q(identifiers__value__iexact=identifier.strip())
+
+            orders = orders.filter(query_filter)
+
+        orders_paginator = Paginator(orders, 10)
+        try:
+            orders_page = orders_paginator.page(self.request.GET.get("page", 1))
+        except EmptyPage:
+            orders_page = orders_paginator.page(1)
+
+        return {
+            "paginator": orders_paginator,
+            "page": orders_page,
+        }
+
     def dispatch(self, request, binding_id, *args, **kwargs):
-        binding = get_object_or_404(
+        self.binding = get_object_or_404(
             AccountBinding.objects.prefetch_related("group_scopes").select_related(
                 "creator",
             ),
             id=binding_id,
         )
 
-        if not binding.accessible_by(request.user):
+        if not self.binding.accessible_by(request.user):
             return self.handle_no_permission()
 
-        return super().dispatch(request, binding=binding, *args, **kwargs)
+        return super().dispatch(request, binding=self.binding, *args, **kwargs)
 
     def post(self, request, binding: AccountBinding):
         if "revoke-account" in request.POST:
@@ -268,7 +302,6 @@ class AccountView(ViewBase):
         return HttpResponseRedirect(reverse("account", args=[binding.id]))
 
     def get(self, request, binding: AccountBinding, *args, **kwargs):
-        orders = Order.objects.filter(account=binding.bound_to).order_by("-created_at")
         binding_event = (
             binding.bound_to.events.filter(event_type=AccountEventType.BOUND).first()
             if binding.bound_to
@@ -283,7 +316,6 @@ class AccountView(ViewBase):
                     for g in binding.group_scopes.all().order_by("group__name")
                 ]
             ),
-            orders=orders[:10],
             account_invalid=binding.bound_to
             and binding.bound_to.status != AccountStatus.valid,
         )
@@ -297,9 +329,15 @@ class AccountView(ViewBase):
 class OrderView(ViewBase):
     section = Sections.Accounts
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
+        order = kwargs.get("order")
         return build_breadcrumbs(
-            ("Accounts", reverse(Sections.Accounts.value)), "Order Detail"
+            ("Accounts", reverse(Sections.Accounts.value)),
+            (
+                f"Account [{order.account.binding.name}]",
+                reverse("account", args=[order.account.binding.id]),
+            ),
+            "Order Detail",
         )
 
     def get(self, request, order_id):
@@ -329,11 +367,19 @@ class CertificatesView(ViewBase):
     def get_context_data(self, **kwargs):
         return super().get_context_data(certificates=self.get_certificates(), **kwargs)
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs("Certificates")
 
     def get_certificates(self):
         certificates_queryset = Certificate.objects.order_by("-created_at")
+        filter = self.request.GET.get("filter")
+        if filter:
+            query_filter = Q()
+            for identifier in filter.split(","):
+                query_filter |= Q(order__identifiers__value__iexact=identifier.strip())
+
+            certificates_queryset = certificates_queryset.filter(query_filter)
+
         certificates_paginator = Paginator(certificates_queryset, 20)
         try:
             certificates_page = certificates_paginator.page(
@@ -356,14 +402,21 @@ class CertificatesView(ViewBase):
 class CertificateView(ViewBase):
     section = Sections.Certificates
 
-    def get_breadcrumbs(self):
+    def get_breadcrumbs(self, **kwargs):
         return build_breadcrumbs(
             ("Certificates", reverse(Sections.Certificates.value)), "Detail"
         )
 
     def get(self, request, cert_id):
-        cert = get_object_or_404(Certificate, pk=cert_id)
-        context = self.get_context_data(cert=cert)
+        cert = get_object_or_404(
+            Certificate.objects.select_related("order__account__binding"), pk=cert_id
+        )
+        context = self.get_context_data(
+            cert=cert,
+            user_can_access_order=cert.order.account.binding.accessible_by(
+                request.user
+            ),
+        )
 
         return render(request, "certificat/certificate.html", context)
 

@@ -1,10 +1,20 @@
 #!/usr/bin/env python
-
+# /// script
+# dependencies = [
+#   "acme==4.1.1",
+#   "cryptography==43.0.1",
+#   "requests==2.32.3",
+# ]
+# ///
 
 from os import get_terminal_size
 
 
-deps = {"acme": "2.11.0", "cryptography": "43.0.1", "requests": "2.32.3"}
+deps = {
+    "acme": "==4.1.1",
+    "cryptography": "==43.0.1",
+    "requests": "==2.32.3",
+}
 
 try:
     import json
@@ -25,8 +35,7 @@ except ImportError as exc:
         "\nYou're missing required packages. Try running the following command in a virtual environment:"
     )
     print(
-        "  pip install "
-        + " ".join([f'"{key}=={value}"' for key, value in deps.items()])
+        "  pip install " + " ".join([f'"{key}{value}"' for key, value in deps.items()])
     )
     print(
         "To create a virtual environment, you can run:\n  python3 -m venv .venv\nand then activate it with \n  source .venv/bin/activate"

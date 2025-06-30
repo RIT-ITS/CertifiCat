@@ -22,6 +22,16 @@
         </new-account-form-manager>
     </c-slot>
     
+    <form action="." id="search_form" method="get">
+        <div class="search mb-3">
+            <div class="input--icon">
+                <i class="fa fa-magnifying-glass icon"></i>
+                <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by name or description" class="search--box" />
+            </div>
+            <button class="btn btn-secondary search--button">Search</button>
+        </div>
+    </form>
+
     <c-table name="accounts">
         <c-slot name="head">
             <tr>
@@ -61,7 +71,11 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="100%"><p>No accounts created yet.</p></td>
+                    <td colspan="100%">
+                        <p>
+                            No accounts found.
+                        </p>
+                    </td>
                 </tr>
             {% endfor %}
         </c-slot>

@@ -6,11 +6,20 @@
 {% block body %}
 
 <div class="container mt-4">
+    <form action="." id="search_form" method="get">
+        <div class="search mb-3">
+            <div class="input--icon">
+                <i class="fa fa-magnifying-glass icon"></i>
+                <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by SAN, separated by ','" class="search--box" />
+            </div>
+            <button class="btn btn-secondary search--button">Search</button>
+        </div>
+    </form>
     <c-table name="certificates">
         <c-slot name="head">
             <tr>
                 <th>Created</th>
-                <th>Expires</th>                        
+                <th>Expiration</th>                        
                 <th>SANs</th>                        
                 <th><!-- details --></th>
             </tr>

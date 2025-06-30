@@ -14,7 +14,7 @@ if dynamic_settings.login_method == "saml":
     AUTHENTICATION_BACKENDS = ["certificat.auth.Saml2Backend"]
 
     SAML_SESSION_COOKIE_NAME = saml_settings.session_cookie
-
+    SAML_CSP_HANDLER = ""
     SAML_ATTRIBUTE_MAPPING = saml_settings.attribute_mapping
 
     if saml_settings.discovery:

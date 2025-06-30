@@ -29,6 +29,13 @@ input, textarea {
     width: 100%;
 }
 
+* {
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 1px theme.$bodyTextColor;
+    }
+}
+
 select {
     margin: 0;
     width: 100%;
@@ -41,6 +48,25 @@ select {
     font-size: 1rem !important;
     line-height: 1.5rem !important;
 }
+
+.input--icon {
+    position: relative;
+
+    .fa {
+        font-size: 1.15rem;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        left: 1.25rem;
+        pointer-events: none;
+        opacity: .5;
+    }
+
+    input {
+        padding-left: $spacer*2.25;
+    }
+}
+
 
 // Trying not to target labels for checkboxes/radio buttons
 form > div > label, form .row > label, form .col > label {

@@ -52,8 +52,8 @@ class Navigation:
     top_level_nav = [
         NavItem(Sections.Dashboard, "Dashboard"),
         NavItem(Sections.Accounts, "Accounts"),
-        NavItem(Sections.Usage, "Usage"),
         NavItem(Sections.Certificates, "Certificates"),
+        NavItem(Sections.Usage, "Usage"),
         NavItem(Sections.TOS, "Terms of Service"),
         NavItem(Sections.Admin, "Admin", is_admin_test),
     ]

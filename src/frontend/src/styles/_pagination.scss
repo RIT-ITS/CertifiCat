@@ -8,6 +8,7 @@
 }
 
 .page-link {
+    cursor: pointer;
     position: relative;
     display: block;
     padding: 0.5rem 0.75rem;
@@ -43,6 +44,7 @@
 }
 
 .page-item.active .page-link {
+    cursor: auto;
     z-index: 3;
     color: #fff;
     background-color: theme.$primaryColor;

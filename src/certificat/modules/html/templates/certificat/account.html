@@ -77,8 +77,17 @@
         </div>
         
         <div class="container mt-5">
-            <h4 class="mt-5 icon"><i class="fa-solid fa-cart-shopping"></i>My Recent Orders</h4>
-            
+
+            <h4 class="mt-5 icon" id="order-history"><i class="fa-solid fa-cart-shopping"></i>Order History</h4>
+            <form action=".#order-history" id="search_form" method="get">
+                <div class="search mb-3">
+                    <div class="input--icon">
+                        <i class="fa fa-magnifying-glass icon"></i>
+                        <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by identifier, separated by ','" class="search--box" />
+                    </div>
+                    <button class="btn btn-secondary search--button">Search</button>
+                </div>
+            </form>
             <c-table name="orders">
                 <c-slot name="head">
                     <tr>
@@ -89,7 +98,7 @@
                     </tr>
                 </c-slot>
                 <c-slot name="body">
-                    {% for order in orders %}
+                    {% for order in orders.page %}
                         <tr>
                             <td class="created_at">
                                 {{ order.created_at|date:"Y/m/d" }}
@@ -109,11 +118,14 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="100%"><p style="text-align:center;">No recent orders.</p></td>
+                            <td colspan="100%"><p style="text-align:center;">No orders found.</p></td>
                         </tr>
                     {% endfor %}
                 </c-slot>
             </c-table>
+            <div class="row mt-2 center-xs">
+                <c-pagination :page="orders.page" qs_extra="#order-history" />
+            </div>
         </div>
 
         {% if not account_invalid %}

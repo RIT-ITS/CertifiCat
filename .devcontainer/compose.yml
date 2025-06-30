@@ -1,25 +1,30 @@
 services:
+  # vim /usr/lib/python3/dist-packages/certbot/configuration.py  
+  # adjust no_verify_ssl to return True
+  # Register account
+  # certbot certonly --standalone --server "https://certificat.localtest.me/directory" -d certbot.localtest.me
   certbot:
     networks: 
       - proxy
-    #links:
-    #  - traefik:certificat.localtest.me
     build:
       context: .
       dockerfile: Dockerfile.certbot
     command: sleep infinity
     ports:
       - "80"
-  
-  app:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.certbot.rule=Host(`certbot.localtest.me`)"
+      - "traefik.http.routers.certbot.tls=false"
+      - "traefik.http.services.certbot.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik.proxy"
+    extra_hosts:
+    - "certificat.localtest.me:host-gateway"
+
+  certificat:
     networks: 
       - proxy
       - backend
-      
-    links:
-      - certbot:acme.edu
-    #  - certbot:subdomain.acme.edu
-    #  - certbot:subdommain2.acme.edu
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -40,6 +45,8 @@ services:
       - "traefik.http.routers.certificat.tls=true"
       - "traefik.http.services.certificat.loadbalancer.server.port=8000"
       - "traefik.docker.network=traefik.proxy"
+    extra_hosts:
+    - "certbot.localtest.me:host-gateway"
 
   mariadb:
     networks: 
@@ -145,3 +152,4 @@ networks:
     name: traefik.proxy
     external: true
   backend:
+    name: certificat.backend

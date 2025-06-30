@@ -13,10 +13,17 @@
             {{ cert.created_at }}
         </dd>
         
-        <dt>Expires</dt>
+        <dt>Expiration</dt>
         <dd>
             {{ cert.metadata.not_valid_after|to_datetime }}
         </dd>
+
+        {% if user_can_access_order %}
+            <dt>Order</dt>
+            <dd>
+                <a href="{% url 'order' cert.order.id %}">{{ cert.order.name }}</a>
+            </dd>
+        {% endif %}
 
         <dt>SANS</dt>
         <dd>

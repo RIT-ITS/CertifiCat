@@ -1,0 +1,8 @@
+---
+questions:
+  # Questions for tab named "Some Example ConfigMap Values"
+  - variable: persistentVolumeClaim.storageClassName
+    default: nfs-client
+    description: What storage class to use for the PersistentVolumeClaim
+    type: string
+    label: persistentVolumeClaim.storageClassName

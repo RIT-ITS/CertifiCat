@@ -17,17 +17,6 @@ spec:
         {{- include "..selectorLabels" . | nindent 8 }}
         {{ include "..namespacedLabel" "component" }}: mariadb
     spec:       
-      initContainers:
-      - name: init-mysql-dir
-        image: busybox:1.35
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            mkdir -p /mnt/data/mysql && \
-            chown 1001:1001 /mnt/data/mysql
-        volumeMounts:
-        - name: data
-          mountPath: /mnt/data
       containers: 
       - name: mariadb
         image: {{ .Values.embedded_mariadb.image }}
@@ -36,7 +25,6 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /var/lib/mysql
-          subPath: mysql
         env:        
         - name: MARIADB_ROOT_HOST
           value: localhost
@@ -69,7 +57,7 @@ metadata:
   name: mariadb-pvc
   namespace: {{ .Release.Namespace | default .Values.namespace }}
 spec:
-  storageClassName: nfs-client
+  storageClassName: {{ .Values.persistentVolumeClaim.storageClassName }}
   accessModes:
     - ReadWriteOnce
   resources:

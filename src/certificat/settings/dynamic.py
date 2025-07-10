@@ -72,7 +72,11 @@ class ApplicationSettings(Settings):
         description="The url root is used to generate absolute urls to the application.",
         examples=["https://acme.edu"],
     )
-    staticfiles_root: Optional[str] = Field(None, description="Location of static files. This usually doesn't have to be changed.", required=False)
+    staticfiles_root: Optional[str] = Field(
+        None,
+        description="Location of static files. This usually doesn't have to be changed.",
+        required=False,
+    )
     logging: LoggingSettings = LoggingSettings()
     db: DatabaseSettings
     redis: RedisSettings

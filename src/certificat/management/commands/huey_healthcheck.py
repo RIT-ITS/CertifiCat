@@ -8,6 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         expected_pong_reply = "pong"
         pong_reply = ping(expected_pong_reply)
+        self.stdout.write("queueing ping")
 
         if expected_pong_reply != pong_reply(blocking=True):
             raise CommandError("huey pong failure")

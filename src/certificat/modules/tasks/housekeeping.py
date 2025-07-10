@@ -32,7 +32,9 @@ def delete_invalid_orders(task=None):
         logger.info("skipping delete task due to settings")
         return
 
-    yesterday = timezone.now() - timedelta(days=1)
+    # TODO: Make this a config value instead of statically 1
+    # By default, delete after one week
+    yesterday = timezone.now() - timedelta(days=7)
     invalid_orders = db.Order.objects.filter(
         status=OrderStatus.invalid, created_at__lte=yesterday
     )

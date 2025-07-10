@@ -109,17 +109,17 @@ spec:
                 - /srv/www/manage.py
                 - huey_healthcheck
             initialDelaySeconds: 30
-            periodSeconds: 60
-            timeoutSeconds: 5
+            periodSeconds: 90
+            timeoutSeconds: 10
           startupProbe:
             exec:
               command:
                 - /srv/www/.venv/bin/python
                 - /srv/www/manage.py
                 - huey_healthcheck
-            failureThreshold: 10
-            periodSeconds: 6
-            timeoutSeconds: 5
+            failureThreshold: 12
+            periodSeconds: 10
+            timeoutSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

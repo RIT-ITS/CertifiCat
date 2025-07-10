@@ -11,6 +11,8 @@ VENV_PATH="${ROOT}/.venv"
 VENV_PYTHON="${VENV_PATH}/bin/python3"
 VENV_PYTEST="${VENV_PATH}/bin/pytest"
 
+export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
 function log_output {
   # shellcheck disable=SC2046
   echo $(date "+%Y/%m/%d %H:%M:%S")" $1"

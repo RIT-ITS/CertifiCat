@@ -32,6 +32,7 @@ from . import models as db
 import json
 from certificat.modules import tasks
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import make_aware
 from django.utils import timezone
 
@@ -105,7 +106,10 @@ class AccountService(IAccountService):
         # the account id is namespaced but we discard the namespace
         # when storing or retrieving.
         account_id = account_id.split("/")[-1]
-        return db.to_pydantic(db.Account.objects.get(name=account_id))
+        try:
+            return db.to_pydantic(db.Account.objects.get(name=account_id))
+        except db.Account.DoesNotExist:
+            return None
 
     def get_by_jwk(self, jwk: JWK) -> AccountResource | None:
         try:
@@ -116,7 +120,10 @@ class AccountService(IAccountService):
             return None
 
     def get_eab_hmac(self, kid: str) -> str | None:
-        return db.AccountBinding.objects.get(hmac_id=kid).hmac_key
+        try:
+            return db.AccountBinding.objects.get(hmac_id=kid).hmac_key
+        except db.AccountBinding.DoesNotExist:
+            return None
 
     def check_access(
         self, account_id: str, resource_id: str, resource_type: ACMEResourceType
@@ -181,7 +188,10 @@ class OrderService(IOrderService):
         return order
 
     def get(self, order_id: str) -> OrderResource | None:
-        return db.to_pydantic(db.Order.objects.get(name=order_id))
+        try:
+            return db.to_pydantic(db.Order.objects.get(name=order_id))
+        except db.Order.DoesNotExist:
+            return None
 
     def process_finalization(self, order, csr):
         with transaction.atomic():
@@ -233,9 +243,13 @@ class AuthorizationService(IAuthorizationService):
         return authz
 
     def get(self, authz_id: str) -> AuthorizationResource | None:
-        return db.to_pydantic(db.Authorization.objects.get(name=authz_id))
+        try:
+            return db.to_pydantic(db.Authorization.objects.get(name=authz_id))
+        except db.Authorization.DoesNotExist:
+            return None
 
     def get_by_order(self, order_id: str) -> list[AuthorizationResource]:
+        # TODO: Remove
         pass
 
     def get_by_chall(self, chall_id: str) -> AuthorizationResource | None:
@@ -280,7 +294,10 @@ class ChallengeService(IChallengeService):
         return chall
 
     def get(self, chall_id):
-        return db.to_pydantic(db.Challenge.objects.get(name=chall_id))
+        try:
+            return db.to_pydantic(db.Challenge.objects.get(name=chall_id))
+        except db.Challenge.DoesNotExist:
+            return None
 
     def queue_validation(self, chall):
         with transaction.atomic():
@@ -311,4 +328,7 @@ class CertService(ICertService):
     order_service: OrderService = inject.attr(IOrderService)
 
     def get(self, ord_id: str) -> CertResource | None:
-        return db.to_pydantic(db.Certificate.objects.get(order__name=ord_id))
+        try:
+            return db.to_pydantic(db.Certificate.objects.get(order__name=ord_id))
+        except db.Certificate.DoesNotExist:
+            return None

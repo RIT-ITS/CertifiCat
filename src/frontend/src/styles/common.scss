@@ -450,3 +450,16 @@ code {
         font-style: italic;
     }
 }
+
+.search {
+    display: flex;
+    
+    .input--icon {
+        flex: 1;
+    }
+
+    .search--box {
+        font-size: 1.25em;
+        height: 100%;
+    }
+}

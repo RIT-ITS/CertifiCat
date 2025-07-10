@@ -1,10 +1,10 @@
 // For format details, see https://aka.ms/devcontainer.json.
 {
-	"name": "Python 3 & MariaDB",
+	"name": "CertifiCat",
 	"dockerComposeFile": "compose.yml",
 	"initializeCommand": "./.devcontainer/initialize.sh",
-	"postStartCommand": "${containerWorkspaceFolder}/.devcontainer/postStart.sh",
-	"service": "app",
+	"postStartCommand": "./.devcontainer/postStart.sh",
+	"service": "certificat",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
 		"ghcr.io/devcontainers/features/node": {},

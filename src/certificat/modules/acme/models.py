@@ -70,6 +70,9 @@ class Account(TimestampMixin):
 
     events = GenericRelation("TaggedEvent")
 
+    def __str__(self):
+        return self.name
+
     def revoke(self):
         self.status = AccountStatus.revoked
         self.save()
@@ -183,6 +186,9 @@ class Order(TimestampMixin):
 
     events = GenericRelation("TaggedEvent")
 
+    def __str__(self):
+        return self.name
+
     def last_finalization_error(self):
         return self.finalization_errors.all().order_by("-created_at").first()
 
@@ -207,6 +213,9 @@ class Certificate(TimestampMixin):
     )
     metadata = models.JSONField(null=True, encoder=DjangoJSONEncoder)
     chain = models.TextField()
+
+    def __str__(self):
+        return self.order.name
 
     def save(self, *args, **kwargs):
         if self.metadata is None:
@@ -271,6 +280,9 @@ class Identifier(TimestampMixin):
 
     type = models.CharField(max_length=15, choices=choices(IdentifierType))
     value = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.type}: {self.value}"
 
 
 class Authorization(TimestampMixin):

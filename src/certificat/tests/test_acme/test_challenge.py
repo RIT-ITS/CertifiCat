@@ -3,6 +3,7 @@ import acme.client
 from ..helpers import do_challenge, select_failed_authorizations
 from ..conftest import NewOrderRet
 from certificat.modules.acme import models as db
+import acme.messages
 
 
 @pytest.mark.django_db
@@ -24,3 +25,12 @@ def test_failed_challenge(acme_client: acme.client.ClientV2, acme_neworder):
     failed_auth = select_failed_authorizations(order)
     assert "err.edu" in failed_auth
     assert db.ChallengeError.objects.count() > 0
+
+
+@pytest.mark.django_db
+def test_nonexistent_challenge(acme_client: acme.client.ClientV2, acme_neworder):
+    new_order: NewOrderRet = acme_neworder(cn="err.edu", sans=["err.edu"])
+    # challenges was deleted for whatever reason
+    db.Challenge.objects.all().delete()
+    with pytest.raises(Exception, match=r".*resourceNotFound.*"):
+        do_challenge(acme_client, new_order.response)

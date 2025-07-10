@@ -45,7 +45,9 @@ else:
 APPEND_SLASH = True
 
 STATIC_URL = "/static/"
-STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(BASE_DIR, "server/static")
+STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(
+    BASE_DIR, "server/static"
+)
 
 SESSION_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -68,6 +70,7 @@ INSTALLED_APPS = [
     "huey.contrib.djhuey",
     "webpack_loader",
     "django_cotton",
+    "import_export",
     "certificat.app.CertificatConfig",
     "certificat.modules.acme",
     "certificat.modules.html",

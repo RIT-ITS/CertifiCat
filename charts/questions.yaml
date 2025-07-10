@@ -6,3 +6,22 @@ questions:
     description: What storage class to use for the PersistentVolumeClaim
     type: string
     label: persistentVolumeClaim.storageClassName
+  - variable: ingress.hostname
+    default: change.me
+    description: Hostname of your Certificat Instance
+    type: string
+    label: Hostname
+  - variable: certificat_image.repository
+    default: registry.code.rit.edu/its-operations-public/django-acmev2
+    description: Repository url for the Certificat container image
+    type: string
+    label: Repository
+  - variable: secretProviders.certificat."certificat\.yml".certificat.login_method
+    default: "saml"
+    description: login method
+    type: enum
+    options:
+      - "saml"
+      - "local"
+    label: login method
+    group: certificat_login

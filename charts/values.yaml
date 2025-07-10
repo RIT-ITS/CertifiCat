@@ -1,3 +1,5 @@
+namespace: "certificat"
+
 ingress:
   # set your hostname!
   hostname: ""

@@ -14,7 +14,7 @@ questions:
     label: Hostname
 
   - variable: certificat_image.repository
-    default: registry.code.rit.edu/its-operations-public/django-acmev2
+    default: ghcr.io/rit-its/certificat
     description: Repository url for the Certificat container image
     type: string
     label: Repository
@@ -35,3 +35,46 @@ questions:
     options:
       - "saml"
       - "local"
+
+  - variable: certificat.saml.debug
+    label: "SAML Debug Mode"
+    description: "Enable debug logging for SAML"
+    type: boolean
+    default: false
+    group: certificat_saml
+
+  - variable: certificat.saml.entity_id
+    label: "SAML SP Entity ID"
+    description: "Entity ID of your SAML Service Provider"
+    type: string
+    required: true
+    default: "https://yourdomain.edu/saml2/metadata/"
+    group: certificat_saml
+
+  - variable: certificat.saml.attribute_mapping.eduPersonPrincipalName
+    label: "SAML Attribute Mapping: eduPersonPrincipalName"
+    description: "Maps to the Django username field"
+    type: string
+    default: username
+    group: certificat_saml
+
+  - variable: certificat.saml.attribute_mapping.mail
+    label: "SAML Attribute Mapping: mail"
+    description: "Maps to the Django email field"
+    type: string
+    default: email
+    group: certificat_saml
+
+  - variable: certificat.saml.attribute_mapping.givenName
+    label: "SAML Attribute Mapping: givenName"
+    description: "Maps to the Django first_name field"
+    type: string
+    default: first_name
+    group: certificat_saml
+
+  - variable: certificat.saml.attribute_mapping.sn
+    label: "SAML Attribute Mapping: sn"
+    description: "Maps to the Django last_name field"
+    type: string
+    default: last_name
+    group: certificat_saml

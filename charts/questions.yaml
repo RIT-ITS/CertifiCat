@@ -1,6 +1,5 @@
 ---
 questions:
-  # Questions for tab named "Some Example ConfigMap Values"
   - variable: persistentVolumeClaim.storageClassName
     default: nfs-client
     description: What storage class to use for the PersistentVolumeClaim
@@ -26,7 +25,7 @@ questions:
     required: false
     default: latest
     
-  - variable: certificat.login_method
+   - variable: certificat.login_method
     label: "Login Method"
     description: "Choose authentication mode for CertifiCat"
     type: enum
@@ -36,11 +35,13 @@ questions:
       - "saml"
       - "local"
 
+  # These will only show when login_method is 'saml'
   - variable: certificat.saml.debug
     label: "SAML Debug Mode"
     description: "Enable debug logging for SAML"
     type: boolean
     default: false
+    show_if: "certificat.login_method=saml"
     group: certificat_saml
 
   - variable: certificat.saml.entity_id
@@ -49,6 +50,7 @@ questions:
     type: string
     required: true
     default: "https://yourdomain.edu/saml2/metadata/"
+    show_if: "certificat.login_method=saml"
     group: certificat_saml
 
   - variable: certificat.saml.attribute_mapping.eduPersonPrincipalName
@@ -56,6 +58,7 @@ questions:
     description: "Maps to the Django username field"
     type: string
     default: username
+    show_if: "certificat.login_method=saml"
     group: certificat_saml
 
   - variable: certificat.saml.attribute_mapping.mail
@@ -63,6 +66,7 @@ questions:
     description: "Maps to the Django email field"
     type: string
     default: email
+    show_if: "certificat.login_method=saml"
     group: certificat_saml
 
   - variable: certificat.saml.attribute_mapping.givenName
@@ -70,6 +74,7 @@ questions:
     description: "Maps to the Django first_name field"
     type: string
     default: first_name
+    show_if: "certificat.login_method=saml"
     group: certificat_saml
 
   - variable: certificat.saml.attribute_mapping.sn
@@ -77,4 +82,5 @@ questions:
     description: "Maps to the Django last_name field"
     type: string
     default: last_name
+    show_if: "certificat.login_method=saml"
     group: certificat_saml

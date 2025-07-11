@@ -12,20 +12,31 @@ certificat:
 {{- if eq $.Values.certificat.login_method "saml" }}
 saml:
   debug: {{ $.Values.certificat.saml.debug }}
+  administrators:
+    {{- $admins := split "," $.Values.certificat.saml.administrators }}
+    {{- range $admins }}
+    - "{{ . | trim }}"
+    {{- end }}
   attribute_mapping:
     eduPersonPrincipalName: ["{{ $.Values.certificat.saml.attribute_mapping.eduPersonPrincipalName }}"]
     mail: ["{{ $.Values.certificat.saml.attribute_mapping.mail }}"]
     givenName: ["{{ $.Values.certificat.saml.attribute_mapping.givenName }}"]
     sn: ["{{ $.Values.certificat.saml.attribute_mapping.sn }}"]
   sp:
-    entity_id: "{{ $.Values.certificat.saml.entity_id }}"
-    key_file: "/srv/www/config/sp.key"
-    cert_file: "/srv/www/config/sp.crt"
+    entity_id: "{{ $.Values.certificat.saml.sp.entity_id }}"
+    key_file: "{{ $.Values.certificat.saml.sp.key_file }}"
+    cert_file: "{{ $.Values.certificat.saml.sp.cert_file }}"
+  {{- if $.Values.certificat.saml.idp.remote_url }}
+  idp:
+    remote:
+      - url: "{{ $.Values.certificat.saml.idp.remote_url }}"
+  {{- else }}
   idp:
     mdq:
       - url: "http://mdq.incommon.org"
         cert: "/srv/www/config/inc-md-cert-mdq.pem"
         freshness_period: "P0Y0M0DT2H0M0S"
+  {{- end }}
 {{- end }}
 
 local_finalizer:

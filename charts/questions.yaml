@@ -24,6 +24,24 @@ questions:
     required: false
     default: latest
 
+# local_finalizer.key
+  - variable: local_finalizer.key
+    label: "Local Finalizer Private Key"
+    description: "Paste your internal CA private key (PEM format)"
+    type: multiline
+    required: true
+    show_if: "certificat.login_method=local"
+    group: local_finalizer
+
+# local_finalizer.cert
+  - variable: local_finalizer.cert
+    label: "Local Finalizer Certificate"
+    description: "Paste your internal CA public certificate (PEM format)"
+    type: multiline
+    required: true
+    show_if: "certificat.login_method=local"
+    group: local_finalizer
+
   - variable: certificat.login_method
     label: "Login Method"
     description: "Choose authentication mode for CertifiCat"

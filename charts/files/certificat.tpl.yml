@@ -9,16 +9,16 @@ certificat:
   redis:
     host: redis-service.{{ .Release.Namespace }}
 
-{{- if eq .Values.certificat.login_method "saml" }}
+{{- if eq $.Values.certificat.login_method "saml" }}
 saml:
-  debug: false
+  debug: {{ $.Values.certificat.saml.debug }}
   attribute_mapping:
-    eduPersonPrincipalName: ["username"]
-    mail: ["email"]
-    givenName: ["first_name"]
-    sn: ["last_name"]
+    eduPersonPrincipalName: ["{{ $.Values.certificat.saml.attribute_mapping.eduPersonPrincipalName }}"]
+    mail: ["{{ $.Values.certificat.saml.attribute_mapping.mail }}"]
+    givenName: ["{{ $.Values.certificat.saml.attribute_mapping.givenName }}"]
+    sn: ["{{ $.Values.certificat.saml.attribute_mapping.sn }}"]
   sp:
-    entity_id: "https://{{ .Values.ingress.hostname }}/saml2/metadata/"
+    entity_id: "{{ $.Values.certificat.saml.entity_id }}"
     key_file: "/srv/www/config/sp.key"
     cert_file: "/srv/www/config/sp.crt"
   idp:

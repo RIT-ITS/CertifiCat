@@ -25,7 +25,7 @@ questions:
     required: false
     default: latest
     
-   - variable: certificat.login_method
+  - variable: certificat.login_method
     label: "Login Method"
     description: "Choose authentication mode for CertifiCat"
     type: enum

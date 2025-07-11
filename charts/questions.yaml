@@ -1,3 +1,7 @@
+groups:
+  - name: certificat_saml
+    label: "Certificat SAML"
+
 questions:
   - variable: persistentVolumeClaim.storageClassName
     default: nfs-client

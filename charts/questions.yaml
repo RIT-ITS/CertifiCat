@@ -6,16 +6,26 @@ questions:
     description: What storage class to use for the PersistentVolumeClaim
     type: string
     label: persistentVolumeClaim.storageClassName
+
   - variable: ingress.hostname
     default: certificat.k8s-admin.its.maine.edu
     description: Hostname of your Certificat Instance
     type: string
     label: Hostname
+
   - variable: certificat_image.repository
     default: registry.code.rit.edu/its-operations-public/django-acmev2
     description: Repository url for the Certificat container image
     type: string
     label: Repository
+
+  - variable: certificat_image.tag
+    label: Image Tag
+    description: "Leave blank to use default (chart version); use 'latest' to pull the latest image"
+    type: string
+    required: false
+    default: latest
+    
   - variable: secretProviders.certificat."certificat\.yml".certificat.login_method
     default: "saml"
     description: login method

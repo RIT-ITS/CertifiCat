@@ -26,12 +26,12 @@ questions:
     required: false
     default: latest
     
-  - variable: secretProviders.certificat."certificat\.yml".certificat.login_method
-    default: "saml"
-    description: login method
+  - variable: certificat.login_method
+    label: "Login Method"
+    description: "Choose authentication mode for CertifiCat"
     type: enum
+    required: true
+    default: "local"
     options:
-      - "local"
       - "saml"
-    label: login method
-    group: certificat_login
+      - "local"

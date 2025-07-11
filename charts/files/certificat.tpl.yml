@@ -27,3 +27,14 @@ saml:
         cert: "/srv/www/config/inc-md-cert-mdq.pem"
         freshness_period: "P0Y0M0DT2H0M0S"
 {{- end }}
+
+local_finalizer:
+  key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    GENERATE YOUR OWN!
+    -----END RSA PRIVATE KEY-----
+
+  cert: |
+    -----BEGIN CERTIFICATE-----
+    GENERATE YOUR OWN!
+    -----END CERTIFICATE-----

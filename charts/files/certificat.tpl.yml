@@ -41,11 +41,6 @@ saml:
 
 local_finalizer:
   key: |
-    -----BEGIN RSA PRIVATE KEY-----
-    GENERATE YOUR OWN!
-    -----END RSA PRIVATE KEY-----
-
+    {{ .Values.local_finalizer.key | indent 4 }}
   cert: |
-    -----BEGIN CERTIFICATE-----
-    GENERATE YOUR OWN!
-    -----END CERTIFICATE-----
+    {{ .Values.local_finalizer.cert | indent 4 }}

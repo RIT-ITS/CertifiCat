@@ -1,15 +1,15 @@
 certificat:
-  url_root: "https://{{ $.Values.ingress.hostname }}"
-  login_method: {{ $.Values.secretProviders.certificat.certificat.login_method | quote }}
+  url_root: "https://{{ .Values.ingress.hostname }}"
+  login_method: {{ .Values.certificat.login_method | quote }}
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
   db:
     name: certificat
     user: certificat
-    host: mariadb-service.{{ $.Release.Namespace }}
+    host: mariadb-service.{{ .Release.Namespace }}
   redis:
-    host: redis-service.{{ $.Release.Namespace }}
+    host: redis-service.{{ .Release.Namespace }}
 
-{{- if eq $.Values.secretProviders.certificat.certificat.login_method "saml" }}
+{{- if eq .Values.certificat.login_method "saml" }}
 saml:
   debug: false
   attribute_mapping:
@@ -18,7 +18,7 @@ saml:
     givenName: ["first_name"]
     sn: ["last_name"]
   sp:
-    entity_id: "https://{{ $.Values.ingress.hostname }}/saml2/metadata/"
+    entity_id: "https://{{ .Values.ingress.hostname }}/saml2/metadata/"
     key_file: "/srv/www/config/sp.key"
     cert_file: "/srv/www/config/sp.crt"
   idp:

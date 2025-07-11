@@ -1,11 +1,15 @@
 certificat:
-  login_method: {{ .Values.certificat.login_method | quote }}
+  url_root: "https://{{ .Values.ingress.hostname }}"
+  login_method: {{ .Values.secretProviders.certificat.certificat.login_method | quote }}
+  finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
   db:
+    name: certificat
+    user: certificat
     host: mariadb-service.{{ .Release.Namespace }}
   redis:
     host: redis-service.{{ .Release.Namespace }}
 
-{{- if eq .Values.certificat.login_method "saml" }}
+{{- if eq .Values.secretProviders.certificat.certificat.login_method "saml" }}
 saml:
   debug: false
   attribute_mapping:

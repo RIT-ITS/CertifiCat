@@ -1,6 +1,6 @@
 groups:
-  - name: certificat_saml
-    label: "Certificat SAML"
+  - name: "Certificat SAML"
+    label: "Certificat SAML Configuration"
 
 questions:
   - variable: persistentVolumeClaim.storageClassName
@@ -61,7 +61,7 @@ questions:
     type: boolean
     default: false
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.administrators
     label: "SAML Admin Users"
@@ -69,7 +69,7 @@ questions:
     type: string
     default: "admin"
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.sp.entity_id
     label: "SAML SP Entity ID"
@@ -77,7 +77,7 @@ questions:
     type: string
     default: "http://certificat.localtest.me/saml2/metadata/"
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.sp.key_file
     label: "SAML SP Key File Path"
@@ -85,7 +85,7 @@ questions:
     type: string
     default: "/etc/certificat/insecure.key"
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.sp.cert_file
     label: "SAML SP Cert File Path"
@@ -93,7 +93,7 @@ questions:
     type: string
     default: "/etc/certificat/insecure.crt"
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.idp.remote_url
     label: "SAML IdP Remote Metadata URL"
@@ -101,7 +101,7 @@ questions:
     type: string
     default: "http://idp./saml2/metadata"
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.attribute_mapping.eduPersonPrincipalName
     label: "SAML Attribute Mapping: eduPersonPrincipalName"
@@ -109,7 +109,7 @@ questions:
     type: string
     default: username
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.attribute_mapping.mail
     label: "SAML Attribute Mapping: mail"
@@ -117,7 +117,7 @@ questions:
     type: string
     default: email
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.attribute_mapping.givenName
     label: "SAML Attribute Mapping: givenName"
@@ -125,7 +125,7 @@ questions:
     type: string
     default: first_name
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"
 
   - variable: certificat.saml.attribute_mapping.sn
     label: "SAML Attribute Mapping: sn"
@@ -133,4 +133,4 @@ questions:
     type: string
     default: last_name
     show_if: "certificat.login_method=saml"
-    group: certificat_saml
+    group: "Certificat SAML"

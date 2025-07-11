@@ -7,7 +7,7 @@ questions:
     type: string
     label: persistentVolumeClaim.storageClassName
   - variable: ingress.hostname
-    default: change.me
+    default: certificat.k8s-admin.its.maine.edu
     description: Hostname of your Certificat Instance
     type: string
     label: Hostname
@@ -21,7 +21,7 @@ questions:
     description: login method
     type: enum
     options:
-      - "saml"
       - "local"
+      - "saml"
     label: login method
     group: certificat_login

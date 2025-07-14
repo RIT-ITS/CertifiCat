@@ -39,8 +39,10 @@ saml:
   {{- end }}
 {{- end }}
 
+{{- if .Values.local_finalizer }}
 local_finalizer:
   key: |
     {{ .Values.local_finalizer.key | indent 4 }}
   cert: |
     {{ .Values.local_finalizer.cert | indent 4 }}
+{{- end }}

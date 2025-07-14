@@ -17,7 +17,7 @@ questions:
 
   - variable: certificat_image.repository
     default: ghcr.io/rit-its/certificat
-    description: Repository url for the Certificat container image
+    description: Repository URL for the Certificat container image
     type: string
     label: Repository
 
@@ -34,6 +34,22 @@ questions:
     description: "Paste your internal CA private key (PEM format)"
     type: multiline
     required: true
+    default: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIICXAIBAAKBgQC7Zc9mK7P9lHX1XySdx5tK9NjRL+KjL+l8vS3pEr7YJ+fb2GFn
+    bCN7KJzmDCuZ+zAaP8pm/EMjxZ+NdvYw2mF5dZV09bq+KU52XYuw7ZlDLMIX/kaL
+    GcQwRm2Ftx8bFak47ivQ3XMuNmLPX2qLVC3rEbT0PTm9zTfO1l4Wxg6vYwIDAQAB
+    AoGAKXb9Z+1XR5KY3uE/rA2K4mYvR1rzBeN7nPuNz9KdqTw0iONsdKFCYz0V7RzN
+    RQghmgxX8m8bJ9R6HVmGRcAePxKrg3T+a41dT+ZsWAv8Iu7p4bgUjR27V8D+8PRn
+    8fN0TfOb5jfl+8SPxyD4rNKQeTCr3C0HDk4MrD1xOBuO9zECQQDrjNGB9ALm1SGM
+    ZN9Ej9K3b6G+eZ1MQXZnpzABRfEmkNxxkZxwDW0jFFqtK7fWNVvFvb8okP7vb1Al
+    w3yA8Uv9AkEAx5IkGiaymWdpZ2hllZkhZTf4gkh/3dInrzCrZ9SCaW4xqWRHNV5R
+    G+UnkBZBgZ7RjHzqzNP1u2Pb5+8O+p4osQJBALkVNV9ZLTPCQgYGh6VOMk2cPyhM
+    7xf9oBzN4yKHXPTArjZT40f+aIhB3kC2Z5RmvC4O4r+kp6C3M74B50VnNkECQATz
+    o0fPpG/R3JVR8oXgdCRqmh2A7umgoTxISJ3b8aEZ8ZqZoN8BrWTygjNq2mDnS6W9
+    xe0kQw2cTjZJKuf9HYECQF5FzCzUOzY6t+bw9kgkguAQnAz92qlJ+Soj+0cikBbe
+    1mDyBZQZPVby7Vf97UZjZqOfCKJdHKQ7CFIRaQO09bg=
+    -----END RSA PRIVATE KEY-----
     show_if: "certificat.login_method=local"
 
 # local_finalizer.cert
@@ -42,6 +58,20 @@ questions:
     description: "Paste your internal CA public certificate (PEM format)"
     type: multiline
     required: true
+    default: |
+    -----BEGIN CERTIFICATE-----
+    MIIC0jCCAbqgAwIBAgIJALYvmUI8FGibMA0GCSqGSIb3DQEBCwUAMBMxETAPBgNV
+    BAMMCHJvb3QuY29tMB4XDTE5MDkwNDEzNTYxMloXDTI5MDkwMTEzNTYxMlowEzER
+    MA8GA1UEAwwIcm9vdC5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALtl
+    z2Yrs/2UdfVfJJ3Hm0r02NEv4qMv6Xy9LekSvtgn59vYYWdsI3sonOYMK5n7MBo/
+    ymb8QyPFn4129jDaYXl1lXT1ur4pTnZdi7DtlUMswjf+RospxDBGbYW3HxsVqTju
+    K9Ddcw42Ys9fapxULesRtPQ9Ob3NN87WXhbGDq9jAgMBAAGjUzBRMB0GA1UdDgQW
+    BBQK1JRM2FzS0Cl5hzKAZF9K+RZrAzAfBgNVHSMEGDAWgBQK1JRM2FzS0Cl5hzKA
+    ZF9K+RZrAzAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4GBAGVshz4K
+    wKq9HpXyFuNdBv8pJnlB07on6rHC3pz4NZKTy7hK3uFWp3jF1v6OyVUNLGHaLzK0
+    T8Lsx6WOPJqZmxnhF+X9mY5U5QzcfX8XjEGdd0L5ZgBPSwhk7n6vF6+y9VKBYqpC
+    XhQyxFQ00e8MQmT4SPgJKdM+tkZcXxVCpZq6
+    -----END CERTIFICATE-----
     show_if: "certificat.login_method=local"
 
   - variable: certificat.login_method

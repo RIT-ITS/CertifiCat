@@ -33,9 +33,9 @@ saml:
   {{- else }}
   idp:
     mdq:
-      - url: "http://mdq.incommon.org"
-        cert: "/srv/www/config/inc-md-cert-mdq.pem"
-        freshness_period: "P0Y0M0DT2H0M0S"
+      - url: "{{ $.Values.certificat.saml.idp.mdq.url }}"
+        cert: "{{ $.Values.certificat.saml.idp.mdq.cert }}"
+        freshness_period: "{{ $.Values.certificat.saml.idp.mdq.freshness_period }}"
   {{- end }}
 {{- end }}
 

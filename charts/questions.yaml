@@ -28,6 +28,28 @@ questions:
     required: false
     default: latest
 
+  - variable: certificat.logging.certificat_level
+    label: "Logging Level: Certificat"
+    description: "Log level for certificat app"
+    type: string
+    default: "DEBUG"
+
+  - variable: certificat.logging.acmev2_level
+    label: "Logging Level: ACMEv2"
+    description: "Log level for ACME module"
+    type: string
+    default: "DEBUG"
+
+  - variable: certificat.login_method
+    label: "Login Method"
+    description: "Choose authentication mode for CertifiCat"
+    type: enum
+    required: true
+    default: "local"
+    options:
+      - "saml"
+      - "local"
+
 # local_finalizer.key
   - variable: certificat.local_finalizer.key
     label: "Local Finalizer Private Key"
@@ -75,16 +97,6 @@ questions:
       -----END CERTIFICATE-----
     
     show_if: "certificat.login_method=local"
-
-  - variable: certificat.login_method
-    label: "Login Method"
-    description: "Choose authentication mode for CertifiCat"
-    type: enum
-    required: true
-    default: "local"
-    options:
-      - "saml"
-      - "local"
 
   # SAML-Specific Fields
   - variable: certificat.saml.debug

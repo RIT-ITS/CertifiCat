@@ -135,6 +135,33 @@ questions:
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
 
+# saml.idp.mdq.url
+  - variable: certificat.saml.idp.mdq.url
+    label: "SAML IdP MDQ URL"
+    description: "URL to the SAML metadata query (MDQ) service"
+    type: string
+    default: "http://mdq.incommon.org"
+    show_if: "certificat.login_method=saml"
+    group: "Certificat SAML"
+
+# saml.idp.mdq.cert
+  - variable: certificat.saml.idp.mdq.cert
+    label: "SAML IdP MDQ Certificate Path"
+    description: "Path to the cert used to verify metadata from the MDQ"
+    type: string
+    default: "/srv/www/config/inc-md-cert-mdq.pem"
+    show_if: "certificat.login_method=saml"
+    group: "Certificat SAML"
+
+# saml.idp.mdq.freshness_period
+  - variable: certificat.saml.idp.mdq.freshness_period
+    label: "SAML IdP MDQ Freshness Period"
+    description: "How long the IdP metadata is considered valid (e.g., P0Y0M0DT2H0M0S)"
+    type: string
+    default: "P0Y0M0DT2H0M0S"
+    show_if: "certificat.login_method=saml"
+    group: "Certificat SAML"
+    
   - variable: certificat.saml.attribute_mapping.eduPersonPrincipalName
     label: "SAML Attribute Mapping: eduPersonPrincipalName"
     description: "Maps to the Django username field"

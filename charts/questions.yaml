@@ -6,25 +6,19 @@ questions:
   - variable: persistentVolumeClaim.storageClassName
     default: nfs-client
     description: What storage class to use for the PersistentVolumeClaim
-    type: enum
-    options:
-      - nfs-client
+    type: string
     label: Storage Class for PVC
 
   - variable: ingress.hostname
     default: certificat.k8s-admin.its.maine.edu
     description: Hostname of your Certificat Instance
-    type: enum
-    options:
-      - certificat.k8s-admin.its.maine.edu
+    type: string
     label: Hostname
 
   - variable: certificat_image.repository
     default: ghcr.io/rit-its/certificat
     description: Repository URL for the Certificat container image
-    type: enum
-    options:
-      - ghcr.io/rit-its/certificat
+    type: string
     label: Repository
 
   - variable: certificat_image.tag
@@ -36,7 +30,7 @@ questions:
 
   - variable: certificat.logging.certificat_level
     label: "Logging Level: Certificat"
-    description: "Log level for certificat app"
+    description: "Log level for CertifiCat app"
     type: string
     default: "DEBUG"
 

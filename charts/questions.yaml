@@ -50,6 +50,7 @@ questions:
     xe0kQw2cTjZJKuf9HYECQF5FzCzUOzY6t+bw9kgkguAQnAz92qlJ+Soj+0cikBbe
     1mDyBZQZPVby7Vf97UZjZqOfCKJdHKQ7CFIRaQO09bg=
     -----END RSA PRIVATE KEY-----
+
     show_if: "certificat.login_method=local"
 
 # local_finalizer.cert
@@ -72,6 +73,7 @@ questions:
     T8Lsx6WOPJqZmxnhF+X9mY5U5QzcfX8XjEGdd0L5ZgBPSwhk7n6vF6+y9VKBYqpC
     XhQyxFQ00e8MQmT4SPgJKdM+tkZcXxVCpZq6
     -----END CERTIFICATE-----
+    
     show_if: "certificat.login_method=local"
 
   - variable: certificat.login_method

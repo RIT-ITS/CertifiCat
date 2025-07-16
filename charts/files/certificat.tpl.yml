@@ -42,7 +42,7 @@ saml:
 {{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}
 local_finalizer:
   key: |
-{{ .Values.certificat.local_finalizer.key | nindent 4 }}
+{{- .Values.certificat.local_finalizer.key | nindent 4 }}
   cert: |
-{{ .Values.certificat.local_finalizer.cert | nindent 4 }}
+{{- .Values.certificat.local_finalizer.cert | nindent 4 }}
 {{- end }}

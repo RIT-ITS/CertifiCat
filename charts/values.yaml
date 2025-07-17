@@ -79,6 +79,9 @@ secretProviders:
             # password: ""
 
         saml:
+          extra_settings:
+            want_response_signed: false
+            want_assertions_signed: true
           debug: False
           # Maps default attributes released by the InCommon federation
           # https://incommon.org/federation/attributes/

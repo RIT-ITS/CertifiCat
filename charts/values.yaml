@@ -29,10 +29,14 @@ certificat:
   saml:
     debug: true
     attribute_mapping:
-      eduPersonPrincipalName: username
-      mail: email
-      givenName: first_name
-      sn: last_name
+      eduPersonPrincipalName: 
+        - username
+      mail: 
+        - email
+      givenName: 
+        - first_name
+      sn: 
+        - last_name
     extra_settings:
       want_response_signed: false
       want_assertions_signed: true

@@ -5,8 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace | default .Values.namespace }}
   labels:
     {{- include "..labels" . | nindent 4 }}
-spec:  
-  replicas: 1  
+spec:
+  replicas: 1
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -29,7 +29,7 @@ spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
-      {{- end }}      
+      {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -68,7 +68,6 @@ spec:
               path: /directory/
               port: 80
           startupProbe:
-            # __pycache__ information needs to be regenerated on startup
             timeoutSeconds: 10
             httpGet:
               path: /directory/
@@ -76,8 +75,12 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - mountPath: /srv/www/config/
-            name: {{ .Values.secretProviders.certificat.name }}-volume
+            - mountPath: /srv/www/config/
+              name: {{ .Values.secretProviders.certificat.name }}-volume
+            - mountPath: /etc/certificat
+              name: certificat-saml-sp
+              readOnly: true
+
         - name: {{ .Chart.Name }}-tasks
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -101,11 +104,11 @@ spec:
                   key: {{ $value }}
             {{- end }}
             {{- end }}
-          imagePullPolicy: {{ .Values.certificat_image.pullPolicy }}          
+          imagePullPolicy: {{ .Values.certificat_image.pullPolicy }}
           livenessProbe:
             exec:
               command:
-                - /srv/www/.venv/bin/python 
+                - /srv/www/.venv/bin/python
                 - /srv/www/manage.py
                 - huey_healthcheck
             initialDelaySeconds: 30
@@ -123,15 +126,23 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - mountPath: /srv/www/config/
-            name: {{ .Values.secretProviders.certificat.name }}-volume
+            - mountPath: /srv/www/config/
+              name: {{ .Values.secretProviders.certificat.name }}-volume
+            - mountPath: /etc/certificat
+              name: certificat-saml-sp
+              readOnly: true
+
       volumes:
-      - name: "{{ .Values.secretProviders.certificat.name }}-volume"
-        secret:
-          secretName: {{ .Values.secretProviders.certificat.name }}
-      - name: "{{ .Values.secretProviders.generated.name }}-volume"
-        secret:
-          secretName: {{ .Values.secretProviders.generated.name }}
+        - name: "{{ .Values.secretProviders.certificat.name }}-volume"
+          secret:
+            secretName: {{ .Values.secretProviders.certificat.name }}
+        - name: "{{ .Values.secretProviders.generated.name }}-volume"
+          secret:
+            secretName: {{ .Values.secretProviders.generated.name }}
+        - name: certificat-saml-sp
+          secret:
+            secretName: certificat-saml-sp
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -144,7 +155,6 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
 ---
 
 apiVersion: v1

@@ -18,4 +18,5 @@ urlpatterns = [
         name="fetch_user_groups",
     ),
     path("api/cert-activity", views.cert_activity, name="cert_activity"),
+    path("api/order/<order_name>/events", views.order_events, name="order_events"),
 ]

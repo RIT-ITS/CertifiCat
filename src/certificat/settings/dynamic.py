@@ -128,6 +128,10 @@ class ApplicationSettings(Settings):
         True,
         description="If set to True, invalid orders will be purged after some time.",
     )
+    beacon_enabled: bool = Field(
+        True,
+        description="If true, will send tracking information about usage to RIT. All tracking info is logged.",
+    )
 
 
 class LocalCASettings(BaseModel):

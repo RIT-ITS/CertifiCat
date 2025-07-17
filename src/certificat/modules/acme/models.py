@@ -1,30 +1,32 @@
 import json
+import operator
 import random
 import string
 from enum import Enum
 from typing import List, Mapping, Self
 
 from django.core.serializers.json import DjangoJSONEncoder
+from certificat.modules.acme.pydantic import (
+    DjangoAccountResource,
+    DjangoAuthorizationResource,
+    DjangoBaseModel,
+    DjangoCertResource,
+    DjangoHTTPChallengeResource,
+    DjangoIdentifierResource,
+    DjangoOrderResource,
+)
 from certificat.utils import unprefix_group
 import cryptography
 import cryptography.x509
 import cryptography.x509.extensions
 import inject
 from acmev2.models import (
-    AccountResource,
     AccountStatus,
-    AuthorizationResource,
     AuthorizationStatus,
-    CertResource,
     ChallengeStatus,
     ChallengeType,
-    HTTPChallengeResource,
     IdentifierType,
-    OrderResource,
     OrderStatus,
-)
-from acmev2.models import (
-    Identifier as IdentifierResource,
 )
 from acmev2.services import IDirectoryService, ACMEEndpoint
 from django.conf import settings
@@ -40,6 +42,15 @@ from cryptography import x509
 from certificat.settings.dynamic import ApplicationSettings
 from certificat.modules.html.contextvars import request_context
 from datetime import datetime
+
+
+class Dictable:
+    dict_fields = [
+        "id",
+    ]
+
+    def to_dict(self):
+        return {name: operator.attrgetter(name)(self) for name in self.dict_fields}
 
 
 def choices(obj: Enum) -> Mapping[str, str]:
@@ -173,8 +184,9 @@ class OrderManager(models.Manager):
         )
 
 
-class Order(TimestampMixin):
+class Order(TimestampMixin, Dictable):
     objects = OrderManager()
+    dict_fields = ["id", "name", "repr"]
 
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="orders"
@@ -185,6 +197,10 @@ class Order(TimestampMixin):
     expires = models.DateTimeField()
 
     events = GenericRelation("TaggedEvent")
+
+    @property
+    def repr(self):
+        return f"Order <{self.name}>"
 
     def __str__(self):
         return self.name
@@ -207,12 +223,17 @@ class CertificateMetadata(BaseModel):
     sans: List[str]
 
 
-class Certificate(TimestampMixin):
+class Certificate(TimestampMixin, Dictable):
+    dict_fields = ["id", "repr"]
     order = models.OneToOneField(
         Order, on_delete=models.CASCADE, related_name="certificate"
     )
     metadata = models.JSONField(null=True, encoder=DjangoJSONEncoder)
     chain = models.TextField()
+
+    @property
+    def repr(self):
+        return f"Certificate <{self.order.name}>"
 
     def __str__(self):
         return self.order.name
@@ -285,7 +306,8 @@ class Identifier(TimestampMixin):
         return f"{self.type}: {self.value}"
 
 
-class Authorization(TimestampMixin):
+class Authorization(TimestampMixin, Dictable):
+    dict_fields = ["id", "name", "repr"]
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name="authorizations"
     )
@@ -296,6 +318,10 @@ class Authorization(TimestampMixin):
     name = models.CharField(max_length=15, unique=True)
     status = models.CharField(max_length=15, choices=choices(AuthorizationStatus))
     expires = models.DateTimeField()
+
+    @property
+    def repr(self):
+        return f"Authorization <{self.name}>"
 
     def is_valid(self):
         return self.status == AuthorizationStatus.valid
@@ -311,7 +337,8 @@ class Authorization(TimestampMixin):
                 return chall
 
 
-class Challenge(TimestampMixin):
+class Challenge(TimestampMixin, Dictable):
+    dict_fields = ["id", "name", "repr"]
     authorization = models.ForeignKey(
         Authorization, on_delete=models.CASCADE, related_name="challenges"
     )
@@ -321,6 +348,10 @@ class Challenge(TimestampMixin):
     token = models.CharField(max_length=100)
     status = models.CharField(max_length=15, choices=choices(ChallengeStatus))
     validated = models.DateTimeField(null=True)
+
+    @property
+    def repr(self):
+        return f"Challenge <{self.name}>"
 
     def first_error(self):
         query = self.errors.all()
@@ -362,10 +393,11 @@ class SectigoOrderProcessingState(TimestampMixin):
         self.save()
 
 
-def to_pydantic(model: models.Model) -> BaseModel:
+def to_pydantic(model: models.Model) -> DjangoBaseModel:
     match model:
         case Account():
-            return AccountResource(
+            return DjangoAccountResource(
+                model_id=model.id,
                 id=model.name,
                 status=model.status,
                 # Terms of service have to be agreed to for an entry
@@ -374,7 +406,8 @@ def to_pydantic(model: models.Model) -> BaseModel:
                 jwk=JWK.from_json(json.loads(model.jwk)),
             )
         case Order():
-            return OrderResource(
+            return DjangoOrderResource(
+                model_id=model.id,
                 id=model.name,
                 account_id=model.account.name,
                 status=model.status,
@@ -383,7 +416,8 @@ def to_pydantic(model: models.Model) -> BaseModel:
                 authorizations=[to_pydantic(a) for a in model.authorizations.all()],
             )
         case Authorization():
-            return AuthorizationResource(
+            return DjangoAuthorizationResource(
+                model_id=model.id,
                 id=model.name,
                 order_id=model.order.name,
                 status=model.status,
@@ -392,7 +426,8 @@ def to_pydantic(model: models.Model) -> BaseModel:
                 challenges=[to_pydantic(c) for c in model.challenges.all()],
             )
         case Challenge():
-            return HTTPChallengeResource(
+            return DjangoHTTPChallengeResource(
+                model_id=model.id,
                 id=model.name,
                 authz_id=model.authorization.name,
                 type=model.type,
@@ -401,9 +436,13 @@ def to_pydantic(model: models.Model) -> BaseModel:
                 validated=make_naive(model.validated) if model.validated else None,
             )
         case Identifier():
-            return IdentifierResource(id=model.id, type=model.type, value=model.value)
+            return DjangoIdentifierResource(
+                model_id=model.id, id=model.id, type=model.type, value=model.value
+            )
         case Certificate():
-            return CertResource(id=model.order.name, pem=model.chain)
+            return DjangoCertResource(
+                model_id=model.id, id=model.order.name, pem=model.chain
+            )
         case _:
             raise Exception(
                 f"Error converting model {model} to pydantic representation"
@@ -412,10 +451,37 @@ def to_pydantic(model: models.Model) -> BaseModel:
 
 class OrderEventType(models.TextChoices):
     CREATED = "ord.Created", "Order created"
+    STATUS_UPDATED = "ord.StatUpdate", "Order status update"
+    FINALIZATION_QUEUED = "ord.FinQueued", "Order finalization queued"
+    FINALIZATION_PASSED = "ord.FinPassed", "Order finalized"
+    FINALIZATION_FAILED = "ord.FinFailed", "Order finalization failed"
 
 
 class AccountEventType(models.TextChoices):
     BOUND = "acct.Bound", "Account bound"
+
+
+class AuthorizationEventType(models.TextChoices):
+    CREATED = "auth.Created", "Authorization created"
+    STATUS_UPDATED = "auth.StatUpdate", "Authorization status update"
+
+
+class ChallengeEventType(models.TextChoices):
+    CREATED = "chall.Created", "Challenge created"
+    STATUS_UPDATED = "chall.StatUpdate", "Challenge status update"
+    VALIDATION_QUEUED = "chall.ValQueued", "Challenge validation queued"
+    VALIDATION_PASSED = "chall.ValPassed", "Challenge validation passed"
+    VALIDATION_FAILED = "chall.ValFailed", "Challenge validation failed"
+
+
+ALL_EVENT_CHOICES = (
+    OrderEventType.choices
+    + AccountEventType.choices
+    + AuthorizationEventType.choices
+    + ChallengeEventType.choices
+)
+
+ALL_EVENT_CHOICES_DICT = {c[0]: c[1] for c in ALL_EVENT_CHOICES}
 
 
 class TaggedEvent(models.Model):
@@ -440,17 +506,32 @@ class TaggedEvent(models.Model):
 
         return evt
 
+    @classmethod
+    def record_by_type(cls, event: str, object_type: type, object_id: int, **kwargs):
+        evt = TaggedEvent(
+            content_type=ContentType.objects.get_for_model(object_type),
+            object_id=object_id,
+            event_type=event,
+            **kwargs,
+        )
+        evt.save()
+        return evt
+
+    def get_event_type_display(self):
+        return ALL_EVENT_CHOICES_DICT.get(self.event_type)
+
     def save(self, *args, **kwargs):
         req = request_context.get()
 
-        x_forwarded_for = req.META.get("HTTP_X_FORWARDED_FOR")
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(",")[0]
-        else:
-            ip = req.META.get("REMOTE_ADDR")
+        if req:
+            x_forwarded_for = req.META.get("HTTP_X_FORWARDED_FOR")
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(",")[0]
+            else:
+                ip = req.META.get("REMOTE_ADDR")
 
         defaults = {
-            "ip_address": ip,
+            "ip_address": ip if req else None,
             "triggered_by": req.user if req and not req.user.is_anonymous else None,
             "user_agent": req.META.get("HTTP_USER_AGENT") if req else None,
         }
@@ -467,3 +548,45 @@ class TaggedEvent(models.Model):
             models.Index(fields=["event_type"]),
             models.Index(fields=["content_type", "object_id"]),
         ]
+
+
+class Config(models.Model):
+    """
+    A model to store key-value configuration settings.
+    """
+
+    key = models.CharField(
+        max_length=255, unique=True, help_text="Unique key for the setting"
+    )
+    value = models.TextField(blank=True, help_text="Value of the setting")
+    description = models.TextField(blank=True, help_text="Description of the setting")
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+
+    @classmethod
+    def get(cls, key: str, default=None):
+        """
+        Retrieves a setting by its key.
+        Returns default if the key is not found.
+        """
+        try:
+            setting = cls.objects.get(key=key)
+            return setting.value
+        except cls.DoesNotExist:
+            return default
+
+    @classmethod
+    def set(cls, key: str, value: str, description=""):
+        """
+        Creates or updates a setting.
+        """
+        setting, _ = cls.objects.update_or_create(
+            key=key, defaults={"value": value, "description": description}
+        )
+        return setting
+
+    class Meta:
+        verbose_name = "Configuration Setting"
+        verbose_name_plural = "Configuration Settings"
+        ordering = ["key"]

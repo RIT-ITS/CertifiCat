@@ -9,6 +9,7 @@ HUEY = {
     "huey_class": "huey.PriorityRedisHuey",  # Huey implementation to use.
     "name": "huey",  # Use db name for huey.
     "immediate": False,
+    "utc": False,
     "blocking": True,  # Perform blocking pop rather than poll Redis.
     "connection": {
         "host": dynamic_settings.redis.host,

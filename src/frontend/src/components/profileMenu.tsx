@@ -14,7 +14,7 @@ export class ProfileMenuElement extends LitElement {
 
     override connectedCallback(): void {
         super.connectedCallback();
-        this.submenuToggle.addEventListener("click", this.toggle);
+        this.submenuToggle.addEventListener("mousedown", this.toggle);
         this.submenu.addEventListener("mousedown", this.submenuClick);
         document.addEventListener("mousedown", this.hide);
         document.addEventListener("scroll", this.hide);

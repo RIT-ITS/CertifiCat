@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone, dateparse
 from django.db.models import Func
 from django.views.decorators.cache import cache_page
+from django.contrib.contenttypes.models import ContentType
 
 
 class TruncDayNaive(Func):
@@ -101,3 +102,79 @@ def edit_binding(request: HttpRequest, binding_name):
     binding.save()
 
     return HttpResponse(status=200)
+
+
+@login_required
+@require_http_methods(["GET"])
+def order_events(request, order_name):
+    order = get_object_or_404(
+        db.Order.objects.select_related("account", "account__binding"), name=order_name
+    )
+    if not order.account.binding.accessible_by(request.user):
+        return HttpResponse(status=403)
+
+    tagged_items: dict[int, dict[int, object]] = {}
+    event_sources: list[tuple[type, list[int]]] = []
+    order = get_object_or_404(db.Order, name=order_name)
+
+    tagged_items[ContentType.objects.get_for_model(db.Order).id] = {order.id: order}
+    event_sources.append((db.Order, [order.id]))
+
+    tagged_items[ContentType.objects.get_for_model(db.Authorization).id] = {
+        auth.id: auth for auth in order.authorizations.all()
+    }
+    event_sources.append(
+        (db.Authorization, [auth.id for auth in order.authorizations.all()])
+    )
+
+    challenge_ids = []
+    for authorization in order.authorizations.all():
+        challenge_ids.extend(c.id for c in authorization.challenges.all())
+
+    tagged_items[ContentType.objects.get_for_model(db.Challenge).id] = {
+        c.id: c for a in order.authorizations.all() for c in a.challenges.all()
+    }
+    event_sources.append((db.Challenge, challenge_ids))
+
+    try:
+        tagged_items[ContentType.objects.get_for_model(db.Certificate).id] = {
+            order.certificate.id: order.certificate
+        }
+        event_sources.append((db.Certificate, [order.certificate.id]))
+    except db.Certificate.DoesNotExist:
+        pass
+
+    events = []
+    for klass, source_ids in event_sources:
+        events.extend(
+            db.TaggedEvent.objects.filter(
+                content_type=ContentType.objects.get_for_model(klass),
+                object_id__in=source_ids,
+            )
+        )
+
+    events = [
+        {
+            "source": {
+                "content_type": event.content_type_id,
+                "object_id": event.object_id,
+            },
+            "created_at": event.created_at.isoformat(),
+            "ip_address": event.ip_address,
+            "user_agent": event.user_agent,
+            "event_type": event.event_type,
+            "event_type_display": event.get_event_type_display(),
+            "payload": event.payload,
+        }
+        for event in sorted(events, key=lambda e: e.created_at)
+    ]
+
+    def serialize_objects(objects: dict[int, object]):
+        return {key: value.to_dict() for key, value in objects.items()}
+
+    serialized_tagged_items = {
+        key: serialize_objects(objects) for key, objects in tagged_items.items()
+    }
+    return JsonResponse(
+        {"events": events, "sources": serialized_tagged_items}, safe=False
+    )

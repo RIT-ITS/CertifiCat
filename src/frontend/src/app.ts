@@ -11,6 +11,7 @@ import "./components/accountAccessManager";
 import "./components/confirmButton";
 import "./components/fadeOnLoad";
 import "./components/activityGraph";
+import "./components/orderHistory";
 
 // adds label attribute to table data for responsive tables
 document.querySelectorAll("table.collapsible").forEach((table) => {

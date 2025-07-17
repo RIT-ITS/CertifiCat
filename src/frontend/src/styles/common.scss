@@ -13,6 +13,7 @@
 @use './fontawesome/scss/regular.scss';
 @use './fontawesome/scss/solid.scss';
 @use './heatcalendar.scss';
+@use './orderHistory.scss';
 @use 'nav';
 
 @use 'sass:color';
@@ -28,6 +29,7 @@ body {
     -webkit-font-smoothing: antialiased;
     color: theme.$bodyTextColor;
     line-height: 1.5;
+    overflow-y: scroll;
 
     >* {
         width: 100%;
@@ -96,9 +98,9 @@ li {
 
 .chip {
     box-sizing: border-box;
-    padding: $spacer *.25 $spacer*.5;
-    border: 1px solid;
-    border-radius: 10px;
+    padding: $spacer *.35 $spacer*.75;
+    //border: 2px solid #FFF;
+    border-radius: 15px;
     font-weight: bold;
 
     font-size: .8rem;
@@ -106,26 +108,25 @@ li {
     &.chip-success {
         color: color.mix(theme.$accentGreen, white, 10%);
         background-color: theme.$accentGreen;
-        border-color: color.mix(theme.$accentGreen, black, 70%);
+        //box-shadow: 0px 0px 0 2px theme.$accentGreen;
     }
 
     &.chip-warning {
         color: color.mix(theme.$accentOrange, white, 10%);
         background-color: theme.$accentOrange;
-        border-color: color.mix(theme.$accentOrange, black, 70%);
-
+        //box-shadow: 0px 0px 0 2px theme.$accentOrange;
     }
 
     &.chip-info {
         color: color.mix(theme.$accentBlue, white, 10%);
         background-color: theme.$accentBlue;
-        border-color: color.mix(theme.$accentBlue, black, 70%);
+        //box-shadow: 0px 0px 0 2px theme.$accentBlue;
     }
 
     &.chip-danger {
         color: color.mix(theme.$accentRed, white, 10%);
         background-color: theme.$accentRed;
-        border-color: color.mix(theme.$accentRed, black, 70%);
+        //box-shadow: 0px 0px 0 2px theme.$accentRed;
     }
 }
 

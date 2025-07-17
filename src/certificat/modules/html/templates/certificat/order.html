@@ -38,99 +38,104 @@
         <dd>
             <c-status :status="order.status" />
         </dd>
-
     </dl>
 
-    <h4 class="mt-5 icon"><i class="fa-solid fa-list-check"></i>Authorizations</h4>
-    <c-table name="authorizations">
-        <c-slot name="head">
-            <tr>
-                <th>Expiration</th>
-                <th>Name</th>
-                <th>Challenges</th>                        
-                <th>Identifier</th>
-                <th>Status</th>
-                <th>Validated</th>
-            </tr>
-        </c-slot>
-        <c-slot name="body">
-            {% for auth in order.authorizations.all %}
-                <tr>
-                    <td class="expires_at">
-                        {{ auth.expires }}
-                    </td>
-                    <td class="name">
-                        {{ auth.name }}
-                    </td>
-                    <td class="challenges">
-                        {% for chall in auth.challenges.all %}
-                            {{ chall.type }}{% if not forloop.last %},{% endif %}
-                        {% endfor %}
-                    </td>
-                    <td class="identifier">
-                        {{ auth.identifier.value }}
-                    </td>
-                    <td class="status">
-                        <c-status :status="auth.status" />
-                    </td>
-                    <td class="validated_at">
-                        {% if auth.is_valid %}{{ auth.first_valid_challenge.validated }}{% endif %}
-                    </td>
-                </tr>
-                {% if auth.status == 'invalid' %}
-                <tr class="error-row">
-                    <td colspan="100%" class="p0">
-                        <div class="challenge--error">
-                            {{ auth.first_invalid_challenge.first_error.error }}
-                            <div class="subtext">{{ auth.first_invalid_challenge.first_error.created_at }}</div>
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
-            {% empty %}
-                <tr>
-                    <td colspan="100%"><p style="text-align:center;">No recent orders.</p></td>
-                </tr>
-            {% endfor %}
-        </c-slot>
-    </c-table>
-    
-    {% if order.certificate_request %}
-        <h4 class="mt-5 icon"><i class="fa-solid fa-key"></i>Certificate Signing Request</h4>
-        <div class="divider mb-3"></div>
-        <div class="monospaced pre-line mt-3">{{ order.certificate_request.csr }}</div>
-    {% endif %}
-
-    {% if not order.certificate %}
-        {% with err=order.last_finalization_error %}
-            {% if err %}
-                <h4 class="mt-5">Finalization</h4>
-                <div role="contentinfo" class="messages messages--error">
-                    {{ err.error }}
-                </div>
+    <c-tabs bordered class="mt-4">
+        <c-tab group="order" id="general" label="Order Information" default>
+            <h4 class="mt-4 icon"><i class="fa-solid fa-list-check"></i>Authorizations</h4>
+            <c-table name="authorizations">
+                <c-slot name="head">
+                    <tr>
+                        <th>Expiration</th>
+                        <th>Name</th>
+                        <th>Challenges</th>                        
+                        <th>Identifier</th>
+                        <th>Status</th>
+                        <th>Validated</th>
+                    </tr>
+                </c-slot>
+                <c-slot name="body">
+                    {% for auth in order.authorizations.all %}
+                        <tr>
+                            <td class="expires_at">
+                                {{ auth.expires }}
+                            </td>
+                            <td class="name">
+                                {{ auth.name }}
+                            </td>
+                            <td class="challenges">
+                                {% for chall in auth.challenges.all %}
+                                    {{ chall.type }}{% if not forloop.last %},{% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="identifier">
+                                {{ auth.identifier.value }}
+                            </td>
+                            <td class="status">
+                                <c-status :status="auth.status" />
+                            </td>
+                            <td class="validated_at">
+                                {% if auth.is_valid %}{{ auth.first_valid_challenge.validated }}{% endif %}
+                            </td>
+                        </tr>
+                        {% if auth.status == 'invalid' %}
+                        <tr class="error-row">
+                            <td colspan="100%" class="p0">
+                                <div class="challenge--error">
+                                    {{ auth.first_invalid_challenge.first_error.error }}
+                                    <div class="subtext">{{ auth.first_invalid_challenge.first_error.created_at }}</div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="100%"><p style="text-align:center;">No recent orders.</p></td>
+                        </tr>
+                    {% endfor %}
+                </c-slot>
+            </c-table>
+            
+            {% if order.certificate_request %}
+                <h4 class="mt-5 icon"><i class="fa-solid fa-key"></i>Certificate Signing Request</h4>
+                <div class="divider mb-3"></div>
+                <div class="monospaced pre-line mt-3">{{ order.certificate_request.csr }}</div>
             {% endif %}
-        {% endwith %}
-    {% else %}
-        <h4 class="mt-5 icon"><i class="fa-solid fa-chain"></i>Certificate Chain</h4>
-        <div class="divider"></div>
 
-        <c-tabs bordered>
-            <c-tab group="cert" id="decoded" label="Data" default>
-                {% for cert in order.certificate.chain|to_x509 %}
-                    {% if not forloop.first %}
-                    <div class="divider my-4"></div>
+            {% if not order.certificate %}
+                {% with err=order.last_finalization_error %}
+                    {% if err %}
+                        <h4 class="mt-5">Finalization</h4>
+                        <div role="contentinfo" class="messages messages--error">
+                            {{ err.error }}
+                        </div>
                     {% endif %}
-                    <c-certificate.decoded-cert :cert="cert" />
-                {% endfor %}
-            </c-tab>
-            <c-tab group="cert" id="pem" label="PEM Format">
-                <div class="monospaced pre-line mt-3">{{ order.certificate.chain }}</div>
-            </c-tab>
-        </c-tabs>
+                {% endwith %}
+            {% else %}
+                <h4 class="mt-5 icon"><i class="fa-solid fa-chain"></i>Certificate Chain</h4>
+                <div class="divider"></div>
 
-        
-    </div>
-    {% endif %}
+                <c-tabs bordered>
+                    <c-tab group="cert" id="decoded" label="Data" default>
+                        {% for cert in order.certificate.chain|to_x509 %}
+                            {% if not forloop.first %}
+                            <div class="divider my-4"></div>
+                            {% endif %}
+                            <c-certificate.decoded-cert :cert="cert" />
+                        {% endfor %}
+                    </c-tab>
+                    <c-tab group="cert" id="pem" label="PEM Format">
+                        <div class="monospaced pre-line mt-3">{{ order.certificate.chain }}</div>
+                    </c-tab>
+                </c-tabs>
+            {% endif %}
+        </c-tab>
+        <c-tab group="order" id="log" label="Event History">
+            <div class="mt-4">
+                <order-history url="{% url 'api:order_events' order.name %}"></order-history>
+            </div>
+        </c-tab>
+    </c-tabs>
 
 </c-layouts.base>
 {% endblock %}

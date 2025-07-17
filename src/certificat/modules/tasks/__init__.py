@@ -6,6 +6,7 @@ import inject
 from . import finalize_order
 from . import validate_challenge
 from . import housekeeping
+from . import beacon
 
 logger = logging.getLogger(__name__)
 
@@ -35,3 +36,10 @@ def deferred_task_setup():
         retry_delay=app_settings.challenge_retry_delay,
         context=True,
     )(validate_challenge.validate_challenge_task)
+
+    if app_settings.beacon_enabled:
+        logger.info(
+            "A stat-gathering beacon has been enabled. This will send installed version, certificates issued per day, and a non-identifiable guid to RIT for usage data collection. To disable, set beacon_enabled to false in the config."
+        )
+    else:
+        logger.info("Stat-gathering beacon disabled.")

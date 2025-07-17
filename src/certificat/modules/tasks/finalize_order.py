@@ -39,6 +39,7 @@ def _run_task(order_name: str):
     try:
         finalize_response: FinalizeResponse = finalizer.finalize(order, csr)
         if finalize_response.ok():
+            db.TaggedEvent.record(db.OrderEventType.FINALIZATION_PASSED, order)
             # TODO: Move to service?
             order.status = OrderStatus.valid
             order.save()
@@ -86,6 +87,11 @@ def finalize_order_task(order_name: str, task=None):
 
                 order_service = inject.instance(IOrderService)
                 order_service.update_status(db.to_pydantic(order), OrderStatus.invalid)
+                db.TaggedEvent.record(
+                    db.OrderEventType.FINALIZATION_FAILED,
+                    order,
+                    payload={"reason": "Retries exceeded"},
+                )
         else:
             task.retries -= 1
             raise RetryTask("Finalization unsuccessful")

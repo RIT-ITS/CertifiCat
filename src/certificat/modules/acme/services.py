@@ -32,7 +32,6 @@ from . import models as db
 import json
 from certificat.modules import tasks
 from django.db import transaction
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import make_aware
 from django.utils import timezone
 
@@ -152,37 +151,44 @@ class OrderService(IOrderService):
         pass
 
     def create(self, resource: OrderResource) -> OrderResource:
-        order_name = gen_id()
-        while db.Order.objects.filter(name=order_name).exists():
+        with transaction.atomic():
             order_name = gen_id()
+            while db.Order.objects.filter(name=order_name).exists():
+                order_name = gen_id()
 
-        order = db.Order.objects.create(
-            account_id=Subquery(
-                db.Account.objects.filter(name=resource.account_id).values("id")[:1]
-            ),
-            name=order_name,
-            status=resource.status,
-            expires=make_aware(resource.expires),
-        )
-
-        db.TaggedEvent.record(db.OrderEventType.CREATED, order)
-
-        # Create identifiers
-        for identifier in resource.identifiers:
-            identifier_record = db.Identifier.objects.create(
-                order=order, type=identifier.type, value=identifier.value
+            order = db.Order.objects.create(
+                account_id=Subquery(
+                    db.Account.objects.filter(name=resource.account_id).values("id")[:1]
+                ),
+                name=order_name,
+                status=resource.status,
+                expires=make_aware(resource.expires),
             )
-            identifier.id = identifier_record.id
 
-        resource.id = order.name
+            db.TaggedEvent.record(db.OrderEventType.CREATED, order)
 
-        return resource
+            # Create identifiers
+            for identifier in resource.identifiers:
+                identifier_record = db.Identifier.objects.create(
+                    order=order, type=identifier.type, value=identifier.value
+                )
+                identifier.id = identifier_record.id
+
+            resource.id = order.name
+
+            return resource
 
     def update_status(self, order: OrderResource, new_state: OrderStatus):
         if order.status == new_state:
             return order
 
         db.Order.objects.filter(name=order.id).update(status=new_state)
+        db.TaggedEvent.record_by_type(
+            db.OrderEventType.STATUS_UPDATED,
+            db.Order,
+            order.model_id,
+            payload={"from": order.status, "to": new_state},
+        )
         order.status = new_state
 
         return order
@@ -203,6 +209,9 @@ class OrderService(IOrderService):
                 ),
                 csr=csr.public_bytes(encoding=serialization.Encoding.PEM).decode(),
             )
+            db.TaggedEvent.record_by_type(
+                db.OrderEventType.FINALIZATION_QUEUED, db.Order, order.model_id
+            )
             tasks.finalize_order.finalize_order_task(order.id)
 
         return order
@@ -213,23 +222,25 @@ class AuthorizationService(IAuthorizationService):
         self.authorizations = {}
 
     def create(self, resource: AuthorizationResource) -> AuthorizationResource:
-        authz_name = gen_id()
-        while db.Authorization.objects.filter(name=authz_name).exists():
+        with transaction.atomic():
             authz_name = gen_id()
+            while db.Authorization.objects.filter(name=authz_name).exists():
+                authz_name = gen_id()
 
-        authz = db.Authorization.objects.create(
-            order_id=Subquery(
-                db.Order.objects.filter(name=resource.order_id).values("id")[:1]
-            ),
-            identifier_id=resource.identifier.id,
-            name=authz_name,
-            status=resource.status,
-            expires=make_aware(resource.expires),
-        )
+            authz = db.Authorization.objects.create(
+                order_id=Subquery(
+                    db.Order.objects.filter(name=resource.order_id).values("id")[:1]
+                ),
+                identifier_id=resource.identifier.id,
+                name=authz_name,
+                status=resource.status,
+                expires=make_aware(resource.expires),
+            )
+            db.TaggedEvent.record(db.AuthorizationEventType.CREATED, authz)
 
-        resource.id = authz.name
+            resource.id = authz.name
 
-        return resource
+            return resource
 
     def update_status(
         self, authz: AuthorizationResource, new_state: AuthorizationStatus
@@ -237,10 +248,17 @@ class AuthorizationService(IAuthorizationService):
         if authz.status == new_state:
             return authz
 
-        db.Authorization.objects.filter(name=authz.id).update(status=new_state)
-        authz.status = new_state
+        with transaction.atomic():
+            db.Authorization.objects.filter(name=authz.id).update(status=new_state)
+            db.TaggedEvent.record_by_type(
+                db.AuthorizationEventType.STATUS_UPDATED,
+                db.Authorization,
+                authz.model_id,
+                payload={"from": authz.status, "to": new_state},
+            )
+            authz.status = new_state
 
-        return authz
+            return authz
 
     def get(self, authz_id: str) -> AuthorizationResource | None:
         try:
@@ -262,36 +280,46 @@ class ChallengeService(IChallengeService):
         pass
 
     def create(self, resource: ChallengeResource) -> list[ChallengeResource]:
-        chall_name = gen_id()
-        while db.Challenge.objects.filter(name=chall_name).exists():
+        with transaction.atomic():
             chall_name = gen_id()
+            while db.Challenge.objects.filter(name=chall_name).exists():
+                chall_name = gen_id()
 
-        chall = db.Challenge.objects.create(
-            authorization_id=Subquery(
-                db.Authorization.objects.filter(name=resource.authz_id).values("id")[:1]
-            ),
-            name=chall_name,
-            token=resource.token,
-            type=resource.type,
-            status=resource.status,
-        )
+            chall = db.Challenge.objects.create(
+                authorization_id=Subquery(
+                    db.Authorization.objects.filter(name=resource.authz_id).values(
+                        "id"
+                    )[:1]
+                ),
+                name=chall_name,
+                token=resource.token,
+                type=resource.type,
+                status=resource.status,
+            )
+            db.TaggedEvent.record(db.ChallengeEventType.CREATED, chall)
 
-        resource.id = chall.name
+            resource.id = chall.name
 
-        return resource
+            return resource
 
     def update_status(self, chall: ChallengeResource, new_state: ChallengeStatus):
         if chall.status == new_state:
             return chall
 
-        updates = {"status": new_state}
-        if new_state == ChallengeStatus.valid:
-            updates["validated"] = timezone.now()
+        with transaction.atomic():
+            updates = {"status": new_state}
+            if new_state == ChallengeStatus.valid:
+                updates["validated"] = timezone.now()
 
-        db.Challenge.objects.filter(name=chall.id).update(**updates)
-        chall.status = new_state
+            db.Challenge.objects.filter(name=chall.id).update(**updates)
+            db.TaggedEvent.record(
+                db.ChallengeEventType.STATUS_UPDATED,
+                db.Challenge.objects.get(name=chall.id),
+                payload={"from": chall.status, "to": new_state},
+            )
+            chall.status = new_state
 
-        return chall
+            return chall
 
     def get(self, chall_id):
         try:
@@ -303,6 +331,9 @@ class ChallengeService(IChallengeService):
         with transaction.atomic():
             self.update_status(chall, ChallengeStatus.processing)
             tasks.validate_challenge.validate_challenge_task(chall.id)
+            db.TaggedEvent.record_by_type(
+                db.ChallengeEventType.VALIDATION_QUEUED, db.Challenge, chall.model_id
+            )
 
         return chall
 

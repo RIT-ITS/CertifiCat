@@ -142,10 +142,12 @@ table.orders {
 
 
         td.status {
+            text-align: center;
             @include shrink-cell;
         }
 
         td.status {
+            text-align: center;
             @include shrink-cell;
         }
 
@@ -197,10 +199,12 @@ table.authorizations {
             @include shrink-cell;
         }
         td.status {
+            text-align: center;
             @include shrink-cell;
         }
 
         td.status {
+            text-align: center;
             @include shrink-cell;
         }
 

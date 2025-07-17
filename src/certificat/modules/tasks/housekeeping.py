@@ -34,9 +34,9 @@ def delete_invalid_orders(task=None):
 
     # TODO: Make this a config value instead of statically 1
     # By default, delete after one week
-    yesterday = timezone.now() - timedelta(days=7)
+    cutoff = timezone.now() - timedelta(days=7)
     invalid_orders = db.Order.objects.filter(
-        status=OrderStatus.invalid, created_at__lte=yesterday
+        status=OrderStatus.invalid, created_at__lte=cutoff
     )
     logger.info(f"deleting {invalid_orders.count()} invalid orders")
     invalid_orders.delete()

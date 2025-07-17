@@ -77,6 +77,9 @@ def validate_challenge_task(challenge_name: str, task=None):
             )
 
         if passed:
+            db.TaggedEvent.record_by_type(
+                db.ChallengeEventType.VALIDATION_PASSED, db.Challenge, chall.model_id
+            )
             return True
 
         if task.retries == 0 or HUEY.immediate:
@@ -84,6 +87,12 @@ def validate_challenge_task(challenge_name: str, task=None):
             # to handle resubmission.
             logger.info(
                 f"{log_prefix}: retries exceeded, marking challenge and auth invalid"
+            )
+            db.TaggedEvent.record_by_type(
+                db.ChallengeEventType.VALIDATION_FAILED,
+                db.Challenge,
+                chall.model_id,
+                payload={"reason": "Retries exceeded"},
             )
             chall = chall_service.invalidate(order, authz, chall)
         else:

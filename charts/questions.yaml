@@ -123,19 +123,19 @@ questions:
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
 
-  - variable: certificat.saml.sp.key_file
-    label: "SAML SP Key File Path"
-    description: "Path to the private key file for the SP"
-    type: string
-    default: "/etc/certificat/insecure.key"
+  - variable: certificat.saml.sp.key
+    label: "SAML SP Private Key (PEM)"
+    description: "Paste your private key (PEM format)"
+    type: multiline
+    required: true
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
 
-  - variable: certificat.saml.sp.cert_file
-    label: "SAML SP Cert File Path"
-    description: "Path to the certificate file for the SP"
-    type: string
-    default: "/etc/certificat/insecure.crt"
+  - variable: certificat.saml.sp.cert
+    label: "SAML SP Certificate (PEM)"
+    description: "Paste your public certificate (PEM format)"
+    type: multiline
+    required: true
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
 

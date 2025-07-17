@@ -37,10 +37,8 @@ saml:
         cert: "{{ $.Values.certificat.saml.idp.mdq.cert }}"
         freshness_period: "{{ $.Values.certificat.saml.idp.mdq.freshness_period }}"
   {{- end }}
-
-  {{- with $.Values.certificat.saml.extra_settings }}
-  {{ toYaml . | indent 2 }}
-  {{- end }}
+  extra_settings:
+{{ toYaml $.Values.certificat.saml.extra_settings | indent 4 }}
 {{- end }}
 
 {{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}

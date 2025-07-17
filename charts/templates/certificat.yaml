@@ -46,6 +46,12 @@ spec:
               value: https://{{ .Values.ingress.hostname }}
             - name: SAML__SP__ENTITY_ID
               value: https://{{ .Values.ingress.hostname }}/saml2/metadata/
+            - name: http_proxy
+              value: http://proxy.its.maine.edu:3128
+            - name: https_proxy
+              value: http://proxy.its.maine.edu:3128
+            - name: no_proxy
+              value: localhost,127.0.0.1,::1,*.svc.cluster.local
             {{- range .Values.certificat_secrets }}
             {{- $from := .from}}
             {{- range $key, $value := .mapping }}
@@ -94,6 +100,12 @@ spec:
               value: https://{{ .Values.ingress.hostname }}
             - name: SAML__SP__ENTITY_ID
               value: https://{{ .Values.ingress.hostname }}/saml2/metadata/
+            - name: http_proxy
+              value: http://proxy.its.maine.edu:3128
+            - name: https_proxy
+              value: http://proxy.its.maine.edu:3128
+            - name: no_proxy
+              value: localhost,127.0.0.1,::1,*.svc.cluster.local
             {{- range .Values.certificat_secrets }}
             {{- $from := .from}}
             {{- range $key, $value := .mapping }}

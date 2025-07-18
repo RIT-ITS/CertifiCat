@@ -109,6 +109,16 @@ secretProviders:
         GENERATE YOUR OWN!
         -----END CERTIFICATE-----
 
+  sectigo:
+    enabled: true
+    name: 'certificat-sectigo-secret'
+    type: 'Opaque'
+    initialData:
+      api_user: "api@acme.edu"
+      api_password: "password-for-api-user"
+      approval_api_user: "api-approver@acme.edu"
+      approval_api_password: "password-for-api-approver-user"
+
 certificat_secrets:
   - from: *generatedSecrets
     mapping:

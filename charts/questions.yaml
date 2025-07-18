@@ -205,3 +205,70 @@ questions:
     default: last_name
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
+#Sectigo Finalizer
+  - variable: sectigo_finalizer
+    label: "Sectigo Finalizer"
+    description: "Settings for Sectigo API certificate finalizer"
+    group: "Sectigo Finalizer"
+    required: false
+    type: group
+
+  - variable: sectigo_finalizer.org_id
+    label: "Organization ID"
+    type: int
+    required: true
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.cert_profile_id
+    label: "Certificate Profile ID"
+    type: int
+    required: true
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.cert_validity_period
+    label: "Certificate Validity Period (days)"
+    type: int
+    required: true
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.customer_uri
+    label: "Customer URI"
+    type: string
+    required: true
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.api_base
+    label: "API Base URL"
+    type: string
+    required: true
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.api_user
+    label: "API Username"
+    type: string
+    required: true
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.api_password
+    label: "API Password"
+    type: password
+    required: true
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.approval_api_user
+    label: "Approver Username"
+    type: string
+    required: false
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.approval_api_password
+    label: "Approver Password"
+    type: password
+    required: false
+    group: "Sectigo Finalizer"
+
+  - variable: sectigo_finalizer.external_requester_override
+    label: "External Requester Email"
+    type: string
+    required: false
+    group: "Sectigo Finalizer"

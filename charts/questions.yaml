@@ -1,6 +1,8 @@
 groups:
   - name: "Certificat SAML"
     label: "Certificat SAML Configuration"
+  - name: "Sectigo Finalizer"
+    label: "Sectigo Finalizer Configuration"
 
 questions:
   - variable: persistentVolumeClaim.storageClassName
@@ -206,69 +208,82 @@ questions:
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
 #Sectigo Finalizer
-  - variable: sectigo_finalizer
-    label: "Sectigo Finalizer"
-    description: "Settings for Sectigo API certificate finalizer"
-    group: "Sectigo Finalizer"
-    required: false
-    type: group
-
   - variable: sectigo_finalizer.org_id
     label: "Organization ID"
     type: int
+    default: 12345
+    description: "Organization or department ID assigned by Sectigo"
     required: true
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.cert_profile_id
     label: "Certificate Profile ID"
     type: int
+    default: 12345
+    description: "The certificate profile ID found in the Sectigo Cert Manager UI"
     required: true
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.cert_validity_period
     label: "Certificate Validity Period (days)"
     type: int
+    default: 90
+    description: "Validity period of the certificate in days (must match the profile's options)"
     required: true
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.customer_uri
     label: "Customer URI"
     type: string
+    default: "InCommon"
+    description: "Sectigo customer URI (e.g., InCommon, ACME, etc.)"
     required: true
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.api_base
     label: "API Base URL"
     type: string
+    default: "https://cert-manager.com/api/"
+    description: "Base URL for Sectigo API endpoints"
     required: true
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.api_user
     label: "API Username"
     type: string
+    default: "api@acme.edu"
+    description: "Primary API username for certificate requests"
     required: true
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.api_password
     label: "API Password"
     type: password
+    default: "password-for-api-user"
+    description: "Password for the primary API user"
     required: true
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.approval_api_user
     label: "Approver Username"
     type: string
+    default: "api-approver@acme.edu"
+    description: "Optional separate API user for certificate approvals (if required)"
     required: false
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.approval_api_password
     label: "Approver Password"
     type: password
+    default: "password-for-api-approver-user"
+    description: "Password for the certificate approval API user"
     required: false
     group: "Sectigo Finalizer"
 
   - variable: sectigo_finalizer.external_requester_override
     label: "External Requester Email"
     type: string
+    default: "certs@acme.edu"
+    description: "Email address to receive certificate lifecycle alerts"
     required: false
     group: "Sectigo Finalizer"

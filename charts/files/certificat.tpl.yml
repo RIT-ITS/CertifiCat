@@ -37,14 +37,26 @@ saml:
         cert: "{{ $.Values.certificat.saml.idp.mdq.cert }}"
         freshness_period: "{{ $.Values.certificat.saml.idp.mdq.freshness_period }}"
   {{- end }}
-  extra_settings:
-{{ toYaml $.Values.certificat.saml.extra_settings | indent 4 }}
+{{- end }}
+
+{{- if .Values.sectigo_finalizer }}
+sectigo_finalizer:
+  org_id: {{ .Values.sectigo_finalizer.org_id }}
+  cert_profile_id: {{ .Values.sectigo_finalizer.cert_profile_id }}
+  cert_validity_period: {{ .Values.sectigo_finalizer.cert_validity_period }}
+  customer_uri: "{{ .Values.sectigo_finalizer.customer_uri }}"
+  api_base: "{{ .Values.sectigo_finalizer.api_base }}"
+  api_user: "{{ .Values.sectigo_finalizer.api_user | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.api_user | b64dec }}"
+  api_password: "{{ .Values.sectigo_finalizer.api_password | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.api_password | b64dec }}"
+  approval_api_user: "{{ .Values.sectigo_finalizer.approval_api_user | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.approval_api_user | b64dec }}"
+  approval_api_password: "{{ .Values.sectigo_finalizer.approval_api_password | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.approval_api_password | b64dec }}"
+  external_requester_override: "{{ .Values.sectigo_finalizer.external_requester_override }}"
 {{- end }}
 
 {{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}
 local_finalizer:
   key: |
-{{- .Values.certificat.local_finalizer.key | nindent 4 }}
+{{ .Values.certificat.local_finalizer.key | nindent 4 }}
   cert: |
-{{- .Values.certificat.local_finalizer.cert | nindent 4 }}
+{{ .Values.certificat.local_finalizer.cert | nindent 4 }}
 {{- end }}

@@ -40,38 +40,11 @@ certificat:
     extra_settings:
       want_response_signed: false
       want_assertions_signed: true
-    administrators: dmiller.admin@maine.edu, uma.tod.detre@maine.edu,john.warenda.it@maine.edu
-    idp:
-      remote_url: >-
-        https://login.microsoftonline.com/36794658-f219-4ad4-af7b-1b68d1900443/federationmetadata/2007-06/federationmetadata.xml?appid=f1f75c13-57e2-46df-9656-001b2b5a3899
-    sp:
-      entity_id: https://certificat-sso.k8s-admin.its.maine.edu/saml2/metadata/
-      cert: |
-        -----BEGIN CERTIFICATE-----
-        YOUR SP CERT HERE
-        -----END CERTIFICATE-----
-      key: |
-        -----BEGIN RSA PRIVATE KEY-----
-        YOUR SP PRIVATE KEY HERE
-        -----END RSA PRIVATE KEY-----
-
-sectigo_finalizer:
-  api_base: https://cert-manager.com/api/
-  api_user: api@acme.edu
-  api_password: password-for-api-user
-  approval_api_user: api-approver@acme.edu
-  approval_api_password: password-for-api-approver-user
-  cert_profile_id: 12345
-  cert_validity_period: 90
-  customer_uri: InCommon
-  external_requester_override: certs@acme.edu
-  org_id: 12345
-
 secretProviders:
   generated:
     enabled: true
-    name: &generatedSecrets certificat-env-secret
-    type: Generated
+    name: &generatedSecrets 'certificat-env-secret'
+    type: 'Generated'
     keys: 
       - django_secret_key
       - mariadb_root_password
@@ -80,30 +53,71 @@ secretProviders:
 
   certificat:
     enabled: true
-    name: &certificatSecret certificat-file-secret
-    type: Opaque
-    initialData:
-      certificat.yml: |-
-        {{ tpl (.Files.Get "files/certificat.tpl.yml") . | indent 8 }}
+    name: &certificatSecret 'certificat-file-secret'
+    type: 'Opaque'
+initialData:
+      certificat.yml: |
+        certificat:
+          finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
+          login_method: "saml"
+          db: 
+            name: certificat
+            user: certificat
+            host: mariadb-service.{{ .Release.Namespace }}
+          redis:
+            host: redis-service.{{ .Release.Namespace }}
+
+        saml:
+          debug: false
+          attribute_mapping:
+            eduPersonPrincipalName: username
+            mail: email
+            givenName: first_name
+            sn: last_name
+          sp:
+            key_file: "/srv/www/config/sp.key"
+            cert_file: "/srv/www/config/sp.crt"
+          idp:
+            mdq: 
+              - url: "http://mdq.incommon.org"
+                cert: "/srv/www/config/inc-md-cert-mdq.pem"
+                freshness_period: "P0Y0M0DT2H0M0S"
+
+        local_finalizer:
+          key: |
+            -----BEGIN RSA PRIVATE KEY-----
+            GENERATE YOUR OWN!
+            -----END RSA PRIVATE KEY-----
+          cert: |
+            -----BEGIN CERTIFICATE-----
+            GENERATE YOUR OWN!
+            -----END CERTIFICATE-----
+
+      inc-md-cert-mdq.pem: |
+        -----BEGIN CERTIFICATE-----
+        [REDACTED FOR BREVITY]
+        -----END CERTIFICATE-----
+
       sp.key: |
         -----BEGIN PRIVATE KEY-----
+        GENERATE YOUR OWN!
         YOUR SP PRIVATE KEY HERE
         -----END PRIVATE KEY-----
       sp.crt: |
         -----BEGIN CERTIFICATE-----
+        GENERATE YOUR OWN!
         YOUR SP CERT HERE
         -----END CERTIFICATE-----
 
   sectigo:
     enabled: true
-    name: certificat-sectigo-secret
-    type: Opaque
+    name: 'certificat-sectigo-secret'
+    type: 'Opaque'
     initialData:
-      api_user: api@acme.edu
-      api_password: password-for-api-user
-      approval_api_user: api-approver@acme.edu
-      approval_api_password: password-for-api-approver-user
-
+      api_user: "api@acme.edu"
+      api_password: "password-for-api-user"
+      approval_api_user: "api-approver@acme.edu"
+      approval_api_password: "password-for-api-approver-user"
 certificat_secrets:
   - from: *generatedSecrets
     mapping:

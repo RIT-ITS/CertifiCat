@@ -56,10 +56,16 @@ sectigo_finalizer:
   external_requester_override: "{{ .Values.sectigo_finalizer.external_requester_override }}"
 {{- end }}
 
-{{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}
+{{- if and (eq .Values.certificat.login_method "local") .Values.certificat.local_finalizer }}
+  {{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}
 local_finalizer:
+  {{- if .Values.certificat.local_finalizer.key }}
   key: |
 {{ .Values.certificat.local_finalizer.key | nindent 4 }}
+  {{- end }}
+  {{- if .Values.certificat.local_finalizer.cert }}
   cert: |
 {{ .Values.certificat.local_finalizer.cert | nindent 4 }}
+  {{- end }}
+  {{- end }}
 {{- end }}

@@ -47,35 +47,44 @@ sectigo_finalizer:
   cert_validity_period: {{ $sectigo_vals.cert_validity_period | default "" }}
   customer_uri: "{{ $sectigo_vals.customer_uri | default "" }}"
   api_base: "{{ $sectigo_vals.api_base | default "" }}"
+{{- $sectigo_vals := .Values.sectigo_finalizer | default dict }}
+{{- $sectigo_secret := lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret" }}
+sectigo_finalizer:
+  org_id: {{ $sectigo_vals.org_id | default "" }}
+  cert_profile_id: {{ $sectigo_vals.cert_profile_id | default "" }}
+  cert_validity_period: {{ $sectigo_vals.cert_validity_period | default "" }}
+  customer_uri: "{{ $sectigo_vals.customer_uri | default "" }}"
+  api_base: "{{ $sectigo_vals.api_base | default "" }}"
   api_user: >-
     {{- $sectigo_vals.api_user
         | default (
-            (and $sectigo_secret (hasKey $sectigo_secret.data "api_user"))
+            (and $sectigo_secret (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "api_user"))
             | ternary ($sectigo_secret.data.api_user | b64dec) ""
         )
     }}
   api_password: >-
     {{- $sectigo_vals.api_password
         | default (
-            (and $sectigo_secret (hasKey $sectigo_secret.data "api_password"))
+            (and $sectigo_secret (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "api_password"))
             | ternary ($sectigo_secret.data.api_password | b64dec) ""
         )
     }}
   approval_api_user: >-
     {{- $sectigo_vals.approval_api_user
         | default (
-            (and $sectigo_secret (hasKey $sectigo_secret.data "approval_api_user"))
+            (and $sectigo_secret (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "approval_api_user"))
             | ternary ($sectigo_secret.data.approval_api_user | b64dec) ""
         )
     }}
   approval_api_password: >-
     {{- $sectigo_vals.approval_api_password
         | default (
-            (and $sectigo_secret (hasKey $sectigo_secret.data "approval_api_password"))
+            (and $sectigo_secret (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "approval_api_password"))
             | ternary ($sectigo_secret.data.approval_api_password | b64dec) ""
         )
     }}
   external_requester_override: "{{ $sectigo_vals.external_requester_override | default "" }}"
+
 
 
 {{- if and (eq .Values.certificat.login_method "local") .Values.certificat.local_finalizer }}

@@ -40,6 +40,7 @@ certificat:
     extra_settings:
       want_response_signed: false
       want_assertions_signed: true
+
 secretProviders:
   generated:
     enabled: true
@@ -55,7 +56,7 @@ secretProviders:
     enabled: true
     name: &certificatSecret 'certificat-file-secret'
     type: 'Opaque'
-initialData:
+    initialData:
       certificat.yml: |
         certificat:
           finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
@@ -101,12 +102,11 @@ initialData:
       sp.key: |
         -----BEGIN PRIVATE KEY-----
         GENERATE YOUR OWN!
-        YOUR SP PRIVATE KEY HERE
         -----END PRIVATE KEY-----
+
       sp.crt: |
         -----BEGIN CERTIFICATE-----
         GENERATE YOUR OWN!
-        YOUR SP CERT HERE
         -----END CERTIFICATE-----
 
   sectigo:
@@ -118,6 +118,7 @@ initialData:
       api_password: "password-for-api-user"
       approval_api_user: "api-approver@acme.edu"
       approval_api_password: "password-for-api-approver-user"
+
 certificat_secrets:
   - from: *generatedSecrets
     mapping:

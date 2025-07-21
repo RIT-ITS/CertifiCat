@@ -41,6 +41,18 @@ certificat:
       want_response_signed: false
       want_assertions_signed: true
 
+sectigo_finalizer:
+  org_id: 12345
+  cert_profile_id: 12345
+  cert_validity_period: 90
+  customer_uri: "InCommon"
+  api_base: "https://cert-manager.com/api/"
+  api_user: "api@acme.edu"
+  api_password: "password-for-api-user"
+  approval_api_user: "api-approver@acme.edu"
+  approval_api_password: "password-for-api-approver-user"
+  external_requester_override: "certs@acme.edu"
+
 secretProviders:
   generated:
     enabled: true

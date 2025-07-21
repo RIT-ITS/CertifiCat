@@ -40,16 +40,19 @@ saml:
 {{- end }}
 
 {{- if .Values.sectigo_finalizer }}
+{{- $sectigoSecret := lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret" }}
+{{- $sectigoData := ternary $sectigoSecret.data dict (not $sectigoSecret) }}
+
 sectigo_finalizer:
   org_id: {{ .Values.sectigo_finalizer.org_id }}
   cert_profile_id: {{ .Values.sectigo_finalizer.cert_profile_id }}
   cert_validity_period: {{ .Values.sectigo_finalizer.cert_validity_period }}
   customer_uri: "{{ .Values.sectigo_finalizer.customer_uri }}"
   api_base: "{{ .Values.sectigo_finalizer.api_base }}"
-  api_user: "{{ .Values.sectigo_finalizer.api_user | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.api_user | b64dec }}"
-  api_password: "{{ .Values.sectigo_finalizer.api_password | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.api_password | b64dec }}"
-  approval_api_user: "{{ .Values.sectigo_finalizer.approval_api_user | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.approval_api_user | b64dec }}"
-  approval_api_password: "{{ .Values.sectigo_finalizer.approval_api_password | default (lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret").data.approval_api_password | b64dec }}"
+  api_user: "{{ .Values.sectigo_finalizer.api_user | default (get $sectigoData "api_user" | b64dec) }}"
+  api_password: "{{ .Values.sectigo_finalizer.api_password | default (get $sectigoData "api_password" | b64dec) }}"
+  approval_api_user: "{{ .Values.sectigo_finalizer.approval_api_user | default (get $sectigoData "approval_api_user" | b64dec) }}"
+  approval_api_password: "{{ .Values.sectigo_finalizer.approval_api_password | default (get $sectigoData "approval_api_password" | b64dec) }}"
   external_requester_override: "{{ .Values.sectigo_finalizer.external_requester_override }}"
 {{- end }}
 

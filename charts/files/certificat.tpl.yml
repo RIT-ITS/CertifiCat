@@ -1,7 +1,7 @@
 certificat:
   url_root: "https://{{ .Values.ingress.hostname }}"
   login_method: {{ .Values.certificat.login_method | quote }}
-  finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
+  finalizer_module: {{ .Values.certificat.finalizer_module | quote }}
   db:
     name: certificat
     user: certificat

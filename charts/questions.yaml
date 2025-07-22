@@ -136,7 +136,10 @@ questions:
     label: "SAML SP Private Key (PEM)"
     description: "Paste your private key (PEM format)"
     type: multiline
-    default: " "
+    default: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvAIBADANB...
+      -----END PRIVATE KEY-----
     required: true
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
@@ -145,7 +148,10 @@ questions:
     label: "SAML SP Certificate (PEM)"
     description: "Paste your public certificate (PEM format)"
     type: multiline
-    default: " "
+    default: |
+      -----BEGIN CERTIFICATE-----
+      MIIEvAIBADANB...
+      -----END CERTIFICATE-----
     required: true
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"

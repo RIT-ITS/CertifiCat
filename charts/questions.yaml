@@ -56,10 +56,10 @@ questions:
     label: "Finalizer Module"
     description: "Choose how CertifiCat will issue certificates"
     type: enum
-    default: "local_finalizer"
+    default: "certificat.modules.acme.backends.local.LocalFinalizer"
     options:
-      - "local_finalizer"
-      - "sectigo_finalizer"
+      - "certificat.modules.acme.backends.local.LocalFinalizer"
+      - "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
 
 # local_finalizer.key
   - variable: certificat.local_finalizer.key
@@ -83,7 +83,7 @@ questions:
       xe0kQw2cTjZJKuf9HYECQF5FzCzUOzY6t+bw9kgkguAQnAz92qlJ+Soj+0cikBbe
       1mDyBZQZPVby7Vf97UZjZqOfCKJdHKQ7CFIRaQO09bg=
       -----END RSA PRIVATE KEY-----
-    show_if: "certificat.finalizer_module=local_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.local.LocalFinalizer"
 
 # local_finalizer.cert
   - variable: certificat.local_finalizer.cert
@@ -105,7 +105,7 @@ questions:
       T8Lsx6WOPJqZmxnhF+X9mY5U5QzcfX8XjEGdd0L5ZgBPSwhk7n6vF6+y9VKBYqpC
       XhQyxFQ00e8MQmT4SPgJKdM+tkZcXxVCpZq6
       -----END CERTIFICATE-----
-    show_if: "certificat.finalizer_module=local_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.local.LocalFinalizer"
 
   # SAML-Specific Fields
   - variable: certificat.saml.debug
@@ -220,7 +220,7 @@ questions:
     type: int
     default: 12345
     description: "Organization or department ID assigned by Sectigo"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: true
     group: "Sectigo Finalizer"
 
@@ -229,7 +229,7 @@ questions:
     type: int
     default: 12345
     description: "The certificate profile ID found in the Sectigo Cert Manager UI"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: true
     group: "Sectigo Finalizer"
 
@@ -238,7 +238,7 @@ questions:
     type: int
     default: 90
     description: "Validity period of the certificate in days (must match the profile's options)"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: true
     group: "Sectigo Finalizer"
 
@@ -247,7 +247,7 @@ questions:
     type: string
     default: "InCommon"
     description: "Sectigo customer URI (e.g., InCommon, ACME, etc.)"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: true
     group: "Sectigo Finalizer"
 
@@ -256,7 +256,7 @@ questions:
     type: string
     default: "https://cert-manager.com/api/"
     description: "Base URL for Sectigo API endpoints"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: true
     group: "Sectigo Finalizer"
 
@@ -265,7 +265,7 @@ questions:
     type: string
     default: "api@acme.edu"
     description: "Primary API username for certificate requests"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: true
     group: "Sectigo Finalizer"
 
@@ -274,7 +274,7 @@ questions:
     type: password
     default: "password-for-api-user"
     description: "Password for the primary API user"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizerr"
     required: true
     group: "Sectigo Finalizer"
 
@@ -283,7 +283,7 @@ questions:
     type: string
     default: "api-approver@acme.edu"
     description: "Optional separate API user for certificate approvals (if required)"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: false
     group: "Sectigo Finalizer"
 
@@ -292,7 +292,7 @@ questions:
     type: password
     default: "password-for-api-approver-user"
     description: "Password for the certificate approval API user"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: false
     group: "Sectigo Finalizer"
 
@@ -301,6 +301,6 @@ questions:
     type: string
     default: "certs@acme.edu"
     description: "Email address to receive certificate lifecycle alerts"
-    show_if: "certificat.finalizer_module=sectigo_finalizer"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: false
     group: "Sectigo Finalizer"

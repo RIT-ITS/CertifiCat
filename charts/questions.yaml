@@ -132,7 +132,7 @@ questions:
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
 
-  - variable: certificat.saml.sp.key
+  - variable: certificat.saml.sp.key_file
     label: "SAML SP Private Key (PEM)"
     description: "Paste your private key (PEM format)"
     type: multiline
@@ -144,7 +144,7 @@ questions:
     show_if: "certificat.login_method=saml"
     group: "Certificat SAML"
 
-  - variable: certificat.saml.sp.cert
+  - variable: certificat.saml.sp.cert_file
     label: "SAML SP Certificate (PEM)"
     description: "Paste your public certificate (PEM format)"
     type: multiline

@@ -25,6 +25,7 @@ embedded_mariadb:
   image: "mariadb:10.5.23-focal"
 
 certificat:
+  finalizer_module: "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
   login_method: "saml"
   saml:
     debug: true

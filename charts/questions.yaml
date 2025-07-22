@@ -274,7 +274,7 @@ questions:
     type: password
     default: "password-for-api-user"
     description: "Password for the primary API user"
-    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizerr"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: true
     group: "Sectigo Finalizer"
 

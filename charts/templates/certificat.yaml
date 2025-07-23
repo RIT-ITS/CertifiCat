@@ -83,9 +83,12 @@ spec:
           volumeMounts:
             - mountPath: /srv/www/config/
               name: {{ .Values.secretProviders.certificat.name }}-volume
+            {{- $loginMethod := .Values.certificat.login_method | default "local_account" }}
+            {{- if eq $loginMethod "saml" }}
             - mountPath: /etc/certificat
               name: certificat-saml-sp
               readOnly: true
+            {{- end }}
 
         - name: {{ .Chart.Name }}-tasks
           securityContext:
@@ -140,9 +143,11 @@ spec:
           volumeMounts:
             - mountPath: /srv/www/config/
               name: {{ .Values.secretProviders.certificat.name }}-volume
+            {{- if eq $loginMethod "saml" }}
             - mountPath: /etc/certificat
               name: certificat-saml-sp
               readOnly: true
+             {{- end }}
 
       volumes:
         - name: "{{ .Values.secretProviders.certificat.name }}-volume"
@@ -151,9 +156,11 @@ spec:
         - name: "{{ .Values.secretProviders.generated.name }}-volume"
           secret:
             secretName: {{ .Values.secretProviders.generated.name }}
+        {{- if eq $loginMethod "saml" }}
         - name: certificat-saml-sp
           secret:
             secretName: certificat-saml-sp
+        {{- end }}
 
       {{- with .Values.nodeSelector }}
       nodeSelector:

@@ -39,6 +39,8 @@ saml:
   {{- end }}
 {{- end }}
 
+
+{{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.sectigo.SectigoFinalizer" }}
 {{- $sectigo_vals := .Values.sectigo_finalizer | default dict }}
 {{- $sectigo_secret := lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret" }}
 
@@ -71,6 +73,7 @@ sectigo_finalizer:
   approval_api_user: "{{ $approval_user }}"
   approval_api_password: "{{ $approval_pass }}"
   external_requester_override: "{{ $sectigo_vals.external_requester_override | default "" }}"
+{{- end }}
 
 {{- if and (eq .Values.certificat.login_method "local") .Values.certificat.local_finalizer }}
   {{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}

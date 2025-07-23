@@ -24,9 +24,7 @@ saml:
     sn: ["{{ $.Values.certificat.saml.attribute_mapping.sn }}"]
   sp:
     entity_id: "{{ $.Values.certificat.saml.sp.entity_id }}"
-    #key_file: "{{ $.Values.certificat.saml.sp.key_file }}"
     key_file: "/etc/certificat/sp.key"
-    #cert_file: "{{ $.Values.certificat.saml.sp.cert_file }}"
     cert_file: "/etc/certificat/sp.crt"
   {{- if $.Values.certificat.saml.idp.remote_url }}
   idp:

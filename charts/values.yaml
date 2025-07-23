@@ -40,6 +40,20 @@ certificat:
         - last_name
 
 secretProviders:
+  samlSp:
+    enabled: true
+    name: certificat-saml-sp
+    type: Opaque
+    initialData:
+      sp.key: |
+        -----BEGIN PRIVATE KEY-----
+        GENERATE YOUR OWN!
+        -----END PRIVATE KEY-----
+      sp.crt: |
+        -----BEGIN CERTIFICATE-----
+        GENERATE YOUR OWN!
+        -----END CERTIFICATE-----
+
   generated:
     enabled: true
     name: &generatedSecrets 'certificat-env-secret'

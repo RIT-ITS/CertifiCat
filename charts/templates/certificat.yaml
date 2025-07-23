@@ -83,7 +83,7 @@ spec:
           volumeMounts:
             - mountPath: /srv/www/config/
               name: {{ .Values.secretProviders.certificat.name }}-volume
-            {{- $loginMethod := .Values.certificat.login_method | default "local_account" }}
+            {{- $loginMethod := .Values.certificat.login_method | default "local" }}
             {{- if eq $loginMethod "saml" }}
             - mountPath: /etc/certificat
               name: certificat-saml-sp

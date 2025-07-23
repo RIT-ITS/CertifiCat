@@ -50,7 +50,7 @@ questions:
     default: "local"
     options:
       - "saml"
-      - "local_account"
+      - "local"
 
   - variable: certificat.finalizer_module
     label: "Finalizer Module"

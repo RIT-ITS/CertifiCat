@@ -25,9 +25,9 @@ saml:
   sp:
     entity_id: "{{ $.Values.certificat.saml.sp.entity_id }}"
     #key_file: "{{ $.Values.certificat.saml.sp.key_file }}"
-    key_file: "/srv/www/config/sp.key"
+    key_file: "/etc/certificat/sp.key"
     #cert_file: "{{ $.Values.certificat.saml.sp.cert_file }}"
-    cert_file: "/srv/www/config/sp.crt"
+    cert_file: "/etc/certificat/sp.crt"
   {{- if $.Values.certificat.saml.idp.remote_url }}
   idp:
     remote:

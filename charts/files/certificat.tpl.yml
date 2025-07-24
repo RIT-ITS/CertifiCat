@@ -63,21 +63,21 @@ saml:
 {{- end }}
 
 sectigo_finalizer:
-{{- with $sectigo_vals.org_id }}{{- if ne . "" }}
-  org_id: {{ . }}
-{{- end }}{{- end }}
-{{- with $sectigo_vals.cert_profile_id }}{{- if ne . "" }}
-  cert_profile_id: {{ . }}
-{{- end }}{{- end }}
-{{- with $sectigo_vals.cert_validity_period }}{{- if ne . "" }}
-  cert_validity_period: {{ . }}
-{{- end }}{{- end }}
-{{- with $sectigo_vals.customer_uri }}{{- if ne . "" }}
-  customer_uri: "{{ . }}"
-{{- end }}{{- end }}
-{{- with $sectigo_vals.api_base }}{{- if ne . "" }}
-  api_base: "{{ . }}"
-{{- end }}{{- end }}
+{{- if and $sectigo_vals.org_id (ne $sectigo_vals.org_id "") }}
+  org_id: {{ $sectigo_vals.org_id }}
+{{- end }}
+{{- if and $sectigo_vals.cert_profile_id (ne $sectigo_vals.cert_profile_id "") }}
+  cert_profile_id: {{ $sectigo_vals.cert_profile_id }}
+{{- end }}
+{{- if and $sectigo_vals.cert_validity_period (ne $sectigo_vals.cert_validity_period "") }}
+  cert_validity_period: {{ $sectigo_vals.cert_validity_period }}
+{{- end }}
+{{- if and $sectigo_vals.customer_uri (ne $sectigo_vals.customer_uri "") }}
+  customer_uri: "{{ $sectigo_vals.customer_uri }}"
+{{- end }}
+{{- if and $sectigo_vals.api_base (ne $sectigo_vals.api_base "") }}
+  api_base: "{{ $sectigo_vals.api_base }}"
+{{- end }}
 {{- if ne $api_user "" }}
   api_user: "{{ $api_user }}"
 {{- end }}
@@ -90,9 +90,8 @@ sectigo_finalizer:
 {{- if ne $approval_pass "" }}
   approval_api_password: "{{ $approval_pass }}"
 {{- end }}
-{{- with $sectigo_vals.external_requester_override }}{{- if ne . "" }}
-  external_requester_override: "{{ . }}"
-{{- end }}{{- end }}
+{{- if and $sectigo_vals.external_requester_override (ne $sectigo_vals.external_requester_override "") }}
+  external_requester_override: "{{ $sectigo_vals.external_requester_override }}"
 {{- end }}
 
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.local.LocalFinalizer" }}

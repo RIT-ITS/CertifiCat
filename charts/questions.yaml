@@ -42,6 +42,27 @@ questions:
     type: string
     default: "DEBUG"
 
+  - variable: http_proxy
+    label: "HTTP Proxy"
+    description: "Proxy address for HTTP traffic"
+    type: string
+    required: true
+    default: "http://proxy.example.com:3128"
+
+  - variable: https_proxy
+    label: "HTTPS Proxy"
+    description: "Proxy address for HTTPS traffic."
+    type: string
+    required: true
+    default: "http://proxy.example.com:3128"
+
+  - variable: no_proxy
+    label: "No Proxy Domains"
+    description: "Comma-separated list of domains or IPs to bypass proxy."
+    type: string
+    required: true
+    default: "localhost,127.0.0.1,::1,*.svc,*.svc.cluster.local,kubernetes.default"
+
   - variable: certificat.login_method
     label: "Login Method"
     description: "Choose authentication mode for CertifiCat"

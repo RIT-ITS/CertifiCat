@@ -63,16 +63,36 @@ saml:
 {{- end }}
 
 sectigo_finalizer:
-  org_id: {{ $sectigo_vals.org_id | default "" }}
-  cert_profile_id: {{ $sectigo_vals.cert_profile_id | default "" }}
-  cert_validity_period: {{ $sectigo_vals.cert_validity_period | default "" }}
-  customer_uri: "{{ $sectigo_vals.customer_uri | default "" }}"
-  api_base: "{{ $sectigo_vals.api_base | default "" }}"
+{{- with $sectigo_vals.org_id }}{{- if ne . "" }}
+  org_id: {{ . }}
+{{- end }}{{- end }}
+{{- with $sectigo_vals.cert_profile_id }}{{- if ne . "" }}
+  cert_profile_id: {{ . }}
+{{- end }}{{- end }}
+{{- with $sectigo_vals.cert_validity_period }}{{- if ne . "" }}
+  cert_validity_period: {{ . }}
+{{- end }}{{- end }}
+{{- with $sectigo_vals.customer_uri }}{{- if ne . "" }}
+  customer_uri: "{{ . }}"
+{{- end }}{{- end }}
+{{- with $sectigo_vals.api_base }}{{- if ne . "" }}
+  api_base: "{{ . }}"
+{{- end }}{{- end }}
+{{- if ne $api_user "" }}
   api_user: "{{ $api_user }}"
+{{- end }}
+{{- if ne $api_password "" }}
   api_password: "{{ $api_password }}"
+{{- end }}
+{{- if ne $approval_user "" }}
   approval_api_user: "{{ $approval_user }}"
+{{- end }}
+{{- if ne $approval_pass "" }}
   approval_api_password: "{{ $approval_pass }}"
-  external_requester_override: "{{ $sectigo_vals.external_requester_override | default "" }}"
+{{- end }}
+{{- with $sectigo_vals.external_requester_override }}{{- if ne . "" }}
+  external_requester_override: "{{ . }}"
+{{- end }}{{- end }}
 {{- end }}
 
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.local.LocalFinalizer" }}

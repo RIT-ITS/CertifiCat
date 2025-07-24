@@ -47,14 +47,14 @@ questions:
     description: "Proxy address for HTTP traffic"
     type: string
     required: true
-    default: "http://proxy.example.com:3128"
+    default: "http://proxy.its.maine.edu:3128"
 
   - variable: https_proxy
     label: "HTTPS Proxy"
     description: "Proxy address for HTTPS traffic."
     type: string
     required: true
-    default: "http://proxy.example.com:3128"
+    default: "http://proxy.its.maine.com:3128"
 
   - variable: no_proxy
     label: "No Proxy Domains"

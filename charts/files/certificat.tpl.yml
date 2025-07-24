@@ -41,36 +41,16 @@ saml:
 
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.sectigo.SectigoFinalizer" }}
 sectigo_finalizer:
-  {{- if .Values.sectigo_finalizer.org_id }}
-  org_id: {{ .Values.sectigo_finalizer.org_id }}
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.cert_profile_id }}
-  cert_profile_id: {{ .Values.sectigo_finalizer.cert_profile_id }}
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.cert_validity_period }}
-  cert_validity_period: {{ .Values.sectigo_finalizer.cert_validity_period }}
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.customer_uri }}
-  customer_uri: {{ .Values.sectigo_finalizer.customer_uri }}
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.api_base }}
-  api_base: {{ .Values.sectigo_finalizer.api_base }}
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.api_user }}
-  api_user: {{ .Values.sectigo_finalizer.api_user }}
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.api_password }}
-  api_password: "{{ .Values.sectigo_finalizer.api_password }}"
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.approval_api_user }}
-  approval_api_user: {{ .Values.sectigo_finalizer.approval_api_user }}
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.approval_api_password }}
-  approval_api_password: "{{ .Values.sectigo_finalizer.approval_api_password }}"
-  {{- end }}
-  {{- if .Values.sectigo_finalizer.external_requester_override }}
-  external_requester_override: {{ .Values.sectigo_finalizer.external_requester_override }}
-  {{- end }}
+  org_id: "{{ .Values.sectigo_finalizer.org_id | default "" }}"
+  cert_profile_id: "{{ .Values.sectigo_finalizer.cert_profile_id | default "" }}"
+  cert_validity_period: "{{ .Values.sectigo_finalizer.cert_validity_period | default "" }}"
+  customer_uri: "{{ .Values.sectigo_finalizer.customer_uri | default "" }}"
+  api_base: "{{ .Values.sectigo_finalizer.api_base | default "" }}"
+  api_user: "{{ .Values.sectigo_finalizer.api_user | default "" }}"
+  api_password: "{{ .Values.sectigo_finalizer.api_password | default "" }}"
+  approval_api_user: "{{ .Values.sectigo_finalizer.approval_api_user | default "" }}"
+  approval_api_password: "{{ .Values.sectigo_finalizer.approval_api_password | default "" }}"
+  external_requester_override: "{{ .Values.sectigo_finalizer.external_requester_override | default "" }}"
 {{- end}}
 
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.local.LocalFinalizer" }}

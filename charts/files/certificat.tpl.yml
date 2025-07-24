@@ -39,60 +39,39 @@ saml:
   {{- end }}
 {{- end }}
 
-
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.sectigo.SectigoFinalizer" }}
-{{- $sectigo_vals := .Values.sectigo_finalizer | default dict }}
-{{- $sectigo_secret := lookup "v1" "Secret" .Release.Namespace "certificat-sectigo-secret" }}
-
-{{- $api_user := $sectigo_vals.api_user | default "" }}
-{{- $api_password := $sectigo_vals.api_password | default "" }}
-{{- $approval_user := $sectigo_vals.approval_api_user | default "" }}
-{{- $approval_pass := $sectigo_vals.approval_api_password | default "" }}
-
-{{- if and (eq $api_user "") (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "api_user") }}
-  {{- $api_user = $sectigo_secret.data.api_user | b64dec }}
-{{- end }}
-{{- if and (eq $api_password "") (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "api_password") }}
-  {{- $api_password = $sectigo_secret.data.api_password | b64dec }}
-{{- end }}
-{{- if and (eq $approval_user "") (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "approval_api_user") }}
-  {{- $approval_user = $sectigo_secret.data.approval_api_user | b64dec }}
-{{- end }}
-{{- if and (eq $approval_pass "") (hasKey $sectigo_secret "data") (hasKey $sectigo_secret.data "approval_api_password") }}
-  {{- $approval_pass = $sectigo_secret.data.approval_api_password | b64dec }}
-{{- end }}
-
 sectigo_finalizer:
-{{- if and $sectigo_vals.org_id (ne $sectigo_vals.org_id "") }}
-  org_id: {{ $sectigo_vals.org_id }}
-{{- end }}
-{{- if and $sectigo_vals.cert_profile_id (ne $sectigo_vals.cert_profile_id "") }}
-  cert_profile_id: {{ $sectigo_vals.cert_profile_id }}
-{{- end }}
-{{- if and $sectigo_vals.cert_validity_period (ne $sectigo_vals.cert_validity_period "") }}
-  cert_validity_period: {{ $sectigo_vals.cert_validity_period }}
-{{- end }}
-{{- if and $sectigo_vals.customer_uri (ne $sectigo_vals.customer_uri "") }}
-  customer_uri: "{{ $sectigo_vals.customer_uri }}"
-{{- end }}
-{{- if and $sectigo_vals.api_base (ne $sectigo_vals.api_base "") }}
-  api_base: "{{ $sectigo_vals.api_base }}"
-{{- end }}
-{{- if ne $api_user "" }}
-  api_user: "{{ $api_user }}"
-{{- end }}
-{{- if ne $api_password "" }}
-  api_password: "{{ $api_password }}"
-{{- end }}
-{{- if ne $approval_user "" }}
-  approval_api_user: "{{ $approval_user }}"
-{{- end }}
-{{- if ne $approval_pass "" }}
-  approval_api_password: "{{ $approval_pass }}"
-{{- end }}
-{{- if and $sectigo_vals.external_requester_override (ne $sectigo_vals.external_requester_override "") }}
-  external_requester_override: "{{ $sectigo_vals.external_requester_override }}"
-{{- end }}
+  {{- if .Values.sectigo_finalizer.org_id }}
+  org_id: {{ .Values.sectigo_finalizer.org_id }}
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.cert_profile_id }}
+  cert_profile_id: {{ .Values.sectigo_finalizer.cert_profile_id }}
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.cert_validity_period }}
+  cert_validity_period: {{ .Values.sectigo_finalizer.cert_validity_period }}
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.customer_uri }}
+  customer_uri: {{ .Values.sectigo_finalizer.customer_uri }}
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.api_base }}
+  api_base: {{ .Values.sectigo_finalizer.api_base }}
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.api_user }}
+  api_user: {{ .Values.sectigo_finalizer.api_user }}
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.api_password }}
+  api_password: "{{ .Values.sectigo_finalizer.api_password }}"
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.approval_api_user }}
+  approval_api_user: {{ .Values.sectigo_finalizer.approval_api_user }}
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.approval_api_password }}
+  approval_api_password: "{{ .Values.sectigo_finalizer.approval_api_password }}"
+  {{- end }}
+  {{- if .Values.sectigo_finalizer.external_requester_override }}
+  external_requester_override: {{ .Values.sectigo_finalizer.external_requester_override }}
+  {{- end }}
+{{- end}}
 
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.local.LocalFinalizer" }}
   {{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}

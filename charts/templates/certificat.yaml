@@ -47,15 +47,15 @@ spec:
             - name: SAML__SP__ENTITY_ID
               value: https://{{ .Values.ingress.hostname }}/saml2/metadata/
             {{- if .Values.http_proxy }}
-            - name: HTTP_PROXY
+            - name: http_proyx
               value: {{ .Values.http_proxy | quote }}
             {{- end }}
             {{- if .Values.https_proxy }}
-            - name: HTTPS_PROXY
+            - name: https_proxy
               value: {{ .Values.https_proxy | quote }}
             {{- end }}
             {{- if .Values.no_proxy }}
-            - name: NO_PROXY
+            - name: no_proxy
               value: {{ .Values.no_proxy | quote }}
             {{- end }}
             {{- range .Values.certificat_secrets }}

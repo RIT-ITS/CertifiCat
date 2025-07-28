@@ -54,7 +54,7 @@ questions:
     description: "Proxy address for HTTPS traffic."
     type: string
     required: true
-    default: "http://proxy.its.maine.com:3128"
+    default: "http://proxy.its.maine.edu:3128"
 
   - variable: no_proxy
     label: "No Proxy Domains"

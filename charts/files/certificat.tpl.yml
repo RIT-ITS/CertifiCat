@@ -41,16 +41,16 @@ saml:
 
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.sectigo.SectigoFinalizer" }}
 sectigo_finalizer:
-  org_id: "{{ .Values.sectigo_finalizer.org_id | default "" }}"
-  cert_profile_id: "{{ .Values.sectigo_finalizer.cert_profile_id | default "" }}"
-  cert_validity_period: "{{ .Values.sectigo_finalizer.cert_validity_period | default "" }}"
-  customer_uri: "{{ .Values.sectigo_finalizer.customer_uri | default "" }}"
-  api_base: "{{ .Values.sectigo_finalizer.api_base | default "" }}"
-  api_user: "{{ .Values.sectigo_finalizer.api_user | default "" }}"
+  org_id: {{ .Values.sectigo_finalizer.org_id | default "" }}
+  cert_profile_id: {{ .Values.sectigo_finalizer.cert_profile_id | default "" }}
+  cert_validity_period: {{ .Values.sectigo_finalizer.cert_validity_period | default "" }}
+  customer_uri: {{ .Values.sectigo_finalizer.customer_uri | default "" }}
+  api_base: {{ .Values.sectigo_finalizer.api_base | default "" }}
+  api_user: {{ .Values.sectigo_finalizer.api_user | default "" }}
   api_password: "{{ .Values.sectigo_finalizer.api_password | default "" }}"
-  approval_api_user: "{{ .Values.sectigo_finalizer.approval_api_user | default "" }}"
+  approval_api_user: {{ .Values.sectigo_finalizer.approval_api_user | default "" }}
   approval_api_password: "{{ .Values.sectigo_finalizer.approval_api_password | default "" }}"
-  external_requester_override: "{{ .Values.sectigo_finalizer.external_requester_override | default "" }}"
+  external_requester_override: {{ .Values.sectigo_finalizer.external_requester_override | default "" }}
 {{- end}}
 
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.local.LocalFinalizer" }}

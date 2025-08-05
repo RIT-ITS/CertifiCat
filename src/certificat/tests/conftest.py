@@ -41,8 +41,9 @@ ROOT_URL = "http://mock.me"
 
 
 class TestDirectoryService(DirectoryService):
-    def __init__(self):
-        self.root_url = f"{ROOT_URL}/acme"
+    @property
+    def root_url(self) -> str:
+        return f"{ROOT_URL}/acme"
 
 
 @pytest.fixture(autouse=True)
@@ -58,6 +59,9 @@ def setup():
     dnsmock.bind_ip("acme2.localhost", 80, "127.0.0.1")
     dnsmock.bind_ip("mock.me", 80, "127.0.0.1")
 
+    acme_settings = LocalACMESettings.get(force_reload=True)
+    acme_settings.eab_required = False
+
     bindings = [
         (INonceService, NonceService()),
         (IDirectoryService, TestDirectoryService()),
@@ -66,7 +70,7 @@ def setup():
         (IAuthorizationService, AuthorizationService()),
         (IChallengeService, ChallengeService()),
         (ICertService, CertService()),
-        (ACMESettings, LocalACMESettings.get(force_reload=True)),
+        (ACMESettings, acme_settings),
         (ApplicationSettings, ApplicationSettings.get(force_reload=True)),
     ]
     inject.configure(

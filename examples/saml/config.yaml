@@ -20,7 +20,8 @@ certificat:
     acmev2_level: DEBUG
   login_method: "saml"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
-
+acme:
+  eab_required: True
 saml:
   debug: True
   administrators:

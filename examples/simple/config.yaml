@@ -20,6 +20,8 @@ certificat:
     acmev2_level: DEBUG
   login_method: "local"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
+acme:
+  eab_required: True
 local_finalizer:
   key: |
     -----BEGIN RSA PRIVATE KEY-----

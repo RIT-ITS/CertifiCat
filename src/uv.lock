@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 
 [[package]]
@@ -86,7 +86,7 @@ wheels = [
 
 [[package]]
 name = "certificat"
-version = "2025.7.1752780964"
+version = "2025.8.1754398339"
 source = { virtual = "." }
 dependencies = [
     { name = "acmev2" },

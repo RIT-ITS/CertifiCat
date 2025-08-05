@@ -2,6 +2,10 @@ from django.apps import AppConfig
 from certificat.settings import bindings as settings_bindings
 from django.db.models.signals import class_prepared
 import inject
+from acmev2.settings import ACMESettings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CertificatConfig(AppConfig):
@@ -56,6 +60,15 @@ class CertificatConfig(AppConfig):
         import certificat.modules.tasks  # noqa: F401
 
         certificat.modules.tasks.deferred_task_setup()
+
+        acme_settings = inject.instance(ACMESettings)
+
+        if not acme_settings.eab_required:
+            logger.info(
+                "Forcing external account binding to True. CertifiCat can not run with anonymous account binding. To suppress this message set the acme.eab_required flag to True in your config."
+            )
+            acme_settings.eab_required = True
+
         return super().ready()
 
 

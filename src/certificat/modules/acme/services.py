@@ -34,6 +34,7 @@ from certificat.modules import tasks
 from django.db import transaction
 from django.utils.timezone import make_aware
 from django.utils import timezone
+from acmev2.settings import ACMESettings
 
 AccountIdStr = str
 KIDStr = str
@@ -41,11 +42,16 @@ HMACStr = str
 
 
 class DirectoryService(IDirectoryService):
-    external_account_required = True
     app_settings = inject.attr(ApplicationSettings)
+    acme_settings = inject.attr(ACMESettings)
 
-    def __init__(self):
-        self.root_url = urllib.parse.urljoin(self.app_settings.url_root, "/acme")
+    @property
+    def external_account_required(self) -> bool:
+        return self.acme_settings.eab_required
+
+    @property
+    def root_url(self) -> str:
+        return urllib.parse.urljoin(self.app_settings.url_root, "/acme")
 
     def url_base(self) -> str:
         return self.root_url

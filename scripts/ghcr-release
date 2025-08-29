@@ -10,7 +10,7 @@ HERE="$(dirname "$(readlink -f "$0")")"
 }
 
 src_image="registry.code.rit.edu/its-operations-public/django-acmev2"
-dest_image="ghrc.io/rit-its/certificat"
+dest_image="ghcr.io/rit-its/certificat"
 
 docker pull "${src_image}:${1}"
 

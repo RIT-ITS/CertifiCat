@@ -102,15 +102,15 @@ spec:
             {{- end }}
             {{- end }}
           imagePullPolicy: {{ .Values.certificat_image.pullPolicy }}          
-          livenessProbe:
-            exec:
-              command:
-                - /srv/www/.venv/bin/python 
-                - /srv/www/manage.py
-                - huey_healthcheck
-            initialDelaySeconds: 30
-            periodSeconds: 90
-            timeoutSeconds: 10
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - /srv/www/.venv/bin/python 
+          #       - /srv/www/manage.py
+          #       - huey_healthcheck
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 90
+          #   timeoutSeconds: 10
           startupProbe:
             exec:
               command:

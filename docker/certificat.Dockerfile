@@ -44,9 +44,6 @@ RUN python3 -m venv /venv/ && \
         -c requirements-frozen.txt \
         /code/dist/certificat-*.whl gunicorn==$GUNICORN_VERSION
 
-# Bytecode will be generated on first run
-RUN find /venv | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
-
 FROM base AS prod
 
 WORKDIR /srv/www

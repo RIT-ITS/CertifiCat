@@ -1,14 +1,15 @@
-[semgrep]
-  [[semgrep.ruleset]]
+[gitlab-advanced-sast]
+  [[gitlab-advanced-sast.ruleset]]
     disable = true
     # Disables template code injection rule, Django auto escapes output.
-    [semgrep.ruleset.identifier]
+    [gitlab-advanced-sast.ruleset.identifier]
       type = "semgrep_id"
       value = "bandit.B113"
-  [[semgrep.ruleset]]
+      
+  [[gitlab-advanced-sast.ruleset]]
     disable = true
     # Disables insecure tmp file notice. The hardcoded tmp file created is only 
     # touched, not written to. It's an update marker.
-    [semgrep.ruleset.identifier]
+    [gitlab-advanced-sast.ruleset.identifier]
       type = "semgrep_id"
       value = "bandit.B108"

@@ -25,7 +25,7 @@ certificat:
     acmev2_level: DEBUG
 
   healthcheck_allowed_networks:
-    - '*'
+    - '172.19.0.0/16'
 
 saml:
   debug: True

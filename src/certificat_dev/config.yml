@@ -24,7 +24,7 @@ certificat:
     certificat_level: DEBUG
     acmev2_level: DEBUG
 
-  healthcheck_allowed_ips:
+  healthcheck_allowed_networks:
     - '*'
 
 saml:

@@ -139,8 +139,8 @@ class ApplicationSettings(Settings):
         description="If true, will send tracking information about usage to RIT. All tracking info is logged.",
     )
 
-    healthcheck_allowed_ips: List[str] = Field(
-        ["127.0.0.1"], description="IP addresses allowed to access the health endpoints"
+    healthcheck_allowed_networks: List[str] = Field(
+        ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
     )
     huey_health_file: str = Field("/tmp/huey-ping")
 

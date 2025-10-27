@@ -35,9 +35,8 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   # Disable certain SAST modules that don't matter
   SAST_EXCLUDED_ANALYZERS: "flawfinder,nodejs-scan,phpcs-security-audit"
-  # Advanced SAST sucks, don't re-enable it future self
-  #GITLAB_ADVANCED_SAST_ENABLED: 'true'
-  #ADVANCED_SAST_PARTIAL_SCAN: 'differential'
+  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+  ADVANCED_SAST_PARTIAL_SCAN: 'differential'
 
 build:
   stage: build

@@ -152,6 +152,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: certificat-service
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
   labels:
     {{- include "..selectorLabels" . | nindent 4 }}
     {{ include "..namespacedLabel" "component" }}: frontend

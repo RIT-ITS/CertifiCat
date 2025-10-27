@@ -1,0 +1,14 @@
+[semgrep]
+  [[semgrep.ruleset]]
+    disable = true
+    # Disables template code injection rule, Django auto escapes output.
+    [semgrep.ruleset.identifier]
+      type = "semgrep_id"
+      value = "bandit.B113"
+  [[semgrep.ruleset]]
+    disable = true
+    # Disables insecure tmp file notice. The hardcoded tmp file created is only 
+    # touched, not written to. It's an update marker.
+    [semgrep.ruleset.identifier]
+      type = "semgrep_id"
+      value = "bandit.B108"

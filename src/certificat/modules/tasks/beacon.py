@@ -40,4 +40,4 @@ def send_beacon():
     url = "https://certificat-beacon.rit.edu/"
 
     logger.info("Sending params %s to url %s", params, url)
-    requests.get(url, params=params)
+    requests.get(url, params=params, timeout=10)

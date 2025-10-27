@@ -77,6 +77,12 @@ class ApplicationSettings(Settings):
         description="Location of static files. This usually doesn't have to be changed.",
         required=False,
     )
+    root_urlconf: Optional[str] = Field(
+        None,
+        description="Dotted path to the root urlconfig. This usually doesn't have to be changed.",
+        required=False,
+    )
+
     logging: LoggingSettings = LoggingSettings()
     db: DatabaseSettings
     redis: RedisSettings
@@ -132,6 +138,11 @@ class ApplicationSettings(Settings):
         True,
         description="If true, will send tracking information about usage to RIT. All tracking info is logged.",
     )
+
+    healthcheck_allowed_ips: List[str] = Field(
+        ["127.0.0.1"], description="IP addresses allowed to access the health endpoints"
+    )
+    huey_health_file: str = Field("/tmp/huey-ping")
 
 
 class LocalCASettings(BaseModel):

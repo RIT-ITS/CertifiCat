@@ -63,21 +63,21 @@ spec:
               protocol: TCP
           livenessProbe:
             initialDelaySeconds: 30
-            periodSeconds: 60
+            periodSeconds: 15
             httpGet:
-              path: /directory/
+              path: /health/healthz
               port: 80
           startupProbe:
-            # __pycache__ information needs to be regenerated on startup
             timeoutSeconds: 10
             httpGet:
-              path: /directory/
+              path: /health/healthz
               port: 80
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
           - mountPath: /srv/www/config/
             name: {{ .Values.secretProviders.certificat.name }}-volume
+            readOnly: true
         - name: {{ .Chart.Name }}-tasks
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -102,21 +102,20 @@ spec:
             {{- end }}
             {{- end }}
           imagePullPolicy: {{ .Values.certificat_image.pullPolicy }}          
-          # livenessProbe:
-          #   exec:
-          #     command:
-          #       - /srv/www/.venv/bin/python 
-          #       - /srv/www/manage.py
-          #       - huey_healthcheck
-          #   initialDelaySeconds: 30
-          #   periodSeconds: 90
-          #   timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+              # Check to see if marker file has been touched in the last X seconds. This ensures huey received 
+              # a PING message from some consumer at some point. This doesn't work very well in multi-tenant situations, 
+              # like when a redeploy is happening but it's the best we can do.
+                - if [[ $(("$(date +%s)" - "$(stat -c %Y /tmp/huey-ping)")) -gt 60 ]]; then exit 1; else exit 0; fi
+            initialDelaySeconds: 30
+            periodSeconds: 90
+            timeoutSeconds: 10
           startupProbe:
             exec:
               command:
-                - /srv/www/.venv/bin/python
-                - /srv/www/manage.py
-                - huey_healthcheck
+                - stat /tmp/huey-ping
             failureThreshold: 12
             periodSeconds: 10
             timeoutSeconds: 10
@@ -125,6 +124,7 @@ spec:
           volumeMounts:
           - mountPath: /srv/www/config/
             name: {{ .Values.secretProviders.certificat.name }}-volume
+            readOnly: true
       volumes:
       - name: "{{ .Values.secretProviders.certificat.name }}-volume"
         secret:

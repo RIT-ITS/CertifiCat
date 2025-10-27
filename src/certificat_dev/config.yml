@@ -24,6 +24,9 @@ certificat:
     certificat_level: DEBUG
     acmev2_level: DEBUG
 
+  healthcheck_allowed_ips:
+    - '*'
+
 saml:
   debug: True
   administrators:

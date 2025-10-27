@@ -36,11 +36,12 @@ variables:
   # Disable certain SAST modules that don't matter
   SAST_EXCLUDED_ANALYZERS: "flawfinder,nodejs-scan,phpcs-security-audit"
   GITLAB_ADVANCED_SAST_ENABLED: 'true'
+  ADVANCED_SAST_PARTIAL_SCAN: 'differential'
 
 build:
   stage: build
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY    
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:      
       - docker pull $IMAGE_TAG || true
       - scripts/build-image --tag ${CS_IMAGE} --tag ${IMAGE_TAG} 

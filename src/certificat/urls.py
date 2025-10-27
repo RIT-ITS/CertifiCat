@@ -9,6 +9,7 @@ urlpatterns = [
     path("", include("certificat.modules.html.urls")),
     path("", include("certificat.modules.api.urls")),
     path("", include("certificat.modules.acme.urls")),
+    path("health/", include("certificat.modules.health.urls")),
     path(
         "feedback",
         RedirectView.as_view(

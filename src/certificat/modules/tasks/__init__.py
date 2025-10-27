@@ -5,8 +5,9 @@ from huey.contrib.djhuey import task, db_task
 import inject
 from . import finalize_order
 from . import validate_challenge
-from . import housekeeping
-from . import beacon
+from . import housekeeping  # noqa: F401
+from . import beacon  # noqa: F401
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,10 @@ logger = logging.getLogger(__name__)
 # as unhealthy and may restart.
 @task(priority=100)
 def ping(pong_text: str) -> str:
+    app_settings = inject.instance(ApplicationSettings)
+    health_file = Path(app_settings.huey_health_file)
+    health_file.touch()
+
     return pong_text
 
 

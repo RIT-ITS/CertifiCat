@@ -89,7 +89,7 @@ MIDDLEWARE = [
     "certificat.middleware.set_request_context",
 ]
 
-ROOT_URLCONF = "certificat.urls"
+ROOT_URLCONF = dynamic_settings.root_urlconf or "certificat.urls"
 
 TEMPLATES = [
     {

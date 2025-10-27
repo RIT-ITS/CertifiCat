@@ -1,6 +1,6 @@
 [project]
 name = "certificat"
-version = "2025.10.1761582712"
+version = "2025.10.1761584792"
 description = "Web site and reference implementation for the acmev2 package"
 readme = "README.md"
 license = { text = "Apache-2.0" }

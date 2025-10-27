@@ -4,5 +4,5 @@ description: CertifiCat Helm Chart
 type: application
 sources:
   - https://gitlab.code.rit.edu/its-operations-public/django-acmev2/charts/
-version: 2025.10.1761579878
-appVersion: 2025.10.1761579878
+version: 2025.10.1761580775
+appVersion: 2025.10.1761580775

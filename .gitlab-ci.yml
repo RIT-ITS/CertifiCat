@@ -48,9 +48,10 @@ build:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:      
       - docker pull $IMAGE_TAG || true
-      - scripts/build-image --tag ${CS_IMAGE} --tag ${IMAGE_TAG} --tag latest
+      - scripts/build-image --tag ${CS_IMAGE} --tag ${IMAGE_TAG} --tag ${CI_REGISTRY_IMAGE}:latest
       - docker push $CS_IMAGE
       - docker push $IMAGE_TAG
+      - docker push ${CI_REGISTRY_IMAGE}:latest
   rules:
     # Build when a new tag is committed
     - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^\d+\.\d+\..+/
@@ -67,7 +68,7 @@ container_scanning:
   before_script:
     - |
       if [ $SCHEDULED_SECURITY_SCAN == 'true' || $SCHEDULED_SECURITY_SCAN == '1' ]; then
-        CS_IMAGE="$CI_REGISTRY_IMAGE:latest"
+        CS_IMAGE="${CI_REGISTRY_IMAGE}:latest"
       fi 
   rules:
     # Scan if the build pipeline indicates they want a scan

@@ -62,7 +62,6 @@ dependency_scanning:
 
 container_scanning:
   stage: test
-  needs: [build]
   rules:
     # Scan if the build pipeline indicates they want a scan
     - if: $SCHEDULED_SECURITY_SCAN == 'true' || $SCHEDULED_SECURITY_SCAN == '1'

@@ -13,5 +13,6 @@ DATABASES = {
         "PASSWORD": dynamic_settings.db.password,
         "HOST": dynamic_settings.db.host,
         "PORT": dynamic_settings.db.port,
+        "OPTIONS": dynamic_settings.db.options,
     }
 }

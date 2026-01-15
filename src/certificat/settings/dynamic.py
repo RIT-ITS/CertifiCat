@@ -25,6 +25,7 @@ class DatabaseSettings(BaseModel):
     password: str = Field(description="Password for the database connection")
     host: str = Field(description="Host for the database connection")
     port: int = 3306
+    options: Optional[dict] = Field({}, description="Options passed to the driver")
     table_prefix: str = Field(
         "", description="An optional table prefix for every table in the database."
     )

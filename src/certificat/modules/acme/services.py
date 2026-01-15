@@ -150,6 +150,8 @@ class AccountService(IAccountService):
                 return db.Certificate.objects.filter(
                     order__name=resource_id, order__account__name=account_id
                 )
+            case _:
+                return False
 
 
 class OrderService(IOrderService):

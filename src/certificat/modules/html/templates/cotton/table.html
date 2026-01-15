@@ -1,6 +1,6 @@
-<table class="table {{ name }} {% if not no_collapse %}collapsible{% endif %}">
+<table class="table {{ name }} {% if not no_collapse %}collapsible{% endif %} {% if centered %}centered{% endif %}">
     {% if head %}
-    <thead class="thead-light">
+    <thead class="thead--light">
         {{ head }}
     </thead>
     {% endif %}

@@ -15,7 +15,7 @@ IDP_CERT_PATH=".devcontainer/pyidp/idp.crt"
 if [ ! -f "${IDP_KEY_PATH}" ]; then
     echo "Generating pyIdP keypair..."
     mkdir -p ".devcontainer/pyidp"
-    (cd ".devcontainer/pyidp" && openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout "idp.key" -out "idp.crt" -subj "/CN=pyidp.localtest.me" <<< "y")
+    (cd ".devcontainer/pyidp" && openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout "idp.key" -out "idp.crt" -subj "/CN=pyidp.dev.localhost" <<< "y")
 fi
 
 echo """

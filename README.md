@@ -228,7 +228,7 @@ Its recommended to use a Docker-aware proxy like Traefik to manage routing. An e
 docker-compose -f .devcontainer/traefik.yml up --detach
 ```
 
-Go to https://certificat.localtest.me and use the secret key generated in your `.devcontainer/.env` file.
+Go to https://certificat.dev.localhost and use the secret key generated in your `.devcontainer/.env` file.
 
 # Testing
 

@@ -45,7 +45,7 @@ New-PAAccount -ExtAcctKID "{{ binding.hmac_id }}" `
     <div class="mt-4">
         <form action="{% url 'account' binding.id %}" method="POST">
             {% csrf_token %}
-            <input class="btn btn-primary btn-danger width-auto" type="submit" id="delete-binding-submit" name="delete-binding" value="Delete Binding">
+            <input class="btn btn--primary btn--danger width-auto" type="submit" id="delete-binding-submit" name="delete-binding" value="Delete Binding">
         </form>
     </div>
 </c-layouts.base>

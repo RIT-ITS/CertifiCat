@@ -108,7 +108,7 @@ services:
         <md:EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
             xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
             xmlns:ns1="urn:oasis:names:tc:SAML:metadata:algsupport"
-            entityID="http://certificat.localtest.me/saml2/metadata/">
+            entityID="http://certificat.dev.localhost/saml2/metadata/">
             <md:Extensions>
                 <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#md5" />
                 <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#ripemd160" />

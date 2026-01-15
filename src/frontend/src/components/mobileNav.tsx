@@ -6,6 +6,7 @@ export class MobileNavElement extends LitElement {
     @property()
     accessor trigger!: string;
     triggerEl!: HTMLElement;
+    
     @query("#close-mobile-navigation-link")
     closeLink!: HTMLElement;
 
@@ -23,10 +24,10 @@ export class MobileNavElement extends LitElement {
     }
 
     private show = () => {
-        this.classList.remove("hidden");
+        this.classList.remove("mobile-menu--hidden");
     };
 
     private hide = () => {
-        this.classList.add("hidden");
+        this.classList.add("mobile-menu--hidden");
     };
 }

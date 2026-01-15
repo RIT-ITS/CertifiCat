@@ -33,7 +33,7 @@ saml:
     givenName: [first_name]
     sn: [last_name]
   sp:
-    entity_id: "http://certificat.localtest.me/saml2/metadata/"
+    entity_id: "http://certificat.dev.localhost/saml2/metadata/"
     key_file: "/etc/certificat/insecure.key"
     cert_file: "/etc/certificat/insecure.crt"
   idp:

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable
+from typing import Callable
 
 from django.http import HttpRequest
 from django.urls import reverse
@@ -54,7 +54,6 @@ class Navigation:
         NavItem(Sections.Accounts, "Accounts"),
         NavItem(Sections.Certificates, "Certificates"),
         NavItem(Sections.Usage, "Usage"),
-        NavItem(Sections.TOS, "Terms of Service"),
         NavItem(Sections.Admin, "Admin", is_admin_test),
     ]
     indexed_top_level_nav = {n.section: n for n in top_level_nav}
@@ -75,7 +74,7 @@ class BreadCrumbs:
     data: list[BreadCrumb]
 
 
-def build_breadcrumbs(*crumbs: list[Any]) -> BreadCrumbs:
+def build_breadcrumbs(*crumbs: list[str | tuple]) -> BreadCrumbs:
     return BreadCrumbs(
         [BreadCrumb("CertifiCat", "/")]
         + [

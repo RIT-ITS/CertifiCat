@@ -10,10 +10,6 @@ export class ActivityGraphElement extends LitElement {
     @property()
     accessor url!: string;
     @property()
-    accessor startActivityColor!: string;
-    @property()
-    accessor endActivityColor!: string;
-    @property()
     accessor noActivityColor!: string;
 
     accessor colorSteps: Array<string> = [];
@@ -60,8 +56,10 @@ export class ActivityGraphElement extends LitElement {
 
     override connectedCallback(): void {
         super.connectedCallback();
+        const startColor = window.getComputedStyle(this).getPropertyValue("--heat-calendar--start-color");
+        const endColor = window.getComputedStyle(this).getPropertyValue("--heat-calendar--end-color");
         for(let i=1;i<=3;i++) {
-            this.colorSteps[i] = color.blendColors(this.startActivityColor, this.endActivityColor, (i-1)/2);
+            this.colorSteps[i] = color.blendColors(startColor, endColor, (i-1)/2);
         }
     }
 
@@ -95,7 +93,6 @@ export class ActivityGraphElement extends LitElement {
     protected renderSquares = async () => {
         if(this.loadActivityTask.status != TaskStatus.INITIAL) return;
         await this.loadActivityTask.run();
-        // TODO: handle failure
 
         const activity = this.loadActivityTask.value!;
         const squares = this.querySelector('.heat-calendar__squares')!;
@@ -130,7 +127,7 @@ export class ActivityGraphElement extends LitElement {
             const paddedMonth = String(curr.getMonth()+1).padStart(2, '0');
             const paddedDate = String(curr.getDate()).padStart(2, '0');
             const squareActivity = activity[`${curr.getFullYear()}/${paddedMonth}/${paddedDate}`];
-            console.log(`${curr.getFullYear()}/${paddedMonth}/${paddedDate}`)
+            
             let backgroundColor = this.noActivityColor;
             if(squareActivity) {
                 backgroundColor = this.colorSteps[Math.min(squareActivity, 3)]

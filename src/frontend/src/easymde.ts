@@ -3,8 +3,8 @@
  */
 
 import "./styles/easymde.scss";
-import * as EasyMDE from 'easymde';
-import * as CodeMirror from 'codemirror';
+import EasyMDE from 'easymde';
+import CodeMirror from 'codemirror';
 
 window.CodeMirror = CodeMirror;
 window.EasyMDE = EasyMDE;

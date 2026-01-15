@@ -22,6 +22,7 @@ class NewBindingForm(forms.Form):
         widget=forms.RadioSelect,
         choices=BindingScope.choices,
         initial=BindingScope.Personal,
+        help_text="Users with access can view order history and perform account actions.",
     )
     group = forms.ChoiceField(widget=forms.Select, required=False)
     name = forms.CharField(
@@ -32,7 +33,7 @@ class NewBindingForm(forms.Form):
     )
     note = forms.CharField(
         widget=forms.Textarea(
-            attrs={"placeholder": "Notes describing account usage..."}
+            attrs={"placeholder": "Notes describing account usage...", "rows": 5}
         ),
         max_length=255,
     )
@@ -70,16 +71,14 @@ class NewBindingForm(forms.Form):
 
 
 class UsageEditForm(forms.Form):
-    usage = forms.CharField(widget=forms.Textarea())
+    text = forms.CharField(widget=forms.Textarea())
 
     def save(self, request) -> db.Usage:
-        return db.Usage.objects.create(text=self.cleaned_data["usage"])
+        return db.Usage.objects.create(text=self.cleaned_data["text"])
 
 
 class TermsOfServiceEditForm(forms.Form):
-    terms_of_service = forms.CharField(widget=forms.Textarea())
+    text = forms.CharField(widget=forms.Textarea())
 
     def save(self, request) -> db.Usage:
-        return db.TermsOfService.objects.create(
-            text=self.cleaned_data["terms_of_service"]
-        )
+        return db.TermsOfService.objects.create(text=self.cleaned_data["text"])

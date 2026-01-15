@@ -2,7 +2,7 @@ services:
   # vim /usr/lib/python3/dist-packages/certbot/configuration.py  
   # adjust no_verify_ssl to return True
   # Register account
-  # certbot certonly --standalone --server "https://certificat.localtest.me/directory" -d certbot.localtest.me
+  # certbot certonly --standalone --server "https://certificat.dev.localhost/directory" -d certbot.dev.localhost
   certbot:
     networks: 
       - proxy
@@ -14,12 +14,12 @@ services:
       - "80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.certbot.rule=Host(`certbot.localtest.me`)"
+      - "traefik.http.routers.certbot.rule=Host(`certbot.dev.localhost`)"
       - "traefik.http.routers.certbot.tls=false"
       - "traefik.http.services.certbot.loadbalancer.server.port=80"
       - "traefik.docker.network=traefik.proxy"
     extra_hosts:
-    - "certificat.localtest.me:host-gateway"
+    - "certificat.dev.localhost:host-gateway"
 
   certificat:
     networks: 
@@ -30,6 +30,7 @@ services:
       dockerfile: .devcontainer/Dockerfile
     ports:
       - "8000"
+      - "5173"
     volumes:
       - ../..:/workspaces:cached
     # Overrides default command so things don't shut down after the process ends.
@@ -41,12 +42,24 @@ services:
       CERTIFICAT__CONFIG: "/workspaces/certificat/src/certificat_dev/config.yml"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.certificat.rule=Host(`certificat.localtest.me`)"
+
+      # django route
+      - "traefik.http.routers.certificat.entrypoints=websecure"
       - "traefik.http.routers.certificat.tls=true"
+      - "traefik.http.routers.certificat.rule=Host(`certificat.dev.localhost`)"
+      - "traefik.http.routers.certificat.service=certificat"
       - "traefik.http.services.certificat.loadbalancer.server.port=8000"
+
+      # vite route
+      - "traefik.http.routers.certificat-vite.entrypoints=websecure"
+      - "traefik.http.routers.certificat-vite.tls=true"
+      - "traefik.http.routers.certificat-vite.rule=Host(`certificat-vite.dev.localhost`)"
+      - "traefik.http.routers.certificat-vite.service=certificat-vite"
+      - "traefik.http.services.certificat-vite.loadbalancer.server.port=5173"
+
       - "traefik.docker.network=traefik.proxy"
     extra_hosts:
-    - "certbot.localtest.me:host-gateway"
+    - "certbot.dev.localhost:host-gateway"
 
   mariadb:
     networks: 
@@ -74,14 +87,14 @@ services:
       - 8000
     environment:
       SECRET_KEY: "${_PYIDP_SECRET_KEY}"
-      BASE_URL: "https://idp.localtest.me"
+      BASE_URL: "https://idp.dev.localhost"
       IDP_CRT: "${_PYIDP_CERT}"
       IDP_KEY: "${_PYIDP_KEY}"
       SP_METADATA: |
         <md:EntityDescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
             xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
             xmlns:ns1="urn:oasis:names:tc:SAML:metadata:algsupport"
-            entityID="http://certificat.localtest.me/saml2/metadata/">
+            entityID="http://certificat.dev.localhost/saml2/metadata/">
             <md:Extensions>
                 <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#md5" />
                 <ns1:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#ripemd160" />
@@ -124,12 +137,12 @@ services:
                     </ds:KeyInfo>
                 </md:KeyDescriptor>
                 <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-                    Location="https://certificat.localtest.me/saml2/ls/" />
+                    Location="https://certificat.dev.localhost/saml2/ls/" />
                 <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                    Location="https://certificat.localtest.me/saml2/ls/post" />
+                    Location="https://certificat.dev.localhost/saml2/ls/post" />
                 <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat>
                 <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                    Location="https://certificat.localtest.me/saml2/acs/" index="1" />
+                    Location="https://certificat.dev.localhost/saml2/acs/" index="1" />
             </md:SPSSODescriptor>
         </md:EntityDescriptor>
     volumes:
@@ -138,7 +151,7 @@ services:
       #- pyidp-sessions:/tmp/flask-sessions
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.idp.rule=Host(`idp.localtest.me`)"
+      - "traefik.http.routers.idp.rule=Host(`idp.dev.localhost`)"
       - "traefik.http.routers.idp.tls=true"
       - "traefik.http.services.idp.loadbalancer.server.port=80"
 

@@ -28,7 +28,7 @@ COPY --from=src ./ /code/
 WORKDIR /code/frontend
 
 RUN /opt/nodejs/lib/node_modules/yarn/bin/yarn && \
-    ./node_modules/.bin/webpack --env production 
+    /opt/nodejs/lib/node_modules/yarn/bin/yarn build
 
 WORKDIR /code/
 

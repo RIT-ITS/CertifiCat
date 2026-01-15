@@ -1,0 +1,49 @@
+{% extends "certificat/base.html" %}
+
+{% load vite %}
+{% block headline %}
+    {{ display_name }}
+{% endblock %}
+
+{% block body %}
+
+<div class="container my-4">
+    {% if form.errors %}
+        <div role="contentinfo" class="messages messages--error mb-4">
+            {{ form.errors }}
+        </div>
+    {% endif %}
+    <fade-on-load>
+        <form action="{% url route_name %}edit" method="POST">
+            {% csrf_token %}
+            
+            {{ form.text }}
+
+            <div id="dynamic-page-edit-row" class="flex dynamic-page-edit-row">
+                <a href="{% url route_name %}" class="btn btn--light mr-3">Cancel</a>
+                <button name="submit" type="submit" class="btn btn--primary" >Save</button>
+            </div>
+        </form>
+    </fade-on-load>
+</div>
+
+{% vite_resource 'src/easymde.ts' %}
+
+<script>
+    const el = document.querySelector("#dynamic-page-edit-row")
+    const observer = new IntersectionObserver( 
+        ([e]) => e.target.classList.toggle("is-pinned", e.intersectionRatio < 1),
+        { threshold: [1] }
+    );
+
+    observer.observe(el);
+
+    document.addEventListener("DOMContentLoaded", function() {
+        new EasyMDE({
+            element: document.getElementById("id_text"),
+            autofocus: true,
+            forceSync: true
+        })
+    });
+</script>
+{% endblock %}

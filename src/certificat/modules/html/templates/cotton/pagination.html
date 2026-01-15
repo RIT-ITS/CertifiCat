@@ -1,6 +1,6 @@
 {% load certificat %}
 
-<ul class="pagination justify-content-center flex-wrap mt-2 mb-4">
+<ul class="pagination mt-2 mb-4">
     {% if page.has_previous %}
     <li class="page-item"><a class="page-link" href="{% querystring page=page.previous_page_number %}{{ qs_extra }}">&laquo;</a></li>
     {% else %}

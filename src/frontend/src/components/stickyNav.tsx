@@ -19,9 +19,9 @@ export class StickyNavElement extends LitElement {
 
     protected onScroll = () => {
         if (this.topPadding < window.scrollY) {
-            this.classList.add("minimized");
+            this.classList.add("is-sticky");
         } else {
-            this.classList.remove("minimized");
+            this.classList.remove("is-sticky");
         }
     };
 }

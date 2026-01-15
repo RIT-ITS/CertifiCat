@@ -12,9 +12,9 @@
                 <i class="fa fa-magnifying-glass icon"></i>
                 <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by SAN, separated by ','. Surround each identifier in '/' to use regular expressions." class="search--box" />
             </div>
-            <button class="btn btn-secondary search--button">Search</button>
+            <button class="btn btn--secondary search--button">Search</button>
             {% if request.GET.filter %}
-                <a href="{% url 'CERTIFICATES' %}" class="btn btn-secondary-outline"><i class="fa-solid fa-xmark"></i></a>
+                <a href="{% url 'CERTIFICATES' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
             {% endif %}
         </div>
     </form>
@@ -30,22 +30,22 @@
         <c-slot name="body">
             {% for cert in certificates.page %}
                 <tr>
-                    <td class="created_at">
+                    <td class="shrink-cell">
                         {{ cert.created_at }}
                     </td>
-                    <td class="expires">
+                    <td class="shrink-cell">
                         {{ cert.metadata.not_valid_after|to_datetime }}
                     </td>
                     <td class="sans">
                         {{ cert.metadata.sans|join:", " }}
                     </td>
-                    <td class="edit row-button">
-                        <a class="btn btn-primary-outline btn-sm" href="{% url 'certificate' cert.id %}">Details
+                    <td class="edit table--row-button shrink-cell">
+                        <a class="btn btn--light btn--md" href="{% url 'certificate' cert.id %}">Details
                             &nbsp;<span class="fa-solid fa-angle-right"></span></a>
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="100%">No certificates created yet.</td></tr>
+                <tr><td colspan="100%" class="centered no-records-found">No certificates found.</td></tr>
             {% endfor %}
         </c-slot>
     </c-table>

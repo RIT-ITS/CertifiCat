@@ -13,7 +13,7 @@ cat >"$CONFIG_FILE" <<EOL
 certificat:
   secret_key: "12345"
   debug: True
-  url_root: "http://certificat.localtest.me"
+  url_root: "http://certificat.dev.localhost"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
   login_method: "local"
 

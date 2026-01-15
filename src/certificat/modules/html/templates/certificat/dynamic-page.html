@@ -1,13 +1,15 @@
 {% extends "certificat/base.html" %}
 
-{% block headline %}Terms of Service{% endblock %}
+{% block headline %}
+    {{ display_name }}
+    {% if can_edit %}
+        <a class="btn btn--primary btn--sm" href="{% url edit_route_name %}">Edit &nbsp;<span class="fa-solid fa-edit"></span></a>
+    {% endif %}
+{% endblock %}
 
 {% block body %}
 
 <div class="container my-4">
-    {% if can_edit %}
-        <a class="btn btn-primary btn-sm mb-4" href="{% url 'edit-tos' %}">Edit Terms of Service</a>
-    {% endif %}
     {% if text %}
         {{ text|safe }}
     {% else %}

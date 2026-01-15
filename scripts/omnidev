@@ -75,12 +75,12 @@ sync_venv() {
 }
 
 start_services() {
-  # Start django, huey, and webpack
+  # Start django, huey, and vite
   start_django="${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py runserver"
   start_huey="${VENV_PATH}/bin/watchmedo auto-restart --directory '${SRC_PATH}' --recursiv --patterns *.py -- ${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py run_huey"
-  start_webpack="cd ${SRC_PATH}/frontend && yarn && ${SRC_PATH}/frontend/node_modules/.bin/webpack --watch"
+  start_vite="cd ${SRC_PATH}/frontend && yarn && yarn dev"
 
-  npx concurrently --handle-input -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_webpack}" --names=django,huey,webpack --kill-others
+  npx concurrently --handle-input -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_vite}" --names=django,huey,vite --kill-others
 }
 
 manage() {

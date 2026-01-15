@@ -4,23 +4,23 @@
 
 {% block body %}
 
-<c-layouts.left-col>
-    <c-slot name="left">
-        <h3 class="icon mb-1 mt-2"><i class="fa-solid fa-cat"></i>Get Started</h3>
+<c-layouts.base>
+    <form-modal 
+        class="new-account-modal"
+        trigger="#add-new-account"
+        header="Create New Account"
+        addButtonText="Create New Account"
+        addButtonName="new-account"
+        autoFocus="#id_name">
         <new-account-form-manager>
-            <form action='.' id='add_new_binding_form' method='post'>
+            <div>
                 {% csrf_token %}
                 {{ new_binding_form }}
 
-                <input 
-                    class="btn btn-primary row-btn mt-2" 
-                    type="submit"
-                    id="new-account-submit" 
-                    name="new-account" 
-                    value="Add New Account">
-            </form>
+                <label><input type="checkbox" required />I agree to the <a href="{% url 'TOS' %}" class="ml-1">terms of service</a></label>
+            </div>
         </new-account-form-manager>
-    </c-slot>
+    </form-modal>
     
     <form action="." id="search_form" method="get">
         <div class="search mb-3">
@@ -28,10 +28,14 @@
                 <i class="fa fa-magnifying-glass icon"></i>
                 <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by name or description" class="search--box" />
             </div>
-            <button class="btn btn-secondary search--button">Search</button>
+            <button class="btn btn--secondary search--button">Search</button>
             {% if request.GET.filter %}
-                <a href="{% url 'ACCOUNTS' %}" class="btn btn-secondary-outline"><i class="fa-solid fa-xmark"></i></a>
+                <a href="{% url 'ACCOUNTS' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
             {% endif %}
+            <a id="add-new-account" class="btn btn--primary search--button ml-3">
+                Create New Account&nbsp;
+                <i class="fa-solid fa-plus"></i>
+            </a>
         </div>
     </form>
 
@@ -48,7 +52,7 @@
         <c-slot name="body">
             {% for binding in bindings.page %}
                 <tr>
-                    <td class="created_at">
+                    <td class="shrink-cell">
                         {{ binding.created_at|date:"DATE_FORMAT" }}
                     </td>
                     <td class="access">
@@ -62,29 +66,25 @@
                         <b class="bold">{{ binding.name }}</b>
                         <p>{{ binding.note }}</p>
                     </td>
-                    <td class="activated">
+                    <td class="activated shrink-cell centered">
                         {% if binding.bound_to %}
                         <i class="fa-solid fa-check"></i>
                         {% endif %}
                     </td>
-                    <td class="edit row-button">
-                        <a class="btn btn-primary-outline btn-sm" href="{% url 'account' binding.id %}">Manage
+                    <td class="edit table--row-button shrink-cell">
+                        <a class="btn btn--light btn--md" href="{% url 'account' binding.id %}">Manage
                             &nbsp;<span class="fa-solid fa-angle-right"></span></a>
                     </td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="100%">
-                        <p>
-                            No accounts found.
-                        </p>
-                    </td>
+                    <td colspan="100%" class="centered no-records-found">No accounts found.</td>
                 </tr>
             {% endfor %}
         </c-slot>
     </c-table>
 
-    <div class="row mt-2 center-xs">
+    <div class="row mt-2 centered">
         <c-pagination :page="bindings.page" />
     </div>
 </c-layouts.left-col>

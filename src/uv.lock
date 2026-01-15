@@ -86,7 +86,7 @@ wheels = [
 
 [[package]]
 name = "certificat"
-version = "2025.12.1766426460"
+version = "2026.1.1768504097"
 source = { virtual = "." }
 dependencies = [
     { name = "acmev2" },

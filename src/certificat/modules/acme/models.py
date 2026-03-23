@@ -1,7 +1,9 @@
+from base64 import urlsafe_b64encode
 import json
 import operator
 import random
 import string
+import secrets
 from enum import Enum
 from typing import List, Mapping, Self
 
@@ -133,9 +135,11 @@ class AccountBinding(TimestampMixin):
             hmac_id="".join(
                 random.choices(cls.KID_ENTROPY, k=app_settings.hmac_id_length)
             ),
-            hmac_key="".join(
-                random.choices(cls.HMAC_ENTROPY, k=app_settings.hmac_key_length)
-            ),
+            hmac_key=urlsafe_b64encode(
+                secrets.token_bytes(app_settings.hmac_key_length)
+            )
+            .decode()
+            .rstrip("="),
             creator=creator,
             note=note,
             name=name,
@@ -386,6 +390,32 @@ class SectigoOrderProcessingState(TimestampMixin):
     @classmethod
     def for_order(cls, order: Order) -> "SectigoOrderProcessingState":
         state, _ = SectigoOrderProcessingState.objects.get_or_create(order=order)
+        return state
+
+    def transition_to(self, choice: Choices):
+        self.state = choice
+        self.save()
+
+
+class EMSignOrderProcessingState(TimestampMixin):
+    class Choices(models.TextChoices):
+        SUBMITTED = "SU", "Submitted"
+        ORDERED = "OR", "Ordered"
+        FULFILLED = "FU", "Fulfilled"
+        COLLECTED = "CO", "Collected"
+        ERRORED = "ER", "Errored"
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order_number = models.CharField(null=True, max_length=50)
+    state = models.CharField(
+        max_length=2,
+        choices=Choices,
+        default=Choices.SUBMITTED,
+    )
+
+    @classmethod
+    def for_order(cls, order: Order) -> "SectigoOrderProcessingState":
+        state, _ = EMSignOrderProcessingState.objects.get_or_create(order=order)
         return state
 
     def transition_to(self, choice: Choices):

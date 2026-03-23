@@ -2,7 +2,7 @@ FROM python:3.13.3-alpine AS base
 
 FROM base AS builder
 
-ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v22.9.0/node-v22.9.0-linux-x64-musl.tar.gz
+ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v24.14.0/node-v24.14.0-linux-x64-musl.tar.gz
 
 RUN apk update && \
     apk add --no-cache \
@@ -32,12 +32,13 @@ RUN /opt/nodejs/lib/node_modules/yarn/bin/yarn && \
 
 WORKDIR /code/
 
+ARG CERTIFICAT_VERSION
 RUN pip3 install uv && \
+    uv version ${CERTIFICAT_VERSION} && \
     uv build && \
     uv export --no-emit-workspace --no-hashes -o requirements-frozen.txt
 
-ARG GUNICORN_VERSION=21.2.0
-
+ARG GUNICORN_VERSION=25.1.0
 RUN python3 -m venv /venv/ && \
     /venv/bin/pip install \
         --no-cache-dir \

@@ -42,6 +42,7 @@ def test_reconcile_groups():
 
 @pytest.mark.django_db
 def test_reconcile_superuser():
+    """Test that an average is not a superuser unless they're a member of the admin group."""
     from certificat.settings.saml import saml_settings
 
     user = gen_user()
@@ -50,8 +51,13 @@ def test_reconcile_superuser():
     user.refresh_from_db()
     assert not user.is_superuser
 
-    saml_settings.administrators = [user.username]
+    saml_settings.administrators = [user.username, "dummy-user"]
 
     _reconcile_superuser(user, [])
     user.refresh_from_db()
     assert user.is_superuser
+
+    saml_settings.administrators = ["dummy-user"]
+    _reconcile_superuser(user, [])
+    user.refresh_from_db()
+    assert not user.is_superuser

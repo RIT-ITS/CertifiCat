@@ -21,6 +21,7 @@ fi
 echo """
 # Created by initialize.sh, edits may be lost.
 _DJ_MYSQL_ROOT_PWD=${_DJ_MYSQL_ROOT_PWD:-$(gen-random 10)}
+_DJ_POSTGRES_PWD=${_DJ_POSTGRES_PWD:-$(gen-random 10)}
 _DJ_REDIS_PWD=${_DJ_REDIS_PWD:-$(gen-random 10)}
 _DJ_SECRET_KEY=${_DJ_SECRET_KEY:-$(gen-random 40)}
 _PYIDP_SECRET_KEY=${_PYIDP_SECRET_KEY:-$(gen-random 10)}

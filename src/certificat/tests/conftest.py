@@ -1,4 +1,5 @@
 from collections import namedtuple
+import re
 import acme.messages
 from certificat.modules.acme.services import (
     AccountService,
@@ -10,7 +11,11 @@ from certificat.modules.acme.services import (
     OrderService,
 )
 
-from certificat.settings.dynamic import ApplicationSettings, LocalACMESettings
+from certificat.settings.dynamic import (
+    ApplicationSettings,
+    EMSignFinalizerSettings,
+    LocalACMESettings,
+)
 from acmev2.settings import ACMESettings
 import inject
 import pytest
@@ -47,7 +52,7 @@ class TestDirectoryService(DirectoryService):
 
 
 @pytest.fixture(autouse=True)
-def setup():
+def setup(responses):
     import dnsmock
 
     # I have no idea why these are necessary. If they don't exist then DNS resolution
@@ -58,6 +63,11 @@ def setup():
     dnsmock.bind_ip("acme2.localhost", 443, "127.0.0.1")
     dnsmock.bind_ip("acme2.localhost", 80, "127.0.0.1")
     dnsmock.bind_ip("mock.me", 80, "127.0.0.1")
+
+    responses.add_passthru(re.compile(r"^http://acme2\.localhost.*"))
+    responses.add_passthru(re.compile(r"^http://acme\.localhost.*"))
+    responses.add_passthru(re.compile(r"^http://mock\.me.*"))
+    responses.add_passthru(re.compile(r"^https?://localhost.*"))
 
     acme_settings = LocalACMESettings.get(force_reload=True)
     acme_settings.eab_required = False
@@ -141,13 +151,18 @@ def authenticated_su_web_client():
 
 
 @pytest.fixture
-def settings():
+def app_settings():
     return inject.instance(ApplicationSettings)
 
 
 @pytest.fixture
 def acme_settings():
     return inject.instance(ACMESettings)
+
+
+@pytest.fixture
+def emsign_settings():
+    return EMSignFinalizerSettings.get()
 
 
 NewAcctRet = namedtuple("NewAcctRet", ["response", "binding", "user"])

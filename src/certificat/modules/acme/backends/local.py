@@ -7,12 +7,12 @@ from certificat.modules.acme.backends import (
     FinalizeResponse,
     Finalizer,
 )
-from certificat.settings.dynamic import LocalCASettings
+from certificat.settings.dynamic import LocalFinalizerSettings
 
 
 class LocalFinalizer(Finalizer):
     def finalize(self, order: db.Order, pem_csr: str):
-        ca_settings = LocalCASettings.get()
+        ca_settings = LocalFinalizerSettings.get()
 
         ca_key = serialization.load_pem_private_key(
             ca_settings.key.encode(), password=None

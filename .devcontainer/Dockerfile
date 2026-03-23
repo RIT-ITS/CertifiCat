@@ -1,10 +1,11 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.13-bullseye
+FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm
 
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
     mariadb-client \
+    postgresql-client \
     certbot \
     xmlsec1 \
     iputils-ping \

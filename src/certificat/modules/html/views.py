@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse
 from django.views.generic.base import ContextMixin
 from django.views import View
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator, EmptyPage
 from certificat.modules.acme.models import (
     Certificate,
@@ -21,7 +21,7 @@ from certificat.modules.html.forms import (
     TermsOfServiceEditForm,
     UsageEditForm,
 )
-from certificat.settings.dynamic import ApplicationSettings, SAMLSettings
+from certificat.settings.dynamic import ApplicationSettings, RemoteAuthSettings
 from certificat.utils import unprefix_group
 import inject
 from .nav import BreadCrumb, BreadCrumbs, build_breadcrumbs, Sections
@@ -110,7 +110,9 @@ class EditDynamicPageView(ViewBase):
                 messages.error(request, "There was an error saving your edits.")
                 logger.exception("Error saving edits")
 
-        context = self.get_context_data(form=obj_form)
+        context = self.get_context_data(
+            form=obj_form, display_name=self.display_name, route_name=self.route_name
+        )
         return render(request, "certificat/edit-dynamic-page.html", context)
 
 
@@ -408,11 +410,17 @@ class CertificateView(ViewBase):
         cert = get_object_or_404(
             Certificate.objects.select_related("order__account__binding"), pk=cert_id
         )
+        user_can_access_binding = False
+        try:
+            user_can_access_binding = cert.order.account.binding.accessible_by(
+                request.user
+            )
+        except AccountBinding.DoesNotExist:
+            user_can_access_binding = False
+
         context = self.get_context_data(
             cert=cert,
-            user_can_access_order=cert.order.account.binding.accessible_by(
-                request.user
-            ),
+            user_can_access_order=user_can_access_binding,
         )
 
         return render(request, "certificat/certificate.html", context)
@@ -451,8 +459,21 @@ def acs_failure(request, exception, status, **kwargs):
         {
             "attributes": attributes,
             "exception": exception,
-            "saml_settings": SAMLSettings.get(),
+            "saml_settings": inject.attr(ApplicationSettings).authentication,
         },
+    )
+
+
+def remote_login_redirect(request, *args, **kwargs):
+    app_settings = inject.instance(ApplicationSettings)
+    if app_settings.authentication.type != "remote":
+        raise Exception("What are you doing?")
+
+    redirect_target = request.GET.get("next", "/")
+    remote_auth_settings: RemoteAuthSettings = app_settings.authentication
+
+    return redirect(
+        remote_auth_settings.redirect_template.format(redirect=redirect_target)
     )
 
 

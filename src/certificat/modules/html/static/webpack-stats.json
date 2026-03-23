@@ -1,0 +1,211 @@
+{
+  "status": "done",
+  "assets": {
+    "../../../../../frontend/dist/app.d.ts": {
+      "name": "../../../../../frontend/dist/app.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/app.d.ts"
+    },
+    "../../../../../frontend/dist/app.d.ts.map": {
+      "name": "../../../../../frontend/dist/app.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/app.d.ts.map"
+    },
+    "../../../../../frontend/dist/color.d.ts": {
+      "name": "../../../../../frontend/dist/color.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/color.d.ts"
+    },
+    "../../../../../frontend/dist/color.d.ts.map": {
+      "name": "../../../../../frontend/dist/color.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/color.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/accountAccessManager.d.ts": {
+      "name": "../../../../../frontend/dist/components/accountAccessManager.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/accountAccessManager.d.ts"
+    },
+    "../../../../../frontend/dist/components/accountAccessManager.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/accountAccessManager.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/accountAccessManager.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/activityGraph.d.ts": {
+      "name": "../../../../../frontend/dist/components/activityGraph.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/activityGraph.d.ts"
+    },
+    "../../../../../frontend/dist/components/activityGraph.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/activityGraph.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/activityGraph.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/confirmButton.d.ts": {
+      "name": "../../../../../frontend/dist/components/confirmButton.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/confirmButton.d.ts"
+    },
+    "../../../../../frontend/dist/components/confirmButton.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/confirmButton.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/confirmButton.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/editableText.d.ts": {
+      "name": "../../../../../frontend/dist/components/editableText.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/editableText.d.ts"
+    },
+    "../../../../../frontend/dist/components/editableText.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/editableText.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/editableText.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/fadeOnLoad.d.ts": {
+      "name": "../../../../../frontend/dist/components/fadeOnLoad.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/fadeOnLoad.d.ts"
+    },
+    "../../../../../frontend/dist/components/fadeOnLoad.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/fadeOnLoad.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/fadeOnLoad.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/mobileNav.d.ts": {
+      "name": "../../../../../frontend/dist/components/mobileNav.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/mobileNav.d.ts"
+    },
+    "../../../../../frontend/dist/components/mobileNav.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/mobileNav.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/mobileNav.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/newAccountFormManager.d.ts": {
+      "name": "../../../../../frontend/dist/components/newAccountFormManager.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/newAccountFormManager.d.ts"
+    },
+    "../../../../../frontend/dist/components/newAccountFormManager.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/newAccountFormManager.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/newAccountFormManager.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/orderHistory.d.ts": {
+      "name": "../../../../../frontend/dist/components/orderHistory.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/orderHistory.d.ts"
+    },
+    "../../../../../frontend/dist/components/orderHistory.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/orderHistory.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/orderHistory.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/profileMenu.d.ts": {
+      "name": "../../../../../frontend/dist/components/profileMenu.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/profileMenu.d.ts"
+    },
+    "../../../../../frontend/dist/components/profileMenu.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/profileMenu.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/profileMenu.d.ts.map"
+    },
+    "../../../../../frontend/dist/components/stickyNav.d.ts": {
+      "name": "../../../../../frontend/dist/components/stickyNav.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/components/stickyNav.d.ts"
+    },
+    "../../../../../frontend/dist/components/stickyNav.d.ts.map": {
+      "name": "../../../../../frontend/dist/components/stickyNav.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/components/stickyNav.d.ts.map"
+    },
+    "../../../../../frontend/dist/easymde.d.ts": {
+      "name": "../../../../../frontend/dist/easymde.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/easymde.d.ts"
+    },
+    "../../../../../frontend/dist/easymde.d.ts.map": {
+      "name": "../../../../../frontend/dist/easymde.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/easymde.d.ts.map"
+    },
+    "../../../../../frontend/dist/util.d.ts": {
+      "name": "../../../../../frontend/dist/util.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/util.d.ts"
+    },
+    "../../../../../frontend/dist/util.d.ts.map": {
+      "name": "../../../../../frontend/dist/util.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/util.d.ts.map"
+    },
+    "../../../../../frontend/dist/vendor.d.ts": {
+      "name": "../../../../../frontend/dist/vendor.d.ts",
+      "path": "/workspaces/certificat/src/frontend/dist/vendor.d.ts"
+    },
+    "../../../../../frontend/dist/vendor.d.ts.map": {
+      "name": "../../../../../frontend/dist/vendor.d.ts.map",
+      "path": "/workspaces/certificat/src/frontend/dist/vendor.d.ts.map"
+    },
+    "237f4a0afb.woff2": {
+      "name": "237f4a0afb.woff2",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/237f4a0afb.woff2",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-solid-900.woff2"
+    },
+    "2d89b49ac2.woff2": {
+      "name": "2d89b49ac2.woff2",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/2d89b49ac2.woff2",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-regular-400.woff2"
+    },
+    "370dd5af19.ttf": {
+      "name": "370dd5af19.ttf",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/370dd5af19.ttf",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-regular-400.ttf"
+    },
+    "718f73f05b.svg": {
+      "name": "718f73f05b.svg",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/718f73f05b.svg",
+      "sourceFilename": "src/images/certificat.svg"
+    },
+    "adec7d6f31.ttf": {
+      "name": "adec7d6f31.ttf",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/adec7d6f31.ttf",
+      "sourceFilename": "src/styles/fontawesome/webfonts/fa-solid-900.ttf"
+    },
+    "app.66fbb4cbb8.js": {
+      "name": "app.66fbb4cbb8.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/app.66fbb4cbb8.js"
+    },
+    "app.66fbb4cbb8.js.LICENSE.txt": {
+      "name": "app.66fbb4cbb8.js.LICENSE.txt",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/app.66fbb4cbb8.js.LICENSE.txt"
+    },
+    "app.b9b463bc4c.css": {
+      "name": "app.b9b463bc4c.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/app.b9b463bc4c.css"
+    },
+    "cache.8c927eef67.js": {
+      "name": "cache.8c927eef67.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/cache.8c927eef67.js"
+    },
+    "cache.8c927eef67.js.LICENSE.txt": {
+      "name": "cache.8c927eef67.js.LICENSE.txt",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/cache.8c927eef67.js.LICENSE.txt"
+    },
+    "easymde.6efb6ee7b5.js": {
+      "name": "easymde.6efb6ee7b5.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/easymde.6efb6ee7b5.js"
+    },
+    "easymde.6efb6ee7b5.js.LICENSE.txt": {
+      "name": "easymde.6efb6ee7b5.js.LICENSE.txt",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/easymde.6efb6ee7b5.js.LICENSE.txt"
+    },
+    "easymde.e2f5e68d5a.css": {
+      "name": "easymde.e2f5e68d5a.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/easymde.e2f5e68d5a.css"
+    },
+    "vendor.1e85c8597d.css": {
+      "name": "vendor.1e85c8597d.css",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/vendor.1e85c8597d.css"
+    },
+    "vendor.58ecaa7a5a.js": {
+      "name": "vendor.58ecaa7a5a.js",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/vendor.58ecaa7a5a.js"
+    },
+    "vendor.58ecaa7a5a.js.LICENSE.txt": {
+      "name": "vendor.58ecaa7a5a.js.LICENSE.txt",
+      "path": "/workspaces/certificat/src/certificat/modules/html/static/certificat.bundle/vendor.58ecaa7a5a.js.LICENSE.txt"
+    }
+  },
+  "chunks": {
+    "app": [
+      "cache.8c927eef67.js",
+      "app.b9b463bc4c.css",
+      "app.66fbb4cbb8.js"
+    ],
+    "easymde": [
+      "cache.8c927eef67.js",
+      "easymde.e2f5e68d5a.css",
+      "easymde.6efb6ee7b5.js"
+    ],
+    "vendor": [
+      "cache.8c927eef67.js",
+      "vendor.1e85c8597d.css",
+      "vendor.58ecaa7a5a.js"
+    ]
+  }
+}

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from inspect import isclass
 import re
 from typing import Self
-from certificat.settings.dynamic import ConfigFile, SAMLSettings
+from certificat.settings.dynamic import ConfigFile
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined

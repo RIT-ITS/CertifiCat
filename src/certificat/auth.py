@@ -1,10 +1,41 @@
 from typing import Dict, List, Tuple, Optional, Any
+
+from django.http import HttpRequest
+from certificat.settings.dynamic import ApplicationSettings, RemoteAuthSettings
 import djangosaml2.backends
 from django.contrib.auth.models import Group, User
 import logging
 from django.conf import settings
+from django.contrib.auth.backends import RemoteUserBackend as BaseRemoteUserBackend
+
+import inject
 
 logger = logging.getLogger(__name__)
+
+
+class RemoteUserBackend(BaseRemoteUserBackend):
+    def configure_user(self, request: HttpRequest, user, created=True):
+        """
+        Configure a user and return the updated user.
+
+        By default, return the user unmodified.
+        """
+        remote_auth_settings: RemoteAuthSettings = inject.instance(
+            ApplicationSettings
+        ).authentication
+
+        for header, attribute in remote_auth_settings.attribute_mapping.items():
+            if header in request.META:
+                try:
+                    setattr(user, attribute, request.META[header])
+                except:  # noqa: E722
+                    logger.exception(
+                        "Error settings attribute %s on user object", attribute
+                    )
+
+        user.save()
+
+        return user
 
 
 class Saml2Backend(djangosaml2.backends.Saml2Backend):
@@ -74,11 +105,14 @@ def _reconcile_superuser(user: User, attributes: Dict):
 
     if user.username in saml_settings.administrators:
         logger.debug(
-            "user %s in administrators config, giving superuser access",
+            "user %s found in administrators config, granting superuser access",
             user.username,
         )
         user.is_staff = True
         user.is_superuser = True
+        user.save()
+    elif user.is_superuser:
+        user.is_superuser = False
         user.save()
 
 

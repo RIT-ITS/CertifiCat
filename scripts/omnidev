@@ -102,40 +102,6 @@ build() {
   )
 }
 
-bump_version() {
-  PYPROJECT_FILE="${SRC_PATH}/pyproject.toml"
-
-  CURRENT_VERSION="$(tomlq -r ".project.version" "${PYPROJECT_FILE}")"
-  # Makes a version like 2025.5.1746545274
-  # This needs to be a valid python, helm, and docker version
-  NEW_VERSION=$(date '+%Y.%-m.%s')
-
-  log_info "Current version: ${CURRENT_VERSION}"
-  log_info "Setting new version: ${NEW_VERSION}"
-  sed -i "s/version = \"${CURRENT_VERSION}\"/version = \"${NEW_VERSION}\"/g" "${PYPROJECT_FILE}"
-
-  CHART="${ROOT}/charts/Chart.yaml"
-  yq -yi ".appVersion |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
-  yq -yi ".version |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
-
-  # Update uv lock
-  sync_venv
-}
-
-gen_tag() {
-  [ ! -z "$(git status --untracked-files=no --porcelain)" ] && {
-    log_err "Working directory must be clean before creating a new tag."
-    exit 1
-  }
-
-  CHART="${HERE}/../charts/Chart.yaml"
-  NEW_VERSION="$(yq .version "${CHART}" -r)"
-
-  log_info "Creating new git tag. Release changes and start the build pipeline with 'git push <repository> ${NEW_VERSION}'"
-  log_info "You can delete the tag at any time before releasing with 'git tag -d ${NEW_VERSION}"
-  git tag "${NEW_VERSION}"
-}
-
 sync_venv
 
 SUB_COMMAND=${1}
@@ -169,14 +135,6 @@ gen-bom)
 
 build)
   build "$@"
-  ;;
-
-bump-version)
-  bump_version "$@"
-  ;;
-
-gen-tag)
-  gen_tag "$@"
   ;;
 
 *) usage ;;

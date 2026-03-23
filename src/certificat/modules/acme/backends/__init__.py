@@ -5,7 +5,7 @@ from certificat.modules.acme import models as db
 
 @dataclass
 class ErrorResponse:
-    code: int
+    code: str
     description: str
 
 
@@ -16,6 +16,10 @@ class FinalizeResponse:
 
     def ok(self) -> bool:
         return self.error is None
+
+
+class StopFinalization(Exception):
+    pass
 
 
 class Finalizer(abc.ABC):

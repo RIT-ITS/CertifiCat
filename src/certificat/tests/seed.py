@@ -78,7 +78,7 @@ def new_order(cn: str, sans: list[str], client: acme.client.ClientV2):
 
 def create_cert(client: acme.client.ClientV2, cn: str, sans: list[str]):
     settings = inject.instance(ApplicationSettings)
-    settings.finalizer_module = "certificat.modules.acme.backends.local.LocalFinalizer"
+    settings.finalizer.module = "certificat.modules.acme.backends.local.LocalFinalizer"
 
     order, csr = new_order(cn=cn, sans=sans, client=client)
     ord_id = order.uri.split("/")[-1]

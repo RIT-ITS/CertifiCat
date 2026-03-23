@@ -203,8 +203,15 @@ The project is designed to be run using [VSCode devcontainers](https://code.visu
 
 Create two databases, one for development and one for running tests. 
 
+#### MySQL Engine
+
 ```bash
 MYSQL_PWD=$CERTIFICAT__DB__PASSWORD mariadb -h mariadb. -uroot -e "CREATE DATABASE certificat;CREATE DATABASE test_certificat;"
+```
+
+#### Postgres Engine
+```bash
+PGPASSWORD=$CERTIFICAT__DB__PASSWORD psql -U postgres -h postgres. -c "CREATE DATABASE certificat;" -c "CREATE DATABASE test_certificat;"
 ```
 
 ### Run Migrations

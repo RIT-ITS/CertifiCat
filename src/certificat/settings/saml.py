@@ -1,5 +1,5 @@
 from os import path
-from .dynamic import ApplicationSettings, SAMLSettings
+from .dynamic import ApplicationSettings, SAMLAuthSettings
 import inject
 import saml2
 import saml2.saml
@@ -8,10 +8,8 @@ dynamic_settings = inject.instance(ApplicationSettings)
 
 BASEDIR = path.dirname(path.abspath(__file__))
 
-if dynamic_settings.login_method == "saml":
-    saml_settings = SAMLSettings.get()
-    LOGIN_URL = "/saml2/login/"
-    AUTHENTICATION_BACKENDS = ["certificat.auth.Saml2Backend"]
+if dynamic_settings.authentication.type == "saml":
+    saml_settings: SAMLAuthSettings = dynamic_settings.authentication
 
     SAML_SESSION_COOKIE_NAME = saml_settings.session_cookie
     SAML_CSP_HANDLER = ""

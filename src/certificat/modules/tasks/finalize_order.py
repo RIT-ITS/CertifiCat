@@ -4,6 +4,7 @@ from certificat.modules.acme.backends import (
     FinalizeResponse,
     Finalizer,
     NotReadyException,
+    StopFinalization,
 )
 from huey.contrib.djhuey import HUEY
 from huey import RetryTask
@@ -33,7 +34,7 @@ def _run_task(order_name: str):
     csr = db.CertificateRequest.objects.get(order=order).csr
 
     logger.info(f"{log_prefix}: creating finalizer")
-    finalizer_klass = import_string(app_settings.finalizer_module)
+    finalizer_klass = import_string(app_settings.finalizer.module)
     finalizer: Finalizer = finalizer_klass()
 
     try:
@@ -50,6 +51,9 @@ def _run_task(order_name: str):
             )
 
         return finalize_response.ok()
+    except StopFinalization as exc:
+        db.OrderFinalizationError.objects.create(order=order, error=str(exc))
+        raise
     except NotReadyException:
         # Don't log this as an error, the order is just in a processing state
         logger.info(f"{log_prefix}: order was not ready, will be retried if possible")
@@ -72,6 +76,9 @@ def finalize_order_task(order_name: str, task=None):
         passed = False
         try:
             passed = _run_task(order_name)
+        except StopFinalization:
+            logger.exception("finalization stopped early")
+            task.retries = 0
         except Exception:
             logger.exception("error in order finalization")
 

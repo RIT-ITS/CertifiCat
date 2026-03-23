@@ -1,4 +1,4 @@
-from typing import List, Literal, Mapping, Self, Optional
+from typing import List, Literal, Mapping, Self, Optional, Union
 
 from pydantic import Field, ValidationError, BaseModel
 from pydantic_settings import (
@@ -10,6 +10,7 @@ import os
 import yaml
 from acmev2.settings import ACMESettings
 import multiprocessing
+import inject
 
 
 class Settings(BaseSettings):
@@ -17,18 +18,78 @@ class Settings(BaseSettings):
 
 
 class DatabaseSettings(BaseModel):
+    type: Literal["none"]
+
+    def to_backend(self):
+        raise Exception("Databaser settings were not configured.")
+
+
+class MariaDBDatabaseSettings(BaseModel):
+    type: Literal["mysql"]
     engine: str = "django.db.backends.mysql"
     name: str = Field(
         description="The database to use after a connection is established."
     )
     user: str = Field(description="User for the database connection.")
-    password: str = Field(description="Password for the database connection")
-    host: str = Field(description="Host for the database connection")
+    password: str = Field(None, description="Password for the database connection")
+    host: str = Field(None, description="Host for the database connection")
     port: int = 3306
-    options: Optional[dict] = Field({}, description="Options passed to the driver")
+    options: dict = Field({}, description="Options passed to the driver")
     table_prefix: str = Field(
         "", description="An optional table prefix for every table in the database."
     )
+
+    def to_backend(self):
+        return {
+            "ENGINE": self.engine,
+            "NAME": self.name,
+            "USER": self.user,
+            "PASSWORD": self.password,
+            "HOST": self.host,
+            "PORT": self.port,
+            "OPTIONS": self.options,
+        }
+
+
+class PostgresDatabaseSettings(BaseModel):
+    type: Literal["postgresql"]
+    engine: str = "django.db.backends.postgresql"
+    name: str = Field(
+        description="The database to use after a connection is established."
+    )
+    user: str = Field(description="User for the database connection.")
+    password: str = Field(None, description="Password for the database connection")
+    host: str = Field(None, description="Host for the database connection")
+    port: int = 5432
+    options: dict = Field({}, description="Options passed to the driver")
+    table_prefix: str = Field(
+        "", description="An optional table prefix for every table in the database."
+    )
+
+    def to_backend(self):
+        return {
+            "ENGINE": self.engine,
+            "NAME": self.name,
+            "USER": self.user,
+            "PASSWORD": self.password,
+            "HOST": self.host,
+            "PORT": self.port,
+            "OPTIONS": self.options,
+        }
+
+
+class SQLiteDatabaseSettings(BaseModel):
+    type: Literal["sqlite"]
+    engine: str = "django.db.backends.sqlite3"
+    name: str = Field(description="The location of the sqlite database.")
+    options: dict = Field({}, description="Options passed to the driver")
+
+    def to_backend(self):
+        return {
+            "ENGINE": self.engine,
+            "NAME": self.name,
+            "OPTIONS": self.options,
+        }
 
 
 class TaskQueueSettings(BaseModel):
@@ -38,7 +99,38 @@ class TaskQueueSettings(BaseModel):
     )
 
 
+class CacheSettings(BaseModel):
+    type: Literal["django.core.cache.backends.None"]
+
+    def to_backend(self):
+        raise Exception("Cache settings were not configured.")
+
+
+class RedisCacheSettings(CacheSettings):
+    type: Literal["redis"] = "redis"
+    backend: str = "django.core.cache.backends.redis.RedisCache"
+
+    def to_backend(self):
+        redis_settings = inject.instance(ApplicationSettings).redis
+        return {
+            "BACKEND": self.backend,
+            "LOCATION": f"redis://:{redis_settings.password}@{redis_settings.host}:{redis_settings.port}",
+            "OPTIONS": {"health_check_interval": 30},
+        }
+
+
+class LocalMemoryCacheSettings(CacheSettings):
+    type: Literal["local"]
+    backend: str = "django.core.cache.backends.locmem.LocMemCache"
+
+    def to_backend(self):
+        return {"BACKEND": self.backend}
+
+
 class RedisSettings(BaseModel):
+    backend: Literal["django.core.cache.backends.redis.RedisCache"] = (
+        "django.core.cache.backends.redis.RedisCache"
+    )
     host: str = Field(description="Host for the redis connection.")
     password: str = Field(description="Password for the Redis connection")
     port: int = 6379
@@ -51,154 +143,8 @@ class LoggingSettings(BaseModel):
     acmev2_level: str | None = "INFO"
 
 
-class ApplicationSettings(Settings):
-    model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="CERTIFICAT__", env_nested_delimiter="__"
-    )
-
-    @classmethod
-    def get(cls, force_reload=False) -> Self:
-        return ConfigFile.load(force_reload=force_reload).certificat
-
-    debug: Optional[bool] = Field(
-        False,
-        description="Debug mode for the application. This should never be True for production.",
-    )
-    proto: Optional[Literal["http", "https"]] = Field("https")
-    secret_key: str = Field(
-        description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
-    )
-    time_zone: str = "America/New_York"
-    url_root: str = Field(
-        description="The url root is used to generate absolute urls to the application.",
-        examples=["https://acme.edu"],
-    )
-    staticfiles_root: Optional[str] = Field(
-        None,
-        description="Location of static files. This usually doesn't have to be changed.",
-        required=False,
-    )
-    root_urlconf: Optional[str] = Field(
-        None,
-        description="Dotted path to the root urlconfig. This usually doesn't have to be changed.",
-        required=False,
-    )
-
-    logging: LoggingSettings = LoggingSettings()
-    db: DatabaseSettings
-    redis: RedisSettings
-    task_queue: TaskQueueSettings = TaskQueueSettings()
-
-    trust_proxy_forwarded_proto: Optional[bool] = Field(
-        False,
-        description="Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True.",
-    )
-    login_method: Literal["local", "saml"] = Field(
-        "saml",
-        description="Default login method for the app. This defaults to saml, the app has minimal support for local outside of debugging.",
-    )
-
-    hmac_id_length: int = Field(
-        40,
-        description="The length of the hmac id generated for an ACME external account binding.",
-    )
-    hmac_key_length: int = Field(
-        90,
-        description="The length of the hmac key generated for an ACME external account binding.",
-    )
-
-    challenge_retry_delay: int = Field(
-        2, description="How long to wait between challenge retries in seconds."
-    )
-    challenge_max_retries: int = Field(
-        5,
-        description="How many challenge retries to perform before marking the challenge invalid.",
-    )
-    finalize_retry_delay: int = Field(
-        10,
-        description="How long to wait between order finalization retries in seconds.",
-    )
-    finalize_max_retries: int = Field(
-        10,
-        description="How many order finalization retries to perform before marking the order invalid.",
-    )
-
-    finalizer_module: str = Field(
-        "certificat.modules.acme.backends.local.LocalFinalizer",
-        description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
-        examples=[
-            "certificat.modules.acme.backends.local.LocalFinalizer",
-            "certificat.modules.acme.backends.sectigo.SectigoFinalizer",
-        ],
-    )
-    delete_invalid_orders: bool = Field(
-        True,
-        description="If set to True, invalid orders will be purged after some time.",
-    )
-    beacon_enabled: bool = Field(
-        True,
-        description="If true, will send tracking information about usage to RIT. All tracking info is logged.",
-    )
-
-    healthcheck_allowed_networks: List[str] = Field(
-        ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
-    )
-    huey_health_file: str = Field("/tmp/huey-ping")
-
-
-class LocalCASettings(BaseModel):
-    model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="LOCAL_CA__", env_nested_delimiter="__"
-    )
-
-    @classmethod
-    def get(cls, force_reload=False) -> Self:
-        return ConfigFile.load(force_reload=force_reload).local_finalizer
-
-    key: str = Field(description="PEM-formatted private key for the CA")
-    cert: str = Field(description="PEM-formatted public key for the CA")
-
-
-class SectigoSettings(BaseModel):
-    model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="SECTIGO__", env_nested_delimiter="__"
-    )
-
-    @classmethod
-    def get(cls) -> Self:
-        return ConfigFile.load().sectigo_finalizer
-
-    org_id: int = Field(description="Organization or department ID")
-    cert_profile_id: int = Field(description="Certificate profile ID")
-    cert_validity_period: int = Field(
-        90,
-        description="This must be set to one of the valid lifetimes for your certificate profile id.",
-    )
-    customer_uri: str = Field(
-        description="Customer URI, found in the cert-manager URL.",
-        examples=["InCommon", "InCommon_test"],
-    )
-    api_base: str = Field(
-        "https://cert-manager.com/api/", description="Base URL of the cert-manager API."
-    )
-    api_user: str = Field(description="The API user performing the requests.")
-    api_password: str = Field(description="The password for the API user.")
-    approval_api_user: str = Field(
-        description="If your API user is unable to approve requests you will need to provide a separate user."
-    )
-    approval_api_password: str = Field(
-        description="The password for the approval API user."
-    )
-    external_requester_override: Optional[str] = Field(
-        None,
-        description="This email address will receive all Sectigo certificate lifecycle emails instead of the registered account email.",
-        required=False,
-    )
-
-    poll_deadline: int = Field(
-        60 * 5,
-        description="The finalizer task will continue to poll the Sectigo backend to check if the certificate is ready for approval or approved until hitting this deadline in seconds.",
-    )
+class ThemeSettings(BaseModel):
+    global_css: str | None = None
 
 
 class SAMLSPSettings(BaseModel):
@@ -261,7 +207,29 @@ class SAMLDiscoverySettings(BaseModel):
     )
 
 
-class SAMLSettings(BaseModel):
+class LocalAuthSettings(BaseModel):
+    type: Literal["local"]
+
+
+class RemoteAuthSettings(BaseModel):
+    type: Literal["header"] = "remote"
+    user_header: str = "HTTP_USER"
+    attribute_mapping: Mapping[str, List[str]] = Field(
+        {
+            "HTTP_USER_EMAIL": "email",
+            "HTTP_USER_FIRSTNAME": "first_name",
+            "HTTP_USER_LASTNAME": "last_name",
+        },
+        description="A dictionary mapping of src:target where attributes are mapped from headers to Django attributes.",
+    )
+    redirect_template: str = Field(
+        description="Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource.",
+        examples=["https://auth.example/?redirect_to={ redirect }"],
+    )
+
+
+class SAMLAuthSettings(BaseModel):
+    type: Literal["saml"]
     model_config = SettingsConfigDict(
         validate_default=False,
         env_prefix="SAML__",
@@ -313,6 +281,219 @@ class SAMLSettings(BaseModel):
     )
 
 
+class FinalizerSettings(BaseModel):
+    type: Literal["none"]
+    module: str
+
+
+class EMSignFinalizerSettings(FinalizerSettings):
+    model_config = SettingsConfigDict(
+        validate_default=False, env_prefix="EMSIGN__", env_nested_delimiter="__"
+    )
+
+    type: Literal["emsign"] = "emsign"
+    module: str = "certificat.modules.acme.backends.emsign.EMSignFinalizer"
+
+    @classmethod
+    def get(cls) -> Self:
+        settings = inject.instance(ApplicationSettings)
+        if settings.finalizer.type == "emsign":
+            return settings.finalizer
+
+    api_base: str = Field(
+        "https://localhost/api/", description="Base URL of the emSign API"
+    )
+    account_number: str = Field(description="Account number (Org. ID)")
+    auth_key: str = Field(description="Authorization key for API access")
+    product_code: str = Field(description="Unique product code for the order")
+
+    prevetted_org_number: str = Field(
+        description="Pre-vetted organization id to pair with the pre-vetting token"
+    )
+    prevetting_token: str = Field(
+        description="Pre-vetting token for automatically submitting an order"
+    )
+
+    requestor_name: str = Field("CertifiCat", description="Name of the requestor")
+    requestor_isd_code: str = Field("+1", description="ISD code of the requestor")
+    requestor_mobile_number: str = Field(description="Mobile number of the requestor")
+    requestor_email: str = Field(description="Email of the requestor")
+
+    poll_deadline: int = Field(
+        60 * 5,
+        description="The finalizer task will continue to poll the EMSign backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
+    )
+    poll_interval: int = 1
+
+
+class SectigoFinalizerSettings(FinalizerSettings):
+    model_config = SettingsConfigDict(
+        validate_default=False, env_prefix="SECTIGO__", env_nested_delimiter="__"
+    )
+
+    type: Literal["sectigo"]
+    module: str = "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
+
+    @classmethod
+    def get(cls) -> Self:
+        settings = inject.instance(ApplicationSettings)
+        if settings.finalizer.type == "sectigo":
+            return settings.finalizer
+
+    org_id: int = Field(description="Organization or department ID")
+    cert_profile_id: int = Field(description="Certificate profile ID")
+    cert_validity_period: int = Field(
+        90,
+        description="This must be set to one of the valid lifetimes for your certificate profile id.",
+    )
+    customer_uri: str = Field(
+        description="Customer URI, found in the cert-manager URL.",
+        examples=["InCommon", "InCommon_test"],
+    )
+    api_base: str = Field(
+        "https://cert-manager.com/api/", description="Base URL of the cert-manager API."
+    )
+    api_user: str = Field(description="The API user performing the requests.")
+    api_password: str = Field(description="The password for the API user.")
+    approval_api_user: str = Field(
+        description="If your API user is unable to approve requests you will need to provide a separate user."
+    )
+    approval_api_password: str = Field(
+        description="The password for the approval API user."
+    )
+    external_requester_override: Optional[str] = Field(
+        None,
+        description="This email address will receive all Sectigo certificate lifecycle emails instead of the registered account email.",
+        required=False,
+    )
+
+    poll_deadline: int = Field(
+        60 * 5,
+        description="The finalizer task will continue to poll the Sectigo backend to check if the certificate is ready for approval or approved until hitting this deadline in seconds.",
+    )
+
+
+class LocalFinalizerSettings(FinalizerSettings):
+    type: Literal["local"]
+    module: str = "certificat.modules.acme.backends.local.LocalFinalizer"
+
+    model_config = SettingsConfigDict(
+        validate_default=False, env_prefix="LOCAL_CA__", env_nested_delimiter="__"
+    )
+
+    @classmethod
+    def get(cls) -> Self:
+        settings = inject.instance(ApplicationSettings)
+        if settings.finalizer.type == "local":
+            return settings.finalizer
+
+    key: str = Field(description="PEM-formatted private key for the CA")
+    cert: str = Field(description="PEM-formatted public key for the CA")
+
+
+class ApplicationSettings(Settings):
+    model_config = SettingsConfigDict(
+        validate_default=False, env_prefix="CERTIFICAT__", env_nested_delimiter="__"
+    )
+
+    @classmethod
+    def get(cls, force_reload=False) -> Self:
+        return ConfigFile.load(force_reload=force_reload).certificat
+
+    debug: Optional[bool] = Field(
+        False,
+        description="Debug mode for the application. This should never be True for production.",
+    )
+    proto: Optional[Literal["http", "https"]] = Field("https")
+    secret_key: str = Field(
+        description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
+    )
+    time_zone: str = "America/New_York"
+    url_root: str = Field(
+        description="The url root is used to generate absolute urls to the application.",
+        examples=["https://acme.edu"],
+    )
+    staticfiles_root: Optional[str] = Field(
+        None,
+        description="Location of static files. This usually doesn't have to be changed.",
+        required=False,
+    )
+    root_urlconf: Optional[str] = Field(
+        None,
+        description="Dotted path to the root urlconfig. This usually doesn't have to be changed.",
+        required=False,
+    )
+
+    logging: LoggingSettings = LoggingSettings()
+    db: Union[
+        MariaDBDatabaseSettings, PostgresDatabaseSettings, SQLiteDatabaseSettings
+    ] = Field(discriminator="type")
+    redis: RedisSettings
+    cache: Optional[Union[RedisCacheSettings, LocalMemoryCacheSettings]] = Field(
+        RedisCacheSettings(), discriminator="type"
+    )
+    task_queue: TaskQueueSettings = TaskQueueSettings()
+    theming: ThemeSettings = ThemeSettings()
+
+    trust_proxy_forwarded_proto: Optional[bool] = Field(
+        False,
+        description="Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True.",
+    )
+    authentication: Union[SAMLAuthSettings, LocalAuthSettings, RemoteAuthSettings] = (
+        Field(discriminator="type")
+    )
+
+    hmac_id_length: int = Field(
+        40,
+        description="The length of the hmac id generated for an ACME external account binding.",
+    )
+    hmac_key_length: int = Field(
+        90,
+        description="The length of the hmac key generated for an ACME external account binding.",
+    )
+
+    challenge_retry_delay: int = Field(
+        2, description="How long to wait between challenge retries in seconds."
+    )
+    challenge_max_retries: int = Field(
+        5,
+        description="How many challenge retries to perform before marking the challenge invalid.",
+    )
+    finalize_retry_delay: int = Field(
+        10,
+        description="How long to wait between order finalization retries in seconds.",
+    )
+    finalize_max_retries: int = Field(
+        10,
+        description="How many order finalization retries to perform before marking the order invalid.",
+    )
+
+    finalizer: Union[
+        SectigoFinalizerSettings, EMSignFinalizerSettings, LocalFinalizerSettings
+    ] = Field(
+        discriminator="type",
+        description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
+        examples=[
+            "local",
+            "sectigo",
+            "emsign",
+        ],
+    )
+    delete_invalid_orders: bool = Field(
+        True,
+        description="If set to True, invalid orders will be purged after some time.",
+    )
+    beacon_enabled: bool = Field(
+        True,
+        description="If true, will send tracking information about usage to RIT. All tracking info is logged.",
+    )
+
+    healthcheck_allowed_networks: List[str] = Field(
+        ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
+    )
+    huey_health_file: str = Field("/tmp/huey-ping")
+
+
 class LocalACMESettings(ACMESettings):
     @classmethod
     def get(cls, force_reload=False) -> Self:
@@ -324,12 +505,9 @@ class ConfigFile(BaseSettings):
 
     certificat: ApplicationSettings
     acme: LocalACMESettings = Field(default=ACMESettings())
-    saml: Optional[SAMLSettings] = None
-    sectigo_finalizer: Optional[SectigoSettings] = None
-    local_finalizer: Optional[LocalCASettings] = None
 
     @classmethod
-    def load(cls, force_reload=False):
+    def load(cls, force_reload=False) -> Self:
         _config = getattr(cls, "_config", None)
         if force_reload:
             _config = None
@@ -351,26 +529,6 @@ class ConfigFile(BaseSettings):
 
             try:
                 _config = ConfigFile.model_validate(config_values, from_attributes=True)
-
-                match _config.certificat.login_method:
-                    case "saml":
-                        if _config.saml is None:
-                            raise Exception(
-                                "Config file must contain 'saml' section if 'saml' auth is requested"
-                            )
-
-                match _config.certificat.finalizer_module:
-                    case "certificat.modules.acme.backends.local.LocalFinalizer":
-                        if _config.local_finalizer is None:
-                            raise Exception(
-                                "Config file must contain 'local_finalizer' section if 'LocalFinalizer' backend is requested"
-                            )
-                    case "certificat.modules.acme.backends.sectigo.SectigoFinalizer":
-                        if _config.sectigo_finalizer is None:
-                            raise Exception(
-                                "Config file must contain 'sectigo_finalizer' section if 'SectigoFinalizer' backend is requested"
-                            )
-
                 setattr(cls, "_config", _config)
             except ValidationError as err:
                 print("Fatal error loading config at " + config_file)

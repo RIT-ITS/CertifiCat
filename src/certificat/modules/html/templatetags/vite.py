@@ -50,32 +50,33 @@ def vite_resource(resource: str):
             resource,
         )
     else:
-        manifest = json.load(open(MANIFEST_FILE, "r"))
-        entry = manifest[resource]
+        with open(MANIFEST_FILE, "r") as manifest_file:
+            manifest = json.load(manifest_file)
+            entry = manifest[resource]
 
-        assets = []
-        assets.append(
-            format_html(
-                '<script type="module" src="{}"></script>',
-                static("certificat.vite/" + entry["file"]),
-            )
-        )
-
-        for vendor_import in entry.get("imports", []):
-            vendor_entry = manifest[vendor_import]
+            assets = []
             assets.append(
                 format_html(
                     '<script type="module" src="{}"></script>',
-                    static("certificat.vite/" + vendor_entry["file"]),
+                    static("certificat.vite/" + entry["file"]),
                 )
             )
 
-        for css_resource in entry.get("css", []):
-            assets.append(
-                format_html(
-                    '<link rel="stylesheet" href="{}">',
-                    static("certificat.vite/" + css_resource),
+            for vendor_import in entry.get("imports", []):
+                vendor_entry = manifest[vendor_import]
+                assets.append(
+                    format_html(
+                        '<script type="module" src="{}"></script>',
+                        static("certificat.vite/" + vendor_entry["file"]),
+                    )
                 )
-            )
 
-        return mark_safe("".join(assets))
+            for css_resource in entry.get("css", []):
+                assets.append(
+                    format_html(
+                        '<link rel="stylesheet" href="{}">',
+                        static("certificat.vite/" + css_resource),
+                    )
+                )
+
+            return mark_safe("".join(assets))

@@ -25,7 +25,7 @@ redis:
 
 embedded_mariadb:
   enabled: True
-  image: "mariadb:10.5.23-focal"
+  image: "mariadb:10.11.16-jammy"
 
 # These secrets contain bootstrap data. After the initial installation all 
 # secrets will need to be edited within the cluster, and changes here

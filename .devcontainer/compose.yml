@@ -1,5 +1,5 @@
 services:
-  # vim /usr/lib/python3/dist-packages/certbot/configuration.py  
+  # vim /usr/lib/python3/dist-packages/certbot/configuration.py
   # adjust no_verify_ssl to return True
   # Register account
   # certbot certonly --standalone --server "https://certificat.dev.localhost/directory" -d certbot.dev.localhost
@@ -37,7 +37,10 @@ services:
     command: sleep infinity
     environment:
       CERTIFICAT__SECRET_KEY: ${_DJ_SECRET_KEY}
-      CERTIFICAT__DB__PASSWORD: ${_DJ_MYSQL_ROOT_PWD}
+      # Uncomment to use MySQL
+      #CERTIFICAT__DB__PASSWORD: ${_DJ_MYSQL_ROOT_PWD}
+      # Uncomment to use Postgres
+      CERTIFICAT__DB__PASSWORD: ${_DJ_POSTGRES_PWD}
       CERTIFICAT__REDIS__PASSWORD: ${_DJ_REDIS_PWD}
       CERTIFICAT__CONFIG: "/workspaces/certificat/src/certificat_dev/config.yml"
     labels:
@@ -64,17 +67,27 @@ services:
   mariadb:
     networks: 
       - backend
-    image: mariadb:10.5.23-focal
+    image: mariadb:10.11.16-jammy
     restart: unless-stopped
     volumes:
       - mariadb-data:/var/lib/mysql
     environment:
       - MARIADB_ROOT_PASSWORD=${_DJ_MYSQL_ROOT_PWD}
 
+  postgres:
+    networks:
+      - backend
+    image: postgres:18.3
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    environment:
+      - POSTGRES_PASSWORD=${_DJ_POSTGRES_PWD}
+
   redis:
     networks:
       - backend
-    image: redis:7.2.4
+    image: redis:8.6.1
     restart: unless-stopped
     command: redis-server --save 60 1 --requirepass ${_DJ_REDIS_PWD}
 
@@ -157,6 +170,7 @@ services:
 
 volumes:
   mariadb-data:
+  postgres-data:
   # Later
   #pyidp-sessions:
 

@@ -16,6 +16,15 @@ from django.db.models import Subquery
 logger = logging.getLogger(__name__)
 
 
+def execute_validate_challenge_task(challenge_name: str):
+    # This queues with a very small delay so the transaction has time to finish before
+    # the task queue tries to validate the challenge
+    if HUEY.immediate:
+        validate_challenge_task(challenge_name)
+    else:
+        validate_challenge_task.schedule((challenge_name,), delay=1)
+
+
 def validate_challenge_task(challenge_name: str, task=None):
     """Validates an HTTP challenge for a pending authorization. It will
     retry the challenge a number of times and set the authorization as

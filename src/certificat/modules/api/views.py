@@ -23,11 +23,12 @@ class TruncDayNaive(Func):
     the graph using this to have that level of fidelity anyway.
     """
 
-    # TODO: Make sure other databases besides MySQL allow this format
-
     function = "DATE_FORMAT"
     template = "%(function)s(%(expressions)s, '%%%%Y-%%%%m-%%%%d')"
     output_field = DateField()
+
+    def as_postgresql(self, compiler, connection):
+        return self.as_sql(compiler, connection, function="TO_CHAR")
 
     def convert_value(self, value, expression, connection):
         return dateparse.parse_date(value)

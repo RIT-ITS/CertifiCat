@@ -1,0 +1,97 @@
+@use '_theme';
+
+.modal {
+    --modal-background: rgba(0,0,0,.5);
+    --modal-layer: 300;
+    --modal-max-width: 80vw;
+    --modal-max-height: 80vh;
+    --modal-margin: 2rem;
+
+    visibility: hidden;
+    pointer-events: none;
+
+    &.modal--shown {
+        pointer-events: unset;
+        visibility: visible;
+
+        .modal--container {
+            animation-name: modal--show;
+            animation-duration: .125s;
+        }
+
+        .modal--content {
+            animation-name: modal--slidedown;
+            animation-duration: .125s;
+        }
+    }
+
+    .modal--container {
+        background-color: var(--modal-background);
+
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: var(--modal-layer);
+        justify-content: center;
+        align-items: center;
+
+        .modal--content {
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            max-width: var(--modal-max-width);
+            max-height: var(--modal-max-height);
+            margin: var(--modal-margin);
+
+            @media(max-width: theme.$largeSmartphone) {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                max-height: unset;
+                max-width: unset;
+            }
+        }
+
+        .modal--header {
+            background-color: var(--gray-color--300);
+        }
+
+        .modal--body {
+            overflow-y: auto;
+        }
+
+        .modal--footer {
+            border-top: 1px solid var(--gray-color--400);
+        }
+    }
+
+}
+
+.rtl-buttons {
+    flex-direction: row-reverse;
+    > *:not(:first-child) {
+        margin-right: 1em;
+    }
+}
+
+@keyframes modal--slidedown {
+    from {
+        transform: translateY(-10px);
+    }
+    to {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes modal--show {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

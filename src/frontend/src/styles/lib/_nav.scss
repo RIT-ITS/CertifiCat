@@ -1,0 +1,252 @@
+@use '_theme';
+@use 'sass:color';
+@use 'spacing' as *;
+
+html {
+    --nav-layer: 100;
+}
+
+#navigation-row {
+    --top-border-height: 6px;
+    --sticky-border-color: var(--gray-color--500);
+    --navigation-text-color: var(--body-text-color);
+    --header-background-color: #FFF;
+
+    border-top:var(--top-border-height) solid var(--primary-color);
+    background-color: var(--header-background-color);
+    transition: background-color .25s;
+    color: var(--navigation-text-color);
+
+    position: sticky;
+    z-index:var(--nav-layer);
+    top: 0;
+    padding-top: $spacer*.5;
+    padding-bottom: $spacer*.5;
+    top: -$spacer*.5;
+    container-type: scroll-state;
+
+    &.is-sticky {
+        box-shadow: 0px 0px 8px 1px var(--gray-color--600);
+        border-bottom: 1px solid var(--sticky-border-color);
+    }
+
+    #navigation {
+        padding: $spacer*.5 0 $spacer*.5 0;
+        @media(max-width: theme.$largeSmartphone) {
+            justify-content: center;
+        }
+
+        > .container {
+            align-items: center;
+        }
+
+        > .container > * {
+            align-content: center;
+            margin: 0 $spacer*.5 0 $spacer*.5;
+        }
+
+        #navlogo {
+            margin: 0;
+            background-repeat: no-repeat;
+            flex-grow: 1;
+            display: flex;
+            
+            
+        }
+        
+        #navlinks {
+            width: auto;
+            list-style-type: none;
+            align-content: center;
+            font-weight: bold;
+
+            a {
+                color: var(--navigation-text-color);
+                display: block;
+            }
+            @media(max-width: theme.$largeSmartphone) {
+                display: none;
+            }
+
+            li {
+                &:not(:last-of-type) {
+                    margin-right: $spacer*.75;
+                }
+                &:not(:first-of-type) {
+                    margin-left: $spacer*.75;
+                }
+                font-size: 1.25rem;
+                position: relative;
+                &:not(.selected) a{
+                    color: color-mix(in srgb, var(--navigation-text-color) 60%, var(--header-background-color) 40%);
+                }
+                
+                @media (max-width: theme.$tinyDesktop) {
+                    font-size: 1rem;
+                }
+
+                &:before {
+                    content: '';
+                    width: 0%;
+                }
+
+                &.selected, &:hover {
+                    opacity: 1;
+                    &:before {
+                        content: '';
+                        position: absolute;
+                        bottom: -5px;
+                        left: 50%;
+                        width: 100%;
+                        height: 4px;
+                        transform: translateX(-50%);
+                        background-color: var(--primary-color);
+                    }
+                }
+
+                &:hover {
+                    &:before {
+                        transition: width 150ms ease-in-out 0s, transform 150ms ease-in-out 0s;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#mobile-navigation-link {
+    color: var(--navigation-text-color);
+    display: none;
+    font-size: 1rem;
+    margin: 0 !important;
+}
+
+#mobile-menu {
+    display: none;
+
+    &.mobile-menu--hidden {
+        #navlinks--mobile {
+            transform: translateX(-100%);
+        }
+
+        .overlay {
+            display: none;
+        }
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0,0,0,.5);
+        z-index: calc(var(--nav-layer) + 1);
+    }
+
+    #navlinks--mobile {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: #000;
+        width: auto;
+        z-index: calc(var(--nav-layer) + 1);
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fff;
+        list-style-type: none;
+        padding: $spacer;
+        min-width: 60%;
+        transition: transform 150ms ease-in-out 0s;
+
+        a {
+            padding: $spacer * .5 $spacer $spacer*.5 ;
+            display: block;
+            color: #fff;
+        }
+    }
+}
+
+
+.side-nav {
+    list-style: none;
+    position:sticky;
+    top: 80px;
+    height: calc(100vh - 80px);
+    overflow: auto;
+
+    a {
+        display: inline-block;
+        font-size: 1.25rem;
+        line-height: 1.5rem;
+        padding: $spacer*.5 0 $spacer*.5 0;
+        color: color-mix(in srgb, var(--body-text-color) 60%, #FFF 40%);
+        font-weight: bold;
+
+        &.is-active {
+            color: var(--body-text-color);
+        }
+
+        &:hover {
+            color: var(--primary-color);
+        }
+    }
+    
+    @media (max-width: theme.$largeSmartphone) {
+        &.side-nav--mobile-toc {
+            &:before {
+                content: "Table of Contents";
+                display: inline-block;
+                padding-bottom: $spacer*.5;
+                font-size: 1.25rem;
+                font-weight: bold;
+            }
+            height: unset;
+            overflow:unset;
+            margin-bottom:$spacer;
+            margin-top:-2*$spacer;
+
+            a {
+                font-size: 1rem;
+                line-height: 1.25rem;
+                padding: $spacer*.5 0 $spacer*.25 $spacer*.5;
+            }
+        }
+    }
+}
+
+@media(max-width: theme.$largeSmartphone) {
+    #mobile-navigation-link, #mobile-menu {
+        display: block;
+    }
+    
+}
+
+html .breadcrumbs {
+    list-style-type: none;
+    li {
+        margin-right: $spacer*.5;
+    }
+    a {
+        display: inline-block;
+        font-weight: bold;
+        text-decoration: none;
+        color: #000;
+        margin-right: $spacer*.25;
+    }
+    span {
+        display: inline-block;
+    }
+}
+
+#footer {
+    flex: 1;
+    margin-top:$spacer*2;
+    padding-bottom:$spacer;
+    padding-top:$spacer;
+    height:40px;
+    width: 100%;
+    background: #000;
+    color: #fff;
+}

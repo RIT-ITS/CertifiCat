@@ -1,0 +1,53 @@
+@use 'theme';
+@use 'spacing' as *;
+
+.motion-frame {
+    position: relative;
+    overflow: hidden;
+    height: 450px;
+
+    --frame-height: 15;
+    --frame-padding: 6;
+    --frame-offset: -3;
+
+    &.motion-frame--darkened-background {
+        &:before {
+            content: '';
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.6), transparent 70%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    }
+
+    .motion-frame--content {
+        background-color: var(--primary-color);
+        opacity: .9;
+        
+        width: calc(var(--frame-height)*1em);
+        height: calc(var(--frame-height)*1em);
+        left: calc(var(--frame-padding)*1em + var(--frame-offset)*1em);
+        bottom: calc(var(--frame-padding)*1em);
+        padding: $spacer*2;
+        color: #fff;
+        font-weight: bold;
+        position: absolute;
+        z-index: 5;
+    }
+
+    .motion-frame--trail {
+        background-color: var(--primary-color);
+        opacity: .9;
+        height: calc(1em * sqrt(pow(var(--frame-height),2)*2)); 
+        width: calc(1em * 2 * sqrt( pow(var(--frame-padding) + var(--frame-height)/2, 2) *2) );
+        position: absolute;
+        left: calc(var(--frame-offset)*1em);
+        z-index:3;
+        top: 100%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        clip-path: polygon(0% 0%, 100% 0%, calc(100% * (1 - (var(--frame-height) / sqrt(2) / calc(2 * sqrt( pow(var(--frame-padding) + var(--frame-height)/2, 2) *2) )))) 50%, 100% 100%, 0% 100%); 
+    }
+
+}

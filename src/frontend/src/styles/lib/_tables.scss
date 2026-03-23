@@ -1,0 +1,119 @@
+@use 'theme';
+@use 'spacing' as *;
+@use 'sass:color';
+
+.table--scrollable {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.table {
+    width: 100%;
+    box-sizing: border-box;
+    border-collapse: collapse;
+
+    &.table--bordered {
+        border: 1px solid var(--gray-color--300);
+    }
+
+    &.table--striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &.table--borderless {
+
+        th,
+        td,
+        thead th {
+            border: 0;
+        }
+    }
+
+    &.table--sm {
+
+        th,
+        td {
+            padding: $spacer*.25;
+        }
+    }
+
+    th,
+    td {
+        padding: $spacer*.75;
+        vertical-align: top;
+        border-top: 1px solid var(--gray-color--300);
+        min-height: 1.5rem;
+
+        &.centered {
+            text-align: center;
+        }
+    }
+
+    &.centered td {
+        vertical-align: middle;
+    }
+
+    th {
+        font-weight: bold;
+        text-align: left;
+    }
+
+    thead th {
+        border-bottom: 2px solid var(--gray-color--300);
+        font-weight: bold;
+    }
+
+    .thead--light th {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+        color: #495057;
+    }
+
+    .thead--dark th {
+        background-color: var(--gray-color--700);
+        border-color: var(--gray-color--800);
+        color: #fff;
+    }
+}
+
+@media (max-width: theme.$largeSmartphone) {
+    table.collapsible thead {
+        display: none;
+    }
+
+    table.collapsible tr td:nth-child(1) {
+        border-top-width: 5px;
+    }
+
+    table.collapsible td {
+        position: relative;
+        display: block;
+        padding-left: 130px !important;
+    }
+
+    table.collapsible td::before {
+        content: attr(label);
+        font-weight: bold;
+        font-size: 1rem;
+        text-align: left;
+        color: #000;
+        width: 120px;
+        min-width: 120px;
+        position: absolute;
+        padding-left: 0.75em;
+        left: 0;
+    }
+}
+
+
+@mixin shrink-cell {
+    white-space: nowrap;
+
+    @media(min-width:(theme.$largeSmartphone*1+1)) {
+        width: 0.1%;
+    }
+}
+
+table .shrink-cell {
+    @include shrink-cell;
+}

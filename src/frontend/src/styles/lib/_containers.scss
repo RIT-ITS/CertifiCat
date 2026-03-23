@@ -1,0 +1,16 @@
+@use 'theme';
+@use 'spacing' as *;
+
+// generic container, constrains content to a max-width and centers it
+.container {
+    max-width: var(--width--max);
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+
+    @media(max-width: calc(theme.$maxWidth*1 + $spacer*2)) {
+        width: 100%;
+        max-width: unset;
+        padding: 0 $spacer 0 $spacer;
+    }
+}

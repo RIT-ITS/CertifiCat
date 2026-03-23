@@ -1,0 +1,120 @@
+@use 'theme';
+
+/* made more specific to override other styles, like a */
+.btn.btn {
+    --btn-text-color: #fff;
+    --btn-background: transparent;
+    --btn-border: var(--primary-color);
+
+    --btn-hover-text-color: #fff;
+    --btn-hover-background: #000;
+    --btn-hover-border: #000;
+    
+    --btn-active-text-color: var(--primary-color);
+    --btn-active-background: #fff;
+    --btn-active-border: #000;
+
+    color: var(--btn-text-color);
+    background-color: var(--btn-background);
+    font-weight: bold;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    border: 2px solid var(--btn-border);
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    padding: .625rem 1.25rem;
+    font-size: 1.167rem;
+    line-height: 1.5;
+
+    &:hover {
+        background-color: var(--btn-hover-background);
+        border-color: var(--btn-hover-border);
+        color: var(--btn-hover-text-color);
+    }
+
+    &:active {
+        background-color: var(--btn-active-background);
+        border-color: var(--btn-active-border);
+        color: var(--btn-hover-active-color);
+    }
+
+    &:focus {
+        // overrides focus classes in form
+        border-width:2px;
+    }
+
+    &.btn--primary { 
+        --btn-text-color: #fff;
+        --btn-background: var(--primary-color);
+        --btn-border: var(--primary-color);
+
+        --btn-hover-text-color: #fff;
+        --btn-hover-background: #000;
+        --btn-hover-border: #000;
+        
+        --btn-active-text-color: #000;
+        --btn-active-background: #fff;
+        --btn-active-border: #000;
+    }
+
+    &.btn--secondary { 
+        --btn-text-color: #fff;
+        --btn-background: var(--neutral-cool-color--300);
+        --btn-border: var(--neutral-cool-color--300);
+    }
+
+    &.btn--danger {
+        --btn-text-color: #fff;
+        --btn-background: var(--red-accent-color);
+        --btn-border: var(--red-accent-color);
+       
+        &:hover {
+            color: #fff;
+            background-color: black !important;
+            border-color: black;
+        }
+
+        &:active {
+            background-color: white !important;
+            border-color: var(--red-accent-color) !important;
+            color: black !important;
+        }
+    }
+
+    &.btn--light {
+        --btn-text-color: var(--body-text-color);
+        --btn-background: var(--gray-color--300);
+        --btn-border: var(--gray-color--300);
+    }
+
+    &.btn--white {
+        --btn-text-color: #fff;
+        --btn-background: transparent !important;
+        --btn-border: #fff !important;
+
+        --btn-hover-background: var(--gray-color--800);
+        --btn-hover-border: #fff;
+    }
+
+    &.btn--outline { 
+        --btn-background: #fff;
+        --btn-text-color: var(--btn-border);
+    }
+
+    &.btn--md {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5rem;
+        border-radius: 0;
+    }
+
+    &.btn--sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        line-height: 1.5rem;
+        border-radius: 0;
+    }
+}

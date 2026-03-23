@@ -1,0 +1,78 @@
+$primaryColor: #007db1 !default;
+$primaryColorAccessible: #00355f !default;
+$neutralLightCoolColor: #f0fbff !default;
+$neutralMediumCoolColor: #9dadbc !default;
+$neutralDarkCoolColor: #394955 !default;
+$neutralLightWarmColor: #f0fbff !default;
+$neutralDarkWarmColor: #394955 !default;
+
+$accentGreenColor: #008a5a !default;
+$accentLimeColor: #3ec08d !default;
+$accentBlueColor: #009ef6 !default;
+$accentPurpleColor: #b6528c !default;
+$accentRedColor: #c44d62 !default;
+$accentOrangeColor: #e89b26 !default;
+
+$gray100Color: #f8f9fa;
+$gray200Color: #e9ecef;
+$gray300Color: #dee2e6;
+$gray400Color: #ced4da;
+$gray500Color: #adb5bd;
+$gray600Color: #6c757d;
+$gray700Color: #495057;
+$gray800Color: #343a40;
+$gray900Color: #212529;
+
+$bgLightColor: #f8f9fa !default;
+$bodyTextColor: #212529 !default;
+$stickyHeaderBackgroundColor: #000;
+
+$smallSmartphone: 480px !default;
+$largeSmartphone: 768px !default;
+$smallDesktop: 1200px !default;
+$tinyDesktop: 1000px !default;
+
+$fontStack: "Helvetica Neue", "Helvetica", "Arial", sans‑serif !default;
+$fontSize: 16px !default;
+$maxWidth: 1400px !default;
+
+:root {
+    --primary-color: #{$primaryColor};
+    --link-color: #{$primaryColorAccessible};
+    --logo-accent-color: #{$primaryColor};
+    --sticky-header-background-color: #{$stickyHeaderBackgroundColor};
+    --neutral-cool-color--100: #{$neutralLightCoolColor};
+    --neutral-cool-color--200: #{$neutralMediumCoolColor};
+    --neutral-cool-color--300: #{$neutralDarkCoolColor};
+    --neutral-warm-color--100: #{$neutralLightWarmColor};
+    --neutral-warm-color--200: #{$neutralDarkWarmColor};
+
+    --green-accent-color: #{$accentGreenColor};
+    --lime-accent-color: #{$accentLimeColor};
+    --blue-accent-color: #{$accentBlueColor};
+    --purple-accent-color: #{$accentPurpleColor};
+    --red-accent-color: #{$accentRedColor};
+    --orange-accent-color: #{$accentOrangeColor};
+
+    --gray-color--100: #{$gray100Color};
+    --gray-color--200: #{$gray200Color};
+    --gray-color--300: #{$gray300Color};
+    --gray-color--400: #{$gray400Color};
+    --gray-color--500: #{$gray500Color};
+    --gray-color--600: #{$gray600Color};
+    --gray-color--700: #{$gray700Color};
+    --gray-color--800: #{$gray800Color};
+    --gray-color--900: #{$gray900Color};
+
+    --body-text-color: #{$bodyTextColor};
+
+    --font-stack: #{$fontStack};
+    --font-size: #{$fontSize};
+
+    --width--small-smartphone: #{$smallSmartphone};
+    --width--large-smartphone: #{$largeSmartphone};
+    --width--tiny-desktop: #{$tinyDesktop};
+    --width--small-desktop: #{$smallDesktop};
+    --width--max: #{$maxWidth};
+}
+

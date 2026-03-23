@@ -1,0 +1,156 @@
+@use 'theme';
+@use 'spacing' as *;
+@use 'sass:color';
+
+form {
+    width: 100%;
+}
+
+.form-group {
+    margin-top: $spacer*2;
+    margin-bottom: $spacer*2;
+}
+
+input[type=radio] {
+    height: 24px;
+    width: 24px;
+
+    --tw-border-opacity: 1;
+    accent-color: var(--primary-color);
+    margin-right: .25em;
+}
+
+.faux-input,
+input:not([type]),
+input[type=text],
+input[type=date],
+input[type=email],
+input[type=password],
+input[type=search],
+input[type=url],
+select,
+textarea {
+    background-color: #fff;
+    box-sizing: border-box;
+    font-family: var(--font-stack);
+    border: 1px solid var(--gray-color--500);
+    font-size: 1rem;
+    padding: $spacer*.5 $spacer;
+    width: 100%;
+
+    &:focus {
+        border: 1px solid #000;
+        outline: none;
+    }
+}
+
+.faux-input,
+input:not([type]),
+input[type=text],
+input[type=date],
+input[type=email],
+input[type=password],
+input[type=search],
+input[type=url],
+select {
+    height: calc(1.5em + 1rem + 2px)
+}
+
+.input--icon {
+    position: relative;
+
+    .fa {
+        font-size: 1.15rem;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        left: 1.25rem;
+        pointer-events: none;
+        opacity: .5;
+    }
+
+    input {
+        padding-left: $spacer*2.25;
+    }
+}
+
+.faux-input,
+select, input, textarea {
+    &.input--disabled,
+    &[disabled] {
+        opacity:.9;
+        background-color: var(--gray-color--300);
+        background-image: repeating-linear-gradient(
+            45deg,
+            var(--gray-color--200) 2px,
+            var(--gray-color--200) 4px,
+            var(--gray-color--100) 4px,
+            var(--gray-color--100) 10px
+        );
+  
+        cursor: not-allowed;
+    }
+}
+
+.input--error {
+    margin-top: $spacer*.5;
+    color: var(--red-accent-color);
+}
+
+select {
+    margin: 0;
+    width: 100%;
+    border-width: 1px;
+    --tw-border-opacity: 1;
+    border-color: var(--gray-color--500);
+    --tw-bg-opacity: 1;
+    background-color: #fff;
+    padding: $spacer*.5;
+    font-size: 1rem !important;
+    line-height: 1.5rem !important;
+}
+
+label:has(input[type=checkbox]),
+label:has(input[type=radio]) {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+
+    input,
+    input:hover {
+        margin-right: $spacer*.5;
+        accent-color: var(--primary-color);
+    }
+}
+
+input[type=checkbox],
+input[type=radio] {
+    width: 1.25rem;
+    height: 1.375rem;
+}
+
+// Trying not to target labels for checkboxes/radio buttons
+form label {
+    font-size: 1.25rem;
+    margin-bottom: $spacer*.5;
+    display: inline-block;
+
+    &.form-required {
+        &::after {
+            content: "*";
+            color: var(--red-accent-color);
+            margin-left: $spacer*.25;
+        }
+    }
+}
+
+form fieldset {
+    legend {
+        font-size: 1.25rem;
+        margin-bottom: $spacer*.5;
+    }
+    label {
+        display: flex;
+        align-items: center;
+    }
+}

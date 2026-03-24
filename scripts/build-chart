@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# shellcheck disable=SC3040
+set -euo pipefail
+
+HERE="$(dirname "$(readlink -f "$0")")"
+ROOT_DIR="$(realpath "${HERE}/../")"
+CHARTS_DIR="${HERE}/../charts"
+DIST_DIR="${HERE}/../dist/charts"
+
+# shellcheck disable=SC1091
+source "${ROOT_DIR}/.env.defaults"
+
+if [[ -f "${ROOT_DIR}/.env.local" ]]; then
+    # shellcheck disable=SC1091
+    source "${ROOT_DIR}/.env.local"
+fi
+
+REQUIRED_VARS=(
+    HELM_VERSION
+    HELM_APPVERSION
+)
+
+envsubst_vars=""
+for required_var in "${REQUIRED_VARS[@]}"; do
+    [ -z ${!required_var+x} ] && echo "$required_var is unset" && exit 1
+    envsubst_vars="$envsubst_vars \$$required_var"
+done
+
+rm -rf "${DIST_DIR:?}"
+# shellcheck disable=SC3009
+mkdir -p "${DIST_DIR}"
+
+# Build the helm charts, this is mostly doing some environment substitutions
+cp -r "${CHARTS_DIR}"/* "${DIST_DIR}"
+
+chart="$(cat "${DIST_DIR}/Chart.yaml")"
+
+# shellcheck disable=SC3011
+envsubst "$envsubst_vars" <<< "${chart}" > "${DIST_DIR}/Chart.yaml"
+cd "${DIST_DIR}"
+helm package .

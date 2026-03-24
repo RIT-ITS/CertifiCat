@@ -27,9 +27,11 @@
     {% endcomment %}
     {% vite_resource 'src/app.ts' %}
 
+    {% if settings.theming.global_css %}
     <style>
         {{ settings.theming.global_css }}
     </style>
+    {% endif %}
 </head>
 
 <body>

@@ -66,16 +66,16 @@ certificat:
   #   host: mariadb.
 
   # Postgres
-  # db:
-  #   type: postgresql
-  #   name: certificat
-  #   user: postgres
-  #   host: postgres.
+  db:
+    type: postgresql
+    name: certificat
+    user: postgres
+    host: postgres.
 
   # SQLite
-  db: 
-    type: sqlite
-    name: ":memory:"
+  # db: 
+  #   type: sqlite
+  #   name: ":memory:"
   
   redis:
     backend: django.core.cache.backends.redis.RedisCache

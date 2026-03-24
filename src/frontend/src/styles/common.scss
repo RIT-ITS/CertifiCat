@@ -137,9 +137,15 @@ table.accounts {
 }
 
 new-account-form-manager {
+    // hide it before it's placed in the modal container
+    display: none;
     > div > div:not(:first-of-type) {
         margin-top: .5rem;
     }
+}
+
+.modal--shown new-account-form-manager {
+    display: unset;
 }
 
 editable-text {

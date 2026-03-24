@@ -89,7 +89,7 @@ export class FormModal extends LitElement {
                                             type="submit"
                                             name="${this.addButtonName}" 
                                             value="${this.addButtonText}" />
-                                        <a class="btn btn--primary btn--md btn--primary-outline modal-cancel modal-close">Cancel</a>
+                                        <a class="btn btn--primary btn--md btn--primary btn--outline modal-cancel modal-close">Cancel</a>
                                     </div>
                                 </div>
                             </div>

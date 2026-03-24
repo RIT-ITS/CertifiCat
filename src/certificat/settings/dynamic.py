@@ -212,8 +212,9 @@ class LocalAuthSettings(BaseModel):
 
 
 class RemoteAuthSettings(BaseModel):
-    type: Literal["header"] = "remote"
+    type: Literal["remote"] = "remote"
     user_header: str = "HTTP_USER"
+    force_logout_if_no_header: bool = True
     attribute_mapping: Mapping[str, List[str]] = Field(
         {
             "HTTP_USER_EMAIL": "email",

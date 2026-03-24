@@ -55,7 +55,7 @@ function log_err {
 }
 
 migrate() {
-  "${PYTHON}" /srv/www/manage.py migrate  
+  "${PYTHON}" /srv/www/manage.py migrate
 }
 
 manage() {

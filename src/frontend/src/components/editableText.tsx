@@ -128,15 +128,15 @@ export class EditableTextElement extends LitElement {
             const cancelClasses = {
                 'cancel': true,
                 'btn': this.actionButtonDisplay == 'button',
-                'btn-light': this.actionButtonDisplay == 'button',
-                'btn-sm': this.actionButtonDisplay == 'button'
+                'btn--light': this.actionButtonDisplay == 'button',
+                'btn--sm': this.actionButtonDisplay == 'button'
             }
 
             const saveClasses = {
                 'save': true,
                 'btn': this.actionButtonDisplay == 'button',
-                'btn-primary': this.actionButtonDisplay == 'button',
-                'btn-sm': this.actionButtonDisplay == 'button'
+                'btn--primary': this.actionButtonDisplay == 'button',
+                'btn--sm': this.actionButtonDisplay == 'button'
             }
 
             return html`
@@ -160,8 +160,8 @@ export class EditableTextElement extends LitElement {
         } else {
             const editClasses = {
                 'btn': this.editButtonDisplay == 'button',
-                'btn-primary': this.editButtonDisplay == 'button',
-                'btn-sm': this.editButtonDisplay == 'button'
+                'btn--primary': this.editButtonDisplay == 'button',
+                'btn--sm': this.editButtonDisplay == 'button'
             }
 
             return html`

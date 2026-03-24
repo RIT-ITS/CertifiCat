@@ -1,7 +1,6 @@
 from certificat.settings import *  # noqa: F403
 
 DEBUG = True
-WEBPACK_LOADER["DEFAULT"]["CACHE"] = False
 INSTALLED_APPS += [
     "debug_toolbar",
 ]

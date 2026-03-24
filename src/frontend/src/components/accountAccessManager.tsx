@@ -222,7 +222,7 @@ export class AccountAccessManagerElement extends LitElement {
                                 <option value="${group.id}">${group.name}</option>
                             `)}
                         </select>
-                        <a @click="${() => this.addGroup(Number(selectRef.value!.value))}" class="btn btn--primary-outline btn--sm">Add</a>
+                        <a @click="${() => this.addGroup(Number(selectRef.value!.value))}" class="btn btn--primary btn--outline btn--sm">Add</a>
                     </div>`
     }
 

@@ -27,6 +27,10 @@ class CustomHeaderRemoteUserMiddleware(RemoteUserMiddleware):
     def process_request(self, request):
         if self.app_settings.authentication.type == "remote":
             self.header = self.app_settings.authentication.user_header
+            self.force_logout_if_no_header = (
+                self.app_settings.authentication.force_logout_if_no_header
+            )
+
             logger.debug("Checking for %s header in request", self.header)
             return super().process_request(request)
 

@@ -4,12 +4,15 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import importGraph from 'vite-plugin-import-graph'
 
 function moduleIdToChunks(id) {
+    
     const nodules = "node_modules";
     
     const easyMdeBundle = [
         nodules + '/easymde/',
+        nodules + '/marked/',
         nodules + '/codemirror/',
-        nodules + '/codemirror-spell-checker/'
+        nodules + '/codemirror-spell-checker/',
+        nodules + '/typo-js/'
     ]
 
     for(const module of easyMdeBundle) {

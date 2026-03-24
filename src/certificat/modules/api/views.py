@@ -23,12 +23,23 @@ class TruncDayNaive(Func):
     the graph using this to have that level of fidelity anyway.
     """
 
-    function = "DATE_FORMAT"
-    template = "%(function)s(%(expressions)s, '%%%%Y-%%%%m-%%%%d')"
     output_field = DateField()
 
     def as_postgresql(self, compiler, connection):
-        return self.as_sql(compiler, connection, function="TO_CHAR")
+        return self.as_sql(
+            compiler,
+            connection,
+            template="%(function)s(%(expressions)s)::text",
+            function="DATE",
+        )
+
+    def as_mysql(self, compiler, connection):
+        return self.as_sql(
+            compiler,
+            connection,
+            template="%(function)s(%(expressions)s, '%%%%Y-%%%%m-%%%%d')",
+            function="DATE_FORMAT",
+        )
 
     def convert_value(self, value, expression, connection):
         return dateparse.parse_date(value)
@@ -47,6 +58,7 @@ def cert_activity(request: HttpRequest):
         .annotate(count=Count("id"))
         .values("date", "count")
     )
+
     return JsonResponse(
         {format(item["date"], "Y/m/d"): item["count"] for item in activity},
         safe=False,

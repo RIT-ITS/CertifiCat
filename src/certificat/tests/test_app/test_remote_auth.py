@@ -90,3 +90,8 @@ class TestRemoteAuth:
         redirect = web_client.get(response.url)
 
         assert redirect.url == "http://example.com/?rd=/accounts/"
+
+    def test_unprotected_resources(self, web_client: Client):
+        response = web_client.get(reverse("acme:directory"))
+        assert response.status_code == 200
+        assert "newAccount" in response.json()

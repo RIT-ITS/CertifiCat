@@ -8,14 +8,6 @@ ROOT_DIR="$(realpath "${HERE}/../")"
 CHARTS_DIR="${HERE}/../charts"
 DIST_DIR="${HERE}/../dist/charts"
 
-# shellcheck disable=SC1091
-source "${ROOT_DIR}/.env.defaults"
-
-if [[ -f "${ROOT_DIR}/.env.local" ]]; then
-    # shellcheck disable=SC1091
-    source "${ROOT_DIR}/.env.local"
-fi
-
 REQUIRED_VARS=(
     HELM_VERSION
     HELM_APPVERSION

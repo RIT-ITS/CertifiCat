@@ -118,10 +118,74 @@ table.table tr {
     height: 3.25rem;
 }
 
-table.accounts {
-    td.activated {
+.table.accounts {
+    .td.activated {
+        vertical-align: middle;
         color: var(--green-accent-color);
-        font-size: 1.5em;
+        font-size: 1.75em;
+    }
+}
+
+/* show authorization errors */
+.authorizations {
+    .challenge--error {
+        border-left: 3px solid var(--red-accent-color);
+        background-color: color-mix(in srgb, var(--red-accent-color) 10%, #FFF 80%);
+        margin-left: 1rem;
+        padding: 1rem;
+        word-break: break-all;
+    }
+}
+
+/* anchors as table rows */
+div.table {
+    display: table;
+}
+
+a.link-row {
+    display:table-row;
+    height: 3.25rem;
+    color: var(--body-text-color);
+    transition: all 100ms ease-in-out 0s;
+    
+
+    > div {
+        display: table-cell;
+    }
+
+    &:hover {
+        background-color: var(--gray-color--100);
+        outline: 1px solid var(--primary-color) !important;
+        //border-right: 1px solid var(--primary-color) !important;
+    }
+
+    .edit {
+        color: var(--primary-color);
+        transition: all 100ms ease-in-out 0s;
+        text-align: right;
+        vertical-align: middle;
+        padding: 0 .5rem;
+        position: relative;
+        
+        &::before {
+            content: "";
+            position: absolute;
+            top: .45rem;
+            bottom: .45rem;
+            left: 0;
+            padding-right: .5rem;
+            border-left: 1px solid var(--gray-color--400);
+        }
+
+        &.large {
+            font-size: 1.5em;
+        }
+    }
+
+    &:hover {
+        .edit {
+            font-weight: bold;
+        }
     }
 }
 
@@ -549,6 +613,10 @@ code {
 }
 
 #footer > div {
+    .version {
+        opacity: .75;
+        font-size:.8em;
+    }
     align-items: center;
 
     a:not(.btn) {

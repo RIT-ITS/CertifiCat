@@ -214,7 +214,12 @@ class LocalAuthSettings(BaseModel):
 class RemoteAuthSettings(BaseModel):
     type: Literal["remote"] = "remote"
     user_header: str = "HTTP_USER"
+    administrators: List[str] = Field(
+        [],
+        description="A list of user principals who will automatically be given administrator privileges on login.",
+    )
     force_logout_if_no_header: bool = True
+    log_http_headers: bool = False
     attribute_mapping: Mapping[str, List[str]] = Field(
         {
             "HTTP_USER_EMAIL": "email",
@@ -230,7 +235,7 @@ class RemoteAuthSettings(BaseModel):
 
 
 class SAMLAuthSettings(BaseModel):
-    type: Literal["saml"]
+    type: Literal["saml"] = "saml"
     model_config = SettingsConfigDict(
         validate_default=False,
         env_prefix="SAML__",
@@ -488,6 +493,7 @@ class ApplicationSettings(Settings):
         True,
         description="If true, will send tracking information about usage to RIT. All tracking info is logged.",
     )
+    show_version: bool = Field(False, description="Show the version on the website.")
 
     healthcheck_allowed_networks: List[str] = Field(
         ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."

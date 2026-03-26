@@ -89,9 +89,7 @@
                         </tr>
                         {% endif %}
                     {% empty %}
-                        <tr>
-                            <td colspan="100%"><p style="text-align:center;">No recent orders.</p></td>
-                        </tr>
+                        <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No recent orders.</div></div>
                     {% endfor %}
                 </c-slot>
             </c-table>

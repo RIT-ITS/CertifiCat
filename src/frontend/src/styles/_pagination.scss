@@ -16,14 +16,14 @@
     padding: 0.5rem 0.75rem;
     margin-left: -1px;
     line-height: 1.25;
-    color: theme.$primaryColor;
+    color: var(--primary-color);
     background-color: #fff;
     border: 1px solid var(--gray-color--400);
 }
 
 .page-link:hover {
     z-index: 2;
-    color: theme.$bodyTextColor;
+    color: var(--body-text-color);
     text-decoration: none;
     background-color: var(--gray-color--400);
 }

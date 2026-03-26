@@ -94,6 +94,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "certificat.modules.html.context_processors.nav",
                 "certificat.modules.html.context_processors.settings",
+                "certificat.modules.html.context_processors.version",
             ],
         },
     },

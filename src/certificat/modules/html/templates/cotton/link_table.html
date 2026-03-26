@@ -1,0 +1,9 @@
+<div class="table {{ name }} {% if not no_collapse %}collapsible{% endif %} {% if centered %}centered{% endif %}">
+    {% if head %}
+    <div class="thead thead--light">
+        {{ head }}
+    </div>
+    {% endif %}
+    
+    {{ body }}
+</div>

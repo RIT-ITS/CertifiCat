@@ -91,41 +91,38 @@
                     {% endif %}
                 </div>
             </form>
-            <c-table name="orders">
+            <c-link-table name="orders">
                 <c-slot name="head">
-                    <tr>
-                        <th>Created</th>
-                        <th>Status</th>                        
-                        <th>Identifiers</th>
-                        <th><!-- edit --></th>
-                    </tr>
+                    <div class="tr">
+                        <div class="th">Created</div>
+                        <div class="th">Status</div>                        
+                        <div class="th">Identifiers</div>
+                        <div class="th"><!-- edit --></div>
+                    </div>
                 </c-slot>
                 <c-slot name="body">
                     {% for order in orders.page %}
-                        <tr>
-                            <td class="shrink-cell">
+                        <a class="link-row" href="{% url 'order' order.id %}">
+                            <div class="td shrink-cell">
                                 {{ order.created_at|date:"Y/m/d" }}
-                            </td>
-                            <td class="shrink-cell">
+                            </div>
+                            <div class="td shrink-cell">
                                 <c-status :status="order.status" />
-                            </td>
-                            <td class="identifiers">
+                            </div>
+                            <div class="td identifiers">
                                 {% for identifier in order.identifiers.all %}
                                     {{ identifier.value }}{% if not forloop.last %},{% endif %}
                                 {% endfor %}
-                            </td>
-                            <td class="edit table--row-button shrink-cell">
-                                <a class="btn btn--light btn--md" href="{% url 'order' order.id %}">Manage
-                                    &nbsp;<span class="fa-solid fa-angle-right"></span></a>
-                            </td>
-                        </tr>
+                            </div>
+                            <div class="td edit table--row-button shrink-cell">
+                                <span class="fa-solid fa-chevron-right"></span>
+                            </div>
+                        </a>
                     {% empty %}
-                        <tr>
-                            <td colspan="100%" class="centered no-records-found">No orders found.</td>
-                        </tr>
+                        <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No orders found.</div></div>
                     {% endfor %}
                 </c-slot>
-            </c-table>
+            </c-link-table>
             <div class="row mt-2 center-xs">
                 <c-pagination :page="orders.page" qs_extra="#order-history" />
             </div>

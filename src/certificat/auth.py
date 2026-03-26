@@ -1,7 +1,11 @@
 from typing import Dict, List, Tuple, Optional, Any
 
 from django.http import HttpRequest
-from certificat.settings.dynamic import ApplicationSettings, RemoteAuthSettings
+from certificat.settings.dynamic import (
+    ApplicationSettings,
+    RemoteAuthSettings,
+    SAMLAuthSettings,
+)
 import djangosaml2.backends
 from django.contrib.auth.models import Group, User
 import logging
@@ -33,6 +37,10 @@ class RemoteUserBackend(BaseRemoteUserBackend):
                         "Error settings attribute %s on user object", attribute
                     )
 
+        remote_auth_settings: RemoteAuthSettings = inject.instance(
+            ApplicationSettings
+        ).authentication
+        _reconcile_superuser(user, remote_auth_settings.administrators)
         user.save()
 
         return user
@@ -90,7 +98,9 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
         # Gets a list of all the admins in the config file and gives them access
         # to the backend
 
-        _reconcile_superuser(user, attributes)
+        from certificat.settings.saml import saml_settings
+
+        _reconcile_superuser(user, saml_settings.administrators)
         user = super()._update_user(
             user, attributes, attribute_mapping, force_save=force_save
         )
@@ -100,10 +110,8 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
         return user
 
 
-def _reconcile_superuser(user: User, attributes: Dict):
-    from certificat.settings.saml import saml_settings
-
-    if user.username in saml_settings.administrators:
+def _reconcile_superuser(user: User, admins: List[str] = []):
+    if user.username in admins:
         logger.debug(
             "user %s found in administrators config, granting superuser access",
             user.username,
@@ -117,7 +125,9 @@ def _reconcile_superuser(user: User, attributes: Dict):
 
 
 def _prefix_idp_groups(groups: List[str]):
-    from certificat.settings.saml import saml_settings
+    saml_settings: SAMLAuthSettings = inject.instance(
+        ApplicationSettings
+    ).authentication
 
     return [f"{saml_settings.group_sync_prefix}{g}" for g in groups]
 
@@ -129,7 +139,11 @@ def _reconcile_idp_groups(user: User, attributes: Dict):
 
     # Gets a list of the current user's groups that begin with the
     # SAML_GROUP_PREFIX, so we don't update any groups set outside this.
-    from certificat.settings.saml import saml_settings
+
+    # TODO: assert the authentication type is saml...
+    saml_settings: SAMLAuthSettings = inject.instance(
+        ApplicationSettings
+    ).authentication
 
     new_saml_group_names = set(
         _prefix_idp_groups(attributes.get(saml_settings.group_attribute, []))

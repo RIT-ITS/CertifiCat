@@ -4,11 +4,12 @@ from certificat.modules.html.nav import Sections
 from certificat.settings.dynamic import ApplicationSettings, RemoteAuthSettings
 import pytest
 from django.test import Client
+from django.contrib.auth.models import User
 
 
 class TestRemoteAuth:
     USER_HEADER = "USER"
-    LOGIN_URL = "/remote/login"
+    LOGIN_URL = "/remote/login/"
 
     @pytest.fixture(autouse=True)
     def setup_class_members(self, settings):
@@ -88,10 +89,38 @@ class TestRemoteAuth:
 
         assert self.LOGIN_URL in response.url
         redirect = web_client.get(response.url)
-
         assert redirect.url == "http://example.com/?rd=/accounts/"
 
     def test_unprotected_resources(self, web_client: Client):
         response = web_client.get(reverse("acme:directory"))
         assert response.status_code == 200
         assert "newAccount" in response.json()
+
+    @pytest.mark.django_db
+    def test_reconcile_superuser(self, web_client: Client):
+        """Test that an average user is not a superuser unless they're in the admin list."""
+        auth_settings: RemoteAuthSettings = ApplicationSettings.get().authentication
+        username = "remusr"
+
+        web_client.get(
+            reverse(Sections.Accounts.value), headers={self.USER_HEADER: username}
+        )
+        user = User.objects.get(username=username)
+        user.refresh_from_db()
+        assert not user.is_superuser
+
+        web_client.logout()
+        auth_settings.administrators = [user.username, "dummy-user"]
+        web_client.get(
+            reverse(Sections.Accounts.value), headers={self.USER_HEADER: username}
+        )
+        user.refresh_from_db()
+        assert user.is_superuser
+
+        web_client.logout()
+        auth_settings.administrators = ["dummy-user"]
+        web_client.get(
+            reverse(Sections.Accounts.value), headers={self.USER_HEADER: username}
+        )
+        user.refresh_from_db()
+        assert not user.is_superuser

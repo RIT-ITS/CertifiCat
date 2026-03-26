@@ -4,6 +4,11 @@ requirements.txt
 # node
 node_modules/
 
+bundle-report.html
+import-graph.json
+
+smoke-test.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

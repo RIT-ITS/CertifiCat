@@ -11,8 +11,8 @@
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
 	},
 	"remoteEnv": {
-		"VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv",
-		"UV_PROJECT_ENVIRONMENT": "${containerWorkspaceFolder}/.venv"
+		"VIRTUAL_ENV": "${containerWorkspaceFolder}/src/.venv",
+		"UV_PROJECT_ENVIRONMENT": "${containerWorkspaceFolder}/src/.venv"
 	},
 	"customizations": {
 		"vscode": {

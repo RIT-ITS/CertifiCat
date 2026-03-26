@@ -13,60 +13,56 @@
 <div class="container row mt-5">
     <div class="col-xl-6">
         <h4 class="icon"><i class="fa-solid fa-cart-shopping"></i>Recent Orders</h4>
-        <c-table name="orders" centered>
+        <c-link-table name="orders" centered>
             <c-slot name="body">
                 {% for order in recent_orders %}
-                    <tr>
-                        <td label="Created" class="shrink-cell">
+                    <a class="link-row" href="{% url 'order' order.id %}">
+                        <div label="Created" class="td shrink-cell">
                             {{ order.created_at|date:"Y/m/d" }}
-                        </td>
-                        <td label="Status" class="shrink-cell">
+                        </div>
+                        <div label="Status" class="td shrink-cell">
                             <c-status :status="order.status" />
-                        </td>
-                        <td label="Identifiers" class="identifiers">
+                        </div>
+                        <div label="Identifiers" class="td identifiers">
                             {{ order.identifiers.all.0.value }}
                             {% if order.identifiers.all.1 %}
                                 (+{{ order.identifiers.all|slice:"1:"|length }} SANs)
                             {% endif %}
-                        </td>
-                        <td class="edit table--row-button shrink-cell">
-                            <a class="btn btn--light btn--md" href="{% url 'order' order.id %}">Details
-                                &nbsp;<span class="fa-solid fa-angle-right"></span></a>
-                        </td>
-                    </tr>
+                        </div>
+                        <div class="td edit table--row-button shrink-cell" data-text="View">
+                            <span class="fa-solid fa-chevron-right"></span>
+                        </div>
+                    </a>
                 {% empty %}
-                    <tr>
-                        <td colspan="100%"><p style="text-align:center;">No recent orders.</p></td>
-                    </tr>
+                    <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No recent orders.</div></div>
                 {% endfor %}
             </c-slot>
-        </c-table>
+        </c-link-table>
     </div>
     <div class="col-xl-6">
         <h4 class="icon"><i class="fa-solid fa-scroll"></i>Recent Certificates</h4>
-        <c-table name="certificates" centered>
+        <c-link-table name="certificates" centered>
             <c-slot name="body">
                 {% for cert in recent_certificates %}
-                    <tr>
-                        <td label="Created" class="shrink-cell">
+                    <a class="link-row" href="{% url 'certificate' cert.id %}">
+                        <div label="Created" class="td shrink-cell">
                             {{ cert.created_at|date:"Y/m/d" }}
-                        </td>
-                        <td label="SANs" class="sans">
+                        </div>
+                        <div label="SANs" class="td sans">
                             {{ cert.metadata.sans.0 }}
                             {% if cert.metadata.sans.1 %}
                                 (+{{ cert.metadata.sans|slice:"1:"|length }} SANs)
                             {% endif %}
-                        </td>
-                        <td class="edit table--row-button shrink-cell">
-                            <a class="btn btn--light btn--md" href="{% url 'certificate' cert.id %}">Details
-                                &nbsp;<span class="fa-solid fa-angle-right"></span></a>
-                        </td>
-                    </tr>
+                        </div>
+                        <div class="td edit table--row-button shrink-cell">
+                            <span class="fa-solid fa-chevron-right"></span>
+                        </div>
+                    </a>
                 {% empty %}
-                    <tr><td colspan="100%">No certificates created yet.</td></tr>
+                    <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No certificates created yet.</div></div>
                 {% endfor %}
             </c-slot>
-        </c-table>
+        </c-link-table>
     </div>
 </div>
 {% endblock %}

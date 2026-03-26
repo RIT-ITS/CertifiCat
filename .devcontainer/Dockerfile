@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \

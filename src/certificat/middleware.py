@@ -31,6 +31,14 @@ class CustomHeaderRemoteUserMiddleware(RemoteUserMiddleware):
                 self.app_settings.authentication.force_logout_if_no_header
             )
 
+            if self.app_settings.authentication.log_http_headers:
+                logger.info(
+                    "Logging headers starting with HTTP_: %s",
+                    sorted(
+                        {k: v for k, v in request.META.items() if k.startswith("HTTP_")}
+                    ),
+                )
+
             logger.debug("Checking for %s header in request", self.header)
             return super().process_request(request)
 

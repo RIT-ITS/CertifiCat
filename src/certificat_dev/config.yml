@@ -2,6 +2,7 @@ certificat:
   # provided by env
   # secret_key: ""
   debug: True
+  show_version: True
   url_root: "https://certificat.dev.localhost"
   finalizer:
     type: "local"
@@ -57,20 +58,20 @@ certificat:
   trust_proxy_forwarded_proto: True
   
   # MySQL 
-  # db:
-  #   type: mysql
-  #   name: certificat
-  #   user: root
-  #   # provided by env
-  #   # password: ""
-  #   host: mariadb.
+  db:
+    type: mysql
+    name: certificat
+    user: root
+    # provided by env
+    # password: ""
+    host: mariadb.
 
   # Postgres
-  db:
-    type: postgresql
-    name: certificat
-    user: postgres
-    host: postgres.
+  # db:
+  #   type: postgresql
+  #   name: certificat
+  #   user: postgres
+  #   host: postgres.
 
   # SQLite
   # db: 
@@ -86,6 +87,11 @@ certificat:
   # Uses Redis cache if omitted
   cache:
     type: local
+
+  # authentication:
+  #   type: remote
+  #   log_http_headers: true
+  #   redirect_template: https://example.localhost/rd={redirect}
 
   authentication:
     type: saml
@@ -122,6 +128,7 @@ certificat:
   theming:
     global_css: |
       html:root {
+          /*
           --primary-color: #F76902;
           --link-color: #C75300;
           --logo-accent-color: #F76902;
@@ -155,12 +162,15 @@ certificat:
           --width--max: 1400px;
           
           --font-size: 16px;
+          */
       }
 
+      /*
       activity-graph {
           --heat-calendar--start-color: #cff182 !important;
           --heat-calendar--end-color: #fff8a4 !important;
       }
+      */
 
 # emsign_finalizer:
 #   api_base: "http://emsign.localhost/api/"

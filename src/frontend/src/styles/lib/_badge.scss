@@ -5,6 +5,10 @@
 
     font-weight: bold;
     font-size: .8em;
+    i {
+        // fix for font-awesome icons not centering
+        line-height: .8em !important;
+    }
     position: relative;
     padding: 0px .5em 0px .5em;
     height: 2em;

@@ -7,11 +7,12 @@ LOGLEVEL='DEBUG'
 
 ROOT="$(realpath ${HERE}/../)"
 SRC_PATH="${ROOT}/src"
-VENV_PATH="${ROOT}/.venv"
+VENV_PATH="${SRC_PATH}/.venv"
 VENV_PYTHON="${VENV_PATH}/bin/python3"
 VENV_PYTEST="${VENV_PATH}/bin/pytest"
 
 export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+export VIRTUAL_ENV="${VENV_PATH}"
 
 function log_output {
   # shellcheck disable=SC2046

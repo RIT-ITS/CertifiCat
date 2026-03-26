@@ -39,50 +39,47 @@
         </div>
     </form>
 
-    <c-table name="accounts">
+    <c-link-table name="accounts">
         <c-slot name="head">
-            <tr>
-                <th>Created</th>
-                <th>Access</th>                        
-                <th>Description</th>
-                <th>Activated</th>                        
-                <th><!-- edit --></th>
-            </tr>
+            <div class="tr">
+                <div class="th">Created</div>
+                <div class="th">Access</div>                        
+                <div class="th">Description</div>
+                <div class="th">Activated</div>                        
+                <div class="th"><!-- edit --></div>
+            </div>
         </c-slot>
         <c-slot name="body">
             {% for binding in bindings.page %}
-                <tr>
-                    <td class="shrink-cell">
+                <a class="link-row" href="{% url 'account' binding.id %}">
+                    <div class="td shrink-cell">
                         {{ binding.created_at|date:"DATE_FORMAT" }}
-                    </td>
-                    <td class="access">
+                    </div>
+                    <div class="td access">
                         {% for scope in binding.group_scopes.all %}
                             {{ scope.friendly_name }}{% if not forloop.last %}<br />{% endif %}
                         {% empty %}
                             <c-user :user="binding.creator" />
                         {% endfor %}
-                    </td>
-                    <td class="description">
+                    </div>
+                    <div class="td description">
                         <b class="bold">{{ binding.name }}</b>
                         <p>{{ binding.note }}</p>
-                    </td>
-                    <td class="activated shrink-cell centered">
+                    </div>
+                    <div class="td activated shrink-cell centered">
                         {% if binding.bound_to %}
-                        <i class="fa-solid fa-check"></i>
+                        <i class="fa-solid fa-circle-check"></i>
                         {% endif %}
-                    </td>
-                    <td class="edit table--row-button shrink-cell">
-                        <a class="btn btn--light btn--md" href="{% url 'account' binding.id %}">Manage
-                            &nbsp;<span class="fa-solid fa-angle-right"></span></a>
-                    </td>
-                </tr>
+                    </div>
+                    <div class="td edit large table--row-button shrink-cell" data-text="View">
+                        <span class="fa-solid fa-chevron-right"></span>
+                    </div>
+                </a>
             {% empty %}
-                <tr>
-                    <td colspan="100%" class="centered no-records-found">No accounts found.</td>
-                </tr>
+                <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No accounts found.</div></div>
             {% endfor %}
         </c-slot>
-    </c-table>
+    </c-link-table>
 
     <div class="row mt-2 centered">
         <c-pagination :page="bindings.page" />

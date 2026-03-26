@@ -466,6 +466,7 @@ def acs_failure(request, exception, status, **kwargs):
 
 def remote_login_redirect(request, *args, **kwargs):
     app_settings = inject.instance(ApplicationSettings)
+
     if app_settings.authentication.type != "remote":
         raise Exception("What are you doing?")
 

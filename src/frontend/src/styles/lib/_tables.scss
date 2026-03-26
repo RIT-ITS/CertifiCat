@@ -30,15 +30,23 @@
     }
 
     &.table--sm {
-
         th,
         td {
             padding: $spacer*.25;
         }
     }
 
-    th,
-    td {
+    .thead {
+        display: table-header-group;
+    }
+
+    .tr {
+        display: table-row;
+    }
+
+    th, .th,
+    td, .td {
+        display: table-cell;
         padding: $spacer*.75;
         vertical-align: top;
         border-top: 1px solid var(--gray-color--300);
@@ -49,27 +57,27 @@
         }
     }
 
-    &.centered td {
+    &.centered td, &.centered .td {
         vertical-align: middle;
     }
 
-    th {
+    th, .th {
         font-weight: bold;
         text-align: left;
     }
 
-    thead th {
+    thead th, .thead .th {
         border-bottom: 2px solid var(--gray-color--300);
         font-weight: bold;
     }
 
-    .thead--light th {
+    .thead--light th, .thead--light .th {
         background-color: #e9ecef;
         border-color: #dee2e6;
         color: #495057;
     }
 
-    .thead--dark th {
+    .thead--dark th, .thead--dark .th {
         background-color: var(--gray-color--700);
         border-color: var(--gray-color--800);
         color: #fff;
@@ -108,12 +116,9 @@
 
 @mixin shrink-cell {
     white-space: nowrap;
-
-    @media(min-width:(theme.$largeSmartphone*1+1)) {
-        width: 0.1%;
-    }
+    width: 0.1%;
 }
 
-table .shrink-cell {
+table .shrink-cell, .table .shrink-cell {
     @include shrink-cell;
 }

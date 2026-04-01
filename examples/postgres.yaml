@@ -1,4 +1,4 @@
-# This is a simple configuration with local auth and a local issuer. The app does not
+# This is a simple postgres configuration with local auth and a local issuer. The app does not
 # support local authentication, but we can create a local user for an example.
 
 # docker-compose -f postgres.yaml up
@@ -11,13 +11,13 @@ services:
     image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
     restart: unless-stopped
     depends_on:
-      mariadb:
+      postgres:
         condition: service_started
     ports:
       - "8000:80"
     command: start_server
     volumes:
-      - ./simple:/etc/certificat
+      - ./postgres:/etc/certificat
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     
@@ -25,29 +25,28 @@ services:
     image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
     restart: unless-stopped
     depends_on:
-      mariadb:
+      postgres:
         condition: service_started
     command: start_huey
     volumes:
-      - ./simple:/etc/certificat
+      - ./postgres:/etc/certificat
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     extra_hosts:
     - "host.docker.internal:host-gateway"
 
   postgres:
-    networks:
-      - backend
     image: postgres:18.3
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql
     environment:
       - POSTGRES_PASSWORD=pgpassword
+      - POSTGRES_DB=certificat
 
   redis:
     image: redis:7.2.4
     command: redis-server --save 60 1 --requirepass "r3d1s"
 
 volumes:
-  mariadb-data:
+  postgres-data:

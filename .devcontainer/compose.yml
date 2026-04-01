@@ -38,9 +38,9 @@ services:
     environment:
       CERTIFICAT__SECRET_KEY: ${_DJ_SECRET_KEY}
       # Uncomment to use MySQL
-      CERTIFICAT__DB__PASSWORD: ${_DJ_MYSQL_ROOT_PWD}
+      #CERTIFICAT__DB__PASSWORD: ${_DJ_MYSQL_ROOT_PWD}
       # Uncomment to use Postgres
-      # CERTIFICAT__DB__PASSWORD: ${_DJ_POSTGRES_PWD}
+      CERTIFICAT__DB__PASSWORD: ${_DJ_POSTGRES_PWD}
       CERTIFICAT__REDIS__PASSWORD: ${_DJ_REDIS_PWD}
       CERTIFICAT__CONFIG: "/workspaces/certificat/src/certificat_dev/config.yml"
     labels:

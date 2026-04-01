@@ -5,11 +5,11 @@ certificat:
   time_zone: "America/New_York"
   url_root: "http://localhost:8000"
   db: 
-    type: mysql
+    type: "postgres"
     name: "certificat"
-    user: "root"
-    password: "m@ri@dbr00t"
-    host: "mariadb."
+    user: "postgres"
+    password: "pgpassword"
+    host: "postgres."
   redis: 
     host: "redis."
     password: "r3d1s"
@@ -18,25 +18,13 @@ certificat:
     certificat_level: DEBUG
     acmev2_level: DEBUG
   authentication: 
-    type: "saml"
-    debug: True
-    administrators:
-      - admusr
-    attribute_mapping:
-      mail: [username, email]
-      uid: [username]
-      eduPersonPrincipalName: [username]
-      givenName: [first_name]
-      sn: [last_name]
-    sp:
-      entity_id: "http://certificat.dev.localhost/saml2/metadata/"
-      key_file: "/etc/certificat/insecure.key"
-      cert_file: "/etc/certificat/insecure.crt"
-    idp:
-      remote: 
-        - url: "http://idp./saml2/metadata"
+    type: local
+    admin:
+      username: admin
+      password: admin
+      email: noreply@localhost
   finalizer: 
-    type: "local"
+    type: local
     key: |
       -----BEGIN RSA PRIVATE KEY-----
       MIIEowIBAAKCAQEAld0nGypEoP0EKuY1K7PA7auFw94EZy0l2KkbkOcgsdykDcka
@@ -65,25 +53,25 @@ certificat:
       5KFSdaxo8ZLEDoAKtXbR+9THwRF9PzcvyducZp/dkUFr2x+PZ5yVTjQHwcAVd1Zu
       Wo7xleX2mpTnHQTjtv1NikkMkcIVMz0Y2pbLbhkYyQVG2v6lL4jB
       -----END RSA PRIVATE KEY-----
-    cert: |
-      -----BEGIN CERTIFICATE-----
-      MIIC1DCCAbygAwIBAgIUQbnQ870aDubvty1Ph5DcCq92JnowDQYJKoZIhvcNAQEL
-      BQAwFzEVMBMGA1UEAwwMYWNtZWNhLmxvY2FsMB4XDTI0MTAxNjE5Mzg0MVoXDTM0
-      MTAxNDE5Mzg0MVowFzEVMBMGA1UEAwwMYWNtZWNhLmxvY2FsMIIBIjANBgkqhkiG
-      9w0BAQEFAAOCAQ8AMIIBCgKCAQEAld0nGypEoP0EKuY1K7PA7auFw94EZy0l2Kkb
-      kOcgsdykDckaxAa1ST9n5VE96AMTObGWCZb5Fkwv/SPg/RduwcgBLG2y4DjAaR+L
-      afNeRn4Nz7nZ85woRr5ojezgy5vzhxti0HqFT5VW1btl0XuPoDoviudJR7vW6kob
-      oVRberLJeaA1MiRPgxj5tAqlGxMVUEORZhwr5sBgxNNQFXmJzLBCSq2LWHyC75SQ
-      J0AJ3RCNS1V/bLtxLj7T7qMji6zbQV3WmF1hQtmKACaCisrxxfg9EEZbTsRRntCO
-      s4NGtRjU9H3nzrim9Sj3UjxgydIQ0UKF+DP1dIHbY6XrnowdFQIDAQABoxgwFjAU
-      BgNVHREEDTALgglsb2NhbGhvc3QwDQYJKoZIhvcNAQELBQADggEBAE0ZJ8Kl9WzK
-      lZFyNyz17fIYGzSej4XKhXk2IajzYaDCKS6pZabHnEuLdxoVqq2SY7Q6tic5vQFY
-      20h+btoo/1rC80z328PfewDa98xJwd1v4TcKScBifHRw9KaRRPOHgYaeOeejZp3n
-      PjtXes4kQEA6e6sgYFDqbG5RZPKCIbAJUbADPChJocYygrQBmido3tcxNN4PAy8R
-      atZhtPs3UzZ4gYJY9wB+MeX5EpLPHQJpoLYQoJO+Q22JuFuPkTfIsQG/Fzvv+hzj
-      0aRuPpTug5Kgc1VrD97fjbNVn5Q/v0d8eL+eB7jujTSSXg/iBTH9D/0MSTp0u2Mm
-      qIQFqQ2WEBc=
-      -----END CERTIFICATE-----  
+  cert: |
+    -----BEGIN CERTIFICATE-----
+    MIIC1DCCAbygAwIBAgIUQbnQ870aDubvty1Ph5DcCq92JnowDQYJKoZIhvcNAQEL
+    BQAwFzEVMBMGA1UEAwwMYWNtZWNhLmxvY2FsMB4XDTI0MTAxNjE5Mzg0MVoXDTM0
+    MTAxNDE5Mzg0MVowFzEVMBMGA1UEAwwMYWNtZWNhLmxvY2FsMIIBIjANBgkqhkiG
+    9w0BAQEFAAOCAQ8AMIIBCgKCAQEAld0nGypEoP0EKuY1K7PA7auFw94EZy0l2Kkb
+    kOcgsdykDckaxAa1ST9n5VE96AMTObGWCZb5Fkwv/SPg/RduwcgBLG2y4DjAaR+L
+    afNeRn4Nz7nZ85woRr5ojezgy5vzhxti0HqFT5VW1btl0XuPoDoviudJR7vW6kob
+    oVRberLJeaA1MiRPgxj5tAqlGxMVUEORZhwr5sBgxNNQFXmJzLBCSq2LWHyC75SQ
+    J0AJ3RCNS1V/bLtxLj7T7qMji6zbQV3WmF1hQtmKACaCisrxxfg9EEZbTsRRntCO
+    s4NGtRjU9H3nzrim9Sj3UjxgydIQ0UKF+DP1dIHbY6XrnowdFQIDAQABoxgwFjAU
+    BgNVHREEDTALgglsb2NhbGhvc3QwDQYJKoZIhvcNAQELBQADggEBAE0ZJ8Kl9WzK
+    lZFyNyz17fIYGzSej4XKhXk2IajzYaDCKS6pZabHnEuLdxoVqq2SY7Q6tic5vQFY
+    20h+btoo/1rC80z328PfewDa98xJwd1v4TcKScBifHRw9KaRRPOHgYaeOeejZp3n
+    PjtXes4kQEA6e6sgYFDqbG5RZPKCIbAJUbADPChJocYygrQBmido3tcxNN4PAy8R
+    atZhtPs3UzZ4gYJY9wB+MeX5EpLPHQJpoLYQoJO+Q22JuFuPkTfIsQG/Fzvv+hzj
+    0aRuPpTug5Kgc1VrD97fjbNVn5Q/v0d8eL+eB7jujTSSXg/iBTH9D/0MSTp0u2Mm
+    qIQFqQ2WEBc=
+    -----END CERTIFICATE-----  
 acme:
   eab_required: True
 

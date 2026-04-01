@@ -58,20 +58,20 @@ certificat:
   trust_proxy_forwarded_proto: True
   
   # MySQL 
-  db:
-    type: mysql
-    name: certificat
-    user: root
-    # provided by env
-    # password: ""
-    host: mariadb.
+  # db:
+  #   type: mysql
+  #   name: certificat
+  #   user: root
+  #   # provided by env
+  #   # password: ""
+  #   host: mariadb.
 
   # Postgres
-  # db:
-  #   type: postgresql
-  #   name: certificat
-  #   user: postgres
-  #   host: postgres.
+  db:
+    type: postgresql
+    name: certificat
+    user: postgres
+    host: postgres.
 
   # SQLite
   # db: 
@@ -94,29 +94,35 @@ certificat:
   #   redirect_template: https://example.localhost/rd={redirect}
 
   authentication:
-    type: saml
-    debug: True
-    administrators:
-      - admusr
-    attribute_mapping:
-      mail: [username, email]
-      uid: [username]
-      eduPersonPrincipalName: [username]
-      givenName: [first_name]
-      sn: [last_name]
-    #discovery:
-    #  service: "https://service.seamlessaccess.org/ds"
-    sp:
-      entity_id: "http://certificat.dev.localhost/saml2/metadata/"
-      key_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
-      cert_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
-    idp:
-      remote: 
-        - url: "http://idp./saml2/metadata"
-      mdq: 
-        - url: "https://mdq.incommon.org"
-          cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
-          freshness_period: "P0Y0M0DT2H0M0S"
+    # type: saml
+    # debug: True
+    # administrators:
+    #   - admusr
+    # attribute_mapping:
+    #   mail: [username, email]
+    #   uid: [username]
+    #   eduPersonPrincipalName: [username]
+    #   givenName: [first_name]
+    #   sn: [last_name]
+    # #discovery:
+    # #  service: "https://service.seamlessaccess.org/ds"
+    # sp:
+    #   entity_id: "http://certificat.dev.localhost/saml2/metadata/"
+    #   key_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
+    #   cert_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
+    # idp:
+    #   remote: 
+    #     - url: "http://idp./saml2/metadata"
+    #   mdq: 
+    #     - url: "https://mdq.incommon.org"
+    #       cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
+    #       freshness_period: "P0Y0M0DT2H0M0S"
+
+    type: local
+    admin:
+      username: admin
+      password: super-secret
+      email: noreply@localhost
 
   logging:
     certificat_level: DEBUG
@@ -128,49 +134,46 @@ certificat:
   theming:
     global_css: |
       html:root {
-          /*
-          --primary-color: #F76902;
-          --link-color: #C75300;
-          --logo-accent-color: #F76902;
-          --neutral-cool-color--100: #D0D3D4;
-          --neutral-cool-color--200: #A2AAAD;
-          --neutral-cool-color--300: #7C878E;
-          --neutral-warm-color--100: #D7D2CB;
-          --neutral-warm-color--200: #ACA39A;
-          --green-accent-color: #84BD00;
-          --lime-accent-color: #C4D600;
-          --blue-accent-color: #009CBD;
-          --purple-accent-color: #7D55C7;
-          --red-accent-color: #DA291C;
-          --orange-accent-color: #F6BE00;
-          --gray-color--100: #f8f9fa;
-          --gray-color--200: #e9ecef;
-          --gray-color--300: #dee2e6;
-          --gray-color--400: #ced4da;
-          --gray-color--500: #adb5bd;
-          --gray-color--600: #6c757d;
-          --gray-color--700: #495057;
-          --gray-color--800: #343a40;
-          --gray-color--900: #212529;
-          --body-text-color: #212529;
-          --font-stack: Helvetica Neue, Helvetica, Arial, sans‑serif;
-          
-          --width--small-smartphone: 480px;
-          --width--large-smartphone: 768px;
-          --width--tiny-desktop: 1000px;
-          --width--small-desktop: 1200px;
-          --width--max: 1400px;
-          
-          --font-size: 16px;
-          */
+        --primary-color: #F76902;
+        --link-color: #C75300;
+        --logo-accent-color: #F76902;
+        --neutral-cool-color--100: #D0D3D4;
+        --neutral-cool-color--200: #A2AAAD;
+        --neutral-cool-color--300: #7C878E;
+        --neutral-warm-color--100: #D7D2CB;
+        --neutral-warm-color--200: #ACA39A;
+        --green-accent-color: #84BD00;
+        --lime-accent-color: #C4D600;
+        --blue-accent-color: #009CBD;
+        --purple-accent-color: #7D55C7;
+        --red-accent-color: #DA291C;
+        --orange-accent-color: #F6BE00;
+        --gray-color--100: #f8f9fa;
+        --gray-color--200: #e9ecef;
+        --gray-color--300: #dee2e6;
+        --gray-color--400: #ced4da;
+        --gray-color--500: #adb5bd;
+        --gray-color--600: #6c757d;
+        --gray-color--700: #495057;
+        --gray-color--800: #343a40;
+        --gray-color--900: #212529;
+        --body-text-color: #212529;
+        --font-stack: Helvetica Neue, Helvetica, Arial, sans‑serif;
+        
+        --width--small-smartphone: 480px;
+        --width--large-smartphone: 768px;
+        --width--tiny-desktop: 1000px;
+        --width--small-desktop: 1200px;
+        --width--max: 1400px;
+        
+        --font-size: 16px;
       }
 
-      /*
       activity-graph {
           --heat-calendar--start-color: #cff182 !important;
           --heat-calendar--end-color: #fff8a4 !important;
       }
-      */
+      
 
 # emsign_finalizer:
 #   api_base: "http://emsign.localhost/api/"

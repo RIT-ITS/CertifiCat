@@ -139,6 +139,7 @@ case "$SUB_COMMAND" in
       log_info "Collecting static files to /srv/www/static"
       collectstatic
 
+      "${PYTHON}" /srv/www/manage.py initialize_authentication
       runserver
       ;;
 

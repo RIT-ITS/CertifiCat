@@ -146,9 +146,9 @@ a.link-row {
     display:table-row;
     height: 3.25rem;
     color: var(--body-text-color);
-    transition: all 100ms ease-in-out 0s;
+    outline-offset: -1px;
+    transition: background-color 100ms ease-in-out 0s;
     
-
     > div {
         display: table-cell;
     }

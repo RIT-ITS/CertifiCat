@@ -8,6 +8,14 @@ import datetime
 from acme import messages, challenges, standalone, client
 import acme.client
 import acme.messages
+from cryptography.hazmat.primitives import serialization
+import inject
+from acmev2.services import (
+    IChallengeService,
+    IOrderService,
+    IAuthorizationService,
+)
+from acmev2.models import ChallengeStatus, AuthorizationStatus
 
 
 class HelperGlobals:
@@ -117,6 +125,34 @@ def perform_http01(
         # It is possible to set a deadline time.
         deadline = datetime.datetime.now() + datetime.timedelta(seconds=5)
         return client_acme.poll_authorizations(orderr, deadline)
+
+
+def new_order(cn: str, sans: list[str], client: acme.client.ClientV2):
+    csr = gen_csr(
+        cn=cn or "acme.localhost",
+        sans=sans or ["acme.localhost", "acme2.localhost"],
+    )
+    new_order = client.new_order(csr.public_bytes(serialization.Encoding.PEM))
+    return new_order, csr
+
+
+def create_cert(client: acme.client.ClientV2, cn: str, sans: list[str]):
+    order, csr = new_order(cn=cn, sans=sans, client=client)
+    ord_id = order.uri.split("/")[-1]
+    chall_service = inject.instance(IChallengeService)
+    auth_service = inject.instance(IAuthorizationService)
+    for auth in order.authorizations:
+        auth_id = auth.uri.split("/")[-1]
+        auth_service.update_status(auth_service.get(auth_id), AuthorizationStatus.valid)
+        chall_id = auth.body.challenges[0].uri.split("/")[-1]
+        chall_service.update_status(chall_service.get(chall_id), ChallengeStatus.valid)
+
+    order_service = inject.instance(IOrderService)
+    order_resource = order_service.get(ord_id)
+    order_service.process_finalization(order_resource, csr)
+    order_service.resolve_state(order_resource)
+
+    return order_resource
 
 
 def poll_finalizations(client_acme: client.ClientV2, orderr, timeout=5):

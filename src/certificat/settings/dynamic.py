@@ -207,8 +207,15 @@ class SAMLDiscoverySettings(BaseModel):
     )
 
 
+class LocalAuthAdminSettings(BaseModel):
+    username: str
+    password: str
+    email: str
+
+
 class LocalAuthSettings(BaseModel):
     type: Literal["local"]
+    admin: LocalAuthAdminSettings
 
 
 class RemoteAuthSettings(BaseModel):

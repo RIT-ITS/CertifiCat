@@ -8,8 +8,8 @@
 
 services:
   web:
-    image: ghcr.io/rit-its/certificat:latest
-    restart: always
+    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    restart: unless-stopped
     depends_on:
       mariadb:
         condition: service_started
@@ -22,14 +22,14 @@ services:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     
   tasks:
-    image: ghcr.io/rit-its/certificat:latest
-    restart: always
+    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    restart: unless-stopped
     depends_on:
       mariadb:
         condition: service_started
     command: start_huey
     volumes:
-      - ./simple:/etc/certificat
+      - ./saml:/etc/certificat
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     extra_hosts:

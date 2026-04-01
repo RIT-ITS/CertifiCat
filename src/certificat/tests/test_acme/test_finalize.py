@@ -33,8 +33,7 @@ def test_finalize_fail_dispatch_task(
     acme_client: acme.client.ClientV2,
     acme_neworder,
     mocker,
-):
-    settings = inject.instance(ApplicationSettings)
+):  
     new_order: NewOrderRet = acme_neworder()
 
     order = do_challenge(acme_client, new_order.response)

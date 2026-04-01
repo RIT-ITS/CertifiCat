@@ -1,5 +1,6 @@
 from collections import namedtuple
 import re
+import uuid
 import acme.messages
 from certificat.modules.acme.services import (
     AccountService,
@@ -231,3 +232,43 @@ def gen_acme_client():
         acme.client.messages.Directory.from_json(directory_service.get_directory()),
         net=net,
     )
+
+
+@pytest.fixture
+def gen_bound_client():
+    def wrapped():
+        user = helpers.gen_user()
+        binding = db.AccountBinding.generate(
+            user, name=uuid.uuid4().hex.upper()[0:6], note=uuid.uuid4().hex.upper()[0:6]
+        )
+
+        rsa_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        account_key = josepy.JWKRSA(key=rsa_key)
+
+        net = acme.client.ClientNetwork(account_key, user_agent="certificat.tests")
+        net.session.mount(f"{ROOT_URL}/acme/", LocalACMEAdapter())
+        directory_service = inject.instance(IDirectoryService)
+
+        acme_client = acme.client.ClientV2(
+            acme.client.messages.Directory.from_json(directory_service.get_directory()),
+            net=net,
+        )
+
+        account_public_key = acme_client.net.key.public_key()
+        eab = acme.client.messages.ExternalAccountBinding.from_data(
+            account_public_key=account_public_key,
+            kid=binding.hmac_id,
+            hmac_key=binding.hmac_key,
+            directory=acme_client.directory,
+        )
+
+        registration = acme.client.messages.NewRegistration.from_data(
+            email="email@acme.edu" if not user else user.email,
+            terms_of_service_agreed=True,
+            external_account_binding=eab,
+        )
+
+        acct = acme_client.new_account(registration)
+        return acme_client, acct, user
+
+    return wrapped

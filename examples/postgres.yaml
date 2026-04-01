@@ -1,8 +1,9 @@
 # This is a simple configuration with local auth and a local issuer. The app does not
 # support local authentication, but we can create a local user for an example.
 
-# docker-compose -f simple.yaml up
+# docker-compose -f postgres.yaml up
 # Log in at http://localhost:8000 with admin:admin
+# After creating and registering your account:
 # certbot certonly --standalone --server "http://localhost:8000/directory" -d host.docker.internal
 
 services:
@@ -34,13 +35,15 @@ services:
     extra_hosts:
     - "host.docker.internal:host-gateway"
 
-  mariadb:
-    image: mariadb:10.11.16-jammy
+  postgres:
+    networks:
+      - backend
+    image: postgres:18.3
+    restart: unless-stopped
     volumes:
-      - mariadb-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql
     environment:
-      - MARIADB_ROOT_PASSWORD=m@ri@dbr00t
-      - MARIADB_DATABASE=certificat
+      - POSTGRES_PASSWORD=pgpassword
 
   redis:
     image: redis:7.2.4

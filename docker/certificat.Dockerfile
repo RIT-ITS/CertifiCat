@@ -8,15 +8,17 @@ RUN apk update && \
     apk add --no-cache \
     curl \
     libstdc++ \
-    gcc \
     musl-dev \
     libffi-dev \
     make \
     mariadb-dev \
     py3-virtualenv \
     nodejs \
-    yarn
+    yarn \
+    compiler-rt \
+    clang
 
+ENV CC=clang
 COPY --from=src ./ /code/
 
 WORKDIR /code/frontend

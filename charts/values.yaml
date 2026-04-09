@@ -62,13 +62,63 @@ secretProviders:
 
           # Certificate finalizer module, initially set to local, supports other 
           # backends like Sectigo
-          finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
+          finalizer: 
+            type: local
+            key: |
+              -----BEGIN RSA PRIVATE KEY-----
+              GENERATE YOUR OWN!
+              -----END RSA PRIVATE KEY-----
+
+            cert: |
+              -----BEGIN CERTIFICATE-----
+              GENERATE YOUR OWN!
+              -----END CERTIFICATE----- 
 
           # Login with "saml" or "local" accounts
-          login_method: "saml"
+          authentication: 
+            type: "saml"
+            debug: False
+            # Maps default attributes released by the InCommon federation
+            # https://incommon.org/federation/attributes/
+
+            # The format is "SAML attribute": "django user field"
+            attribute_mapping:
+              eduPersonPrincipalName: [username]
+              mail: [email]
+              givenName: [first_name]
+              sn: [last_name]
+
+            # Use a discovery service to select an IdP when logging in
+            #discovery:
+            #  service: "https://service.seamlessaccess.org/ds"
+
+            sp:
+              # Provide your entity ID here. A good rule of thumb is
+              # <base_url>/saml2/metadata/
+              # This is constructed by using the hostname and passed as env
+              # entity_id: "https://acme.edu/saml2/metadata/"
+              key_file: "/srv/www/config/sp.key"
+              cert_file: "/srv/www/config/sp.crt"
+            idp:
+              # Provide one or more local xml files for authorized IdPs
+              #local: 
+              #  - "/srv/www/config/local-idp.xml"
+              
+              # Provide one or more remote xml files for authorized IdPs with a 
+              # included signing cert
+              #remote:
+              #  - url: http://identity.acme.edu/metadata
+              #    cert: "/srv/www/config/identity.acme.edu.crt"
+
+              # Use a metadata query service verified by a signing cert
+              mdq: 
+                - url: "http://mdq.incommon.org"
+                  cert: "/srv/www/config/inc-md-cert-mdq.pem"
+                  freshness_period: "P0Y0M0DT2H0M0S"
 
           # Database connection parameters, defaults to using the embedded database
-          db: 
+          db:
+            type: mysql
             name: certificat
             user: certificat
             # Password is generated in a secret
@@ -79,57 +129,6 @@ secretProviders:
             host: redis-service.certificat
             # Password is generated in a secret
             # password: ""
-
-        saml:
-          debug: False
-          # Maps default attributes released by the InCommon federation
-          # https://incommon.org/federation/attributes/
-
-          # The format is "SAML attribute": "django user field"
-          attribute_mapping:
-            eduPersonPrincipalName: username
-            mail: email
-            givenName: first_name
-            sn: last_name
-
-          # Use a discovery service to select an IdP when logging in
-          #discovery:
-          #  service: "https://service.seamlessaccess.org/ds"
-
-          sp:
-            # Provide your entity ID here. A good rule of thumb is
-            # <base_url>/saml2/metadata/
-            # This is constructed by using the hostname and passed as env
-            # entity_id: "https://acme.edu/saml2/metadata/"
-            key_file: "/srv/www/config/sp.key"
-            cert_file: "/srv/www/config/sp.crt"
-          idp:
-            # Provide one or more local xml files for authorized IdPs
-            #local: 
-            #  - "/srv/www/config/local-idp.xml"
-             
-            # Provide one or more remote xml files for authorized IdPs with a 
-            # included signing cert
-            #remote:
-            #  - url: http://identity.acme.edu/metadata
-            #    cert: "/srv/www/config/identity.acme.edu.crt"
-
-            # Use a metadata query service verified by a signing cert
-            mdq: 
-              - url: "http://mdq.incommon.org"
-                cert: "/srv/www/config/inc-md-cert-mdq.pem"
-                freshness_period: "P0Y0M0DT2H0M0S"
-                
-        local_finalizer:
-          key: |
-            -----BEGIN RSA PRIVATE KEY-----
-            GENERATE YOUR OWN!
-            -----END RSA PRIVATE KEY-----
-
-          cert: |
-            -----BEGIN CERTIFICATE-----
-            GENERATE YOUR OWN!
-            -----END CERTIFICATE-----  
 
       # Signing cert for InCommon metadata query service      
       inc-md-cert-mdq.pem: |

@@ -6,7 +6,10 @@ HERE="$(dirname "$(readlink -f "$0")")"
 ROOT="$(realpath ${HERE}/../)"
 TAG="certificat:latest"
 
+docker buildx rm catbuilder &>/dev/null || true
+docker buildx create --name catbuilder --driver docker-container --use
 docker buildx build \
+    --platform linux/amd64,linux/arm64 \
     --build-arg CERTIFICAT_VERSION="${APP_VERSION}" \
     --build-context "src=${ROOT}/src/" \
     --build-context "dockerfiles=${ROOT}/docker/certificat" \

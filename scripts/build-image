@@ -13,5 +13,5 @@ docker buildx build \
     --build-arg CERTIFICAT_VERSION="${APP_VERSION}" \
     --build-context "src=${ROOT}/src/" \
     --build-context "dockerfiles=${ROOT}/docker/certificat" \
-    -f "${ROOT}/docker/certificat.Dockerfile" . --tag "${TAG}" "$@"
+    -f "${ROOT}/docker/certificat.Dockerfile" --push . --tag "${TAG}" "$@"
     

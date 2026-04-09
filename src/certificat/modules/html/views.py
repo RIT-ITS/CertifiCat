@@ -66,7 +66,8 @@ class IndexView(ViewBase):
         recent_orders = (
             Order.objects.by_user(request.user)
             .order_by("-created_at")
-            .prefetch_related("identifiers")[:10]
+            .prefetch_related("identifiers")
+            .distinct()[:10]
         )
         recent_certificates = Certificate.objects.all().order_by("-created_at")[:10]
 
@@ -184,7 +185,7 @@ class AccountsView(ViewBase):
             .select_related("bound_to", "creator")
             .prefetch_related("group_scopes", "group_scopes__group")
             .order_by("-created_at")
-        )
+        ).distinct()
 
         filter = self.request.GET.get("filter")
         if filter:

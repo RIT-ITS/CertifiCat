@@ -57,6 +57,7 @@ export class EditableTextElement extends LitElement {
             }catch{
                 value.contentEditable = "true";
             }
+            value.removeEventListener("beforeinput", this.cancelInput);
             value.focus();
         });
     };
@@ -70,12 +71,14 @@ export class EditableTextElement extends LitElement {
     };
 
     private transitionToReadonly = () => {
-        this.classList.remove("editing");
         this.editMode = false;
         this.editableElements().forEach((value) => {
             value.contentEditable = "false";
         });
+        this.classList.remove("editing");
     };
+
+    private cancelInput = (e:InputEvent) => e.preventDefault();
 
     private save = async () => {
         if (this.saving) return;
@@ -83,7 +86,7 @@ export class EditableTextElement extends LitElement {
 
         var body: { [key: string]: string } = {};
         this.editableElements().forEach((value, key) => {
-            value.contentEditable = "false";
+            value.addEventListener("beforeinput", this.cancelInput);
             body[key] = value.innerText = value.innerText.trim();
         });
 

@@ -212,6 +212,11 @@ new-account-form-manager {
     display: unset;
 }
 
+.subtext {
+    opacity: .8;
+    font-size: .9em;
+}
+
 editable-text {
     &.editing {
         margin: calc(-.25rem - 1px);
@@ -230,7 +235,7 @@ editable-text {
 
         >.edit-wrap {
             margin-bottom: 0;
-            max-width: 400px;
+            max-width: 600px;
         }
 
         .cancel {
@@ -258,7 +263,6 @@ editable-text {
             border-top: 1px solid var(--gray-color--400);
             border-bottom: 2px solid var(--primary-color);
         }
-
 
         display: block;
         margin-bottom: 1em;

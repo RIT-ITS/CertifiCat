@@ -100,6 +100,7 @@ class AccountBindingManager(models.Manager):
         if user.is_superuser:
             return self
 
+        # TODO: Add owner clause when owner is added to the schema
         return self.filter(
             models.Q(creator=user) | models.Q(group_scopes__group__in=user.groups.all())
         )

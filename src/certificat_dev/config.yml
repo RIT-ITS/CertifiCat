@@ -58,20 +58,20 @@ certificat:
   trust_proxy_forwarded_proto: True
   
   # MySQL 
-  # db:
-  #   type: mysql
-  #   name: certificat
-  #   user: root
-  #   # provided by env
-  #   # password: ""
-  #   host: mariadb.
+  db:
+    type: mysql
+    name: certificat
+    user: root
+    # provided by env
+    # password: ""
+    host: mariadb.
 
   # Postgres
-  db:
-    type: postgresql
-    name: certificat
-    user: postgres
-    host: postgres.
+  # db:
+  #   type: postgresql
+  #   name: certificat
+  #   user: postgres
+  #   host: postgres.
 
   # SQLite
   # db: 

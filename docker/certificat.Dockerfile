@@ -8,27 +8,21 @@ RUN apk update && \
     apk add --no-cache \
     curl \
     libstdc++ \
-    gcc \        
+    gcc \
     musl-dev \
     libffi-dev \
     make \
     mariadb-dev \
-    py3-virtualenv 
-
-RUN wget $NODE_PACKAGE_URL && \
-    mkdir -p /opt/nodejs && \
-    tar -zxvf *.tar.gz --directory /opt/nodejs --strip-components=1 && \
-    rm *.tar.gz && \
-    ln -s /opt/nodejs/bin/node /usr/local/bin/node && \
-    ln -s /opt/nodejs/bin/npm /usr/local/bin/npm && \
-    npm install --global yarn
+    py3-virtualenv \
+    nodejs \
+    yarn
 
 COPY --from=src ./ /code/
 
 WORKDIR /code/frontend
 
-RUN /opt/nodejs/lib/node_modules/yarn/bin/yarn && \
-    /opt/nodejs/lib/node_modules/yarn/bin/yarn build
+RUN yarn && \
+    yarn build
 
 WORKDIR /code/
 

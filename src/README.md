@@ -54,7 +54,7 @@ Outside of the container, run the `scripts/run-tests` script to run the suite ag
 
 # Releasing a New Version
 
-Check in code and create a tag in the X.Y.Z(-dev1)? tag format. For example:
+Check in code and create a tag that conforms to the ^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)? regex. For example:
 
 1. 1.0.5
 2. 1.14.1

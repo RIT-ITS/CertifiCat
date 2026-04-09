@@ -5,7 +5,6 @@ set -eu
 HERE="$(dirname "$(readlink -f "$0")")"
 ROOT="$(realpath ${HERE}/../)"
 TAGS="$1"
-
 buildctl-daemonless.sh build \
     --frontend dockerfile.v0 \
     --opt filename=certificat.Dockerfile \
@@ -17,4 +16,4 @@ buildctl-daemonless.sh build \
     --opt context:src=local:src \
     --opt platform=linux/amd64,linux/arm64 \
     --opt build-arg:CERTIFICAT_VERSION=${APP_VERSION} \
-    --output type=image,"name=${TAGS}",push=true
+    --output type=image,\"name=${TAGS}\",push=true

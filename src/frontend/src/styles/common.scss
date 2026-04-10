@@ -339,7 +339,8 @@ account-access-manager {
             margin-top: $spacer*.5;
 
             .accessmanager--groupname {
-                flex: 1;
+                flex-shrink: 100;
+                white-space:nowrap;
             }
 
         }

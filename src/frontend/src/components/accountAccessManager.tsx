@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 import { ref, createRef, Ref } from 'lit/directives/ref.js';
 import { customElement, property, state } from "lit/decorators.js";
-import { getErrorMessage } from "../util";
+import { getCsrfToken, getErrorMessage } from "../util";
 import { Task, TaskStatus } from "@lit/task";
 
 interface Group {
@@ -71,6 +71,7 @@ export class AccountAccessManagerElement extends LitElement {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRFToken": getCsrfToken()!,
                 },
                 body: JSON.stringify({
                     "groups": {
@@ -138,6 +139,7 @@ export class AccountAccessManagerElement extends LitElement {
             </div>
             ${this.editMode ?
                 this.loadGroupsTask.render({
+                    pending: this.renderGroupDisplay,
                     complete: (groups) => {
                         if(groups.length > 0) {
                             return html`

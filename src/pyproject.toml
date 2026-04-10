@@ -6,7 +6,7 @@ readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.13"
 dependencies = [
-    "acmev2==0.1.1",
+    "acmev2==0.1.2",
     "asn1==3.2.0",
     "django-cotton>=2.6.1",
     "django==6.0.3",

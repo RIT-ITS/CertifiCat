@@ -6,23 +6,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 . "${SCRIPT_DIR}/.env"
 
-RIT_AUTH="$(printf '%s:%s' "${GL_USER}" "${GL_TOKEN}" | base64 -w 0)"
-GHCR_AUTH="$(printf '%s:%s' "${GHCR_USER}" "${GHCR_TOKEN}" | base64 -w 0)"
-AUTH_FILE="$(mktemp)"
-chmod 0640 "${AUTH_FILE}"
-cat >"$AUTH_FILE" <<EOL
-{
-  "auths": {
-    "registry.code.rit.edu": {
-      "auth": "${RIT_AUTH}" 
-    },
-    "ghcr.io": {
-      "auth": "${GHCR_AUTH}"
-    }
-  }
-}
-EOL
 
-podman pull registry.code.rit.edu/its-operations-public/django-acmev2:${1} --authfile="$AUTH_FILE"
-podman tag registry.code.rit.edu/its-operations-public/django-acmev2:${1} ghcr.io/rit-its/certificat:${1}
-podman push ghcr.io/rit-its/certificat:${1}
+crane auth login registry.code.rit.edu -u "$GL_USER" -p "$GL_TOKEN"
+crane auth login ghcr.io -u "$GHCR_USER" -p "$GHCR_TOKEN"
+crane cp registry.code.rit.edu/its-operations-public/django-acmev2:${1} ghcr.io/rit-its/certificat:${1} 

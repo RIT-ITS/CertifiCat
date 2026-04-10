@@ -10,7 +10,6 @@ from lxml_html_clean import Cleaner
 from certificat.modules.acme import models as db
 from django.db.models import Count, DateField
 from django.utils.dateformat import format
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone, dateparse
 from django.db.models import Func
 from django.views.decorators.cache import cache_page
@@ -77,7 +76,6 @@ def my_groups(request: HttpRequest):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(["POST"])
 def edit_binding(request: HttpRequest, binding_name):
     binding = get_object_or_404(

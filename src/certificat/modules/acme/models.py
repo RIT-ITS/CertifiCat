@@ -1,7 +1,6 @@
 from base64 import urlsafe_b64encode
 import json
 import operator
-import random
 import string
 import secrets
 from enum import Enum
@@ -134,7 +133,8 @@ class AccountBinding(TimestampMixin):
 
         binding = AccountBinding(
             hmac_id="".join(
-                random.choices(cls.KID_ENTROPY, k=app_settings.hmac_id_length)
+                secrets.choice(cls.KID_ENTROPY)
+                for _ in range(app_settings.hmac_id_length)
             ),
             hmac_key=urlsafe_b64encode(
                 secrets.token_bytes(app_settings.hmac_key_length)

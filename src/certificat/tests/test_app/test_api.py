@@ -46,7 +46,7 @@ class TestApi:
         response_dict = response.json()
 
         assert len(response_dict.keys()) == 2
-        assert list(response_dict.values()) == [1, 2]
+        assert sorted(list(response_dict.values())) == [1, 2]
 
     @pytest.mark.django_db
     def test_edit_binding(self, web_client: Client):

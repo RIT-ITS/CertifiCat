@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
+import { getCsrfToken } from "../util";
 
 @customElement("editable-text")
 export class EditableTextElement extends LitElement {
@@ -97,6 +98,7 @@ export class EditableTextElement extends LitElement {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRFToken": getCsrfToken()!,
                 },
                 body: JSON.stringify(body),
                 credentials: "same-origin",

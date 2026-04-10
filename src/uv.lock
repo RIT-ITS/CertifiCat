@@ -20,7 +20,7 @@ wheels = [
 
 [[package]]
 name = "acmev2"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "inject" },
@@ -30,9 +30,9 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/07/60e3a6747cb1b2d3582643e854317d035f23468b5e06f9c16067a5b977f9/acmev2-0.1.1.tar.gz", hash = "sha256:7c9ffcec98685583e8edc56ef87f7a3c387a8dcbc7c8ee7a07a585cf8b09cf85", size = 40376, upload-time = "2025-06-18T15:12:12.296Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/00/77/36b0c7f46ddc09023f55542f3bfec5679a187f2d05b95bbc1dc74695ac25/acmev2-0.1.2.tar.gz", hash = "sha256:f3396cc11276c26558c48cb8a706e42d7e1a288ad4cfffe1dcb7e5c48d53f608", size = 40407, upload-time = "2026-04-10T13:20:57.863Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/2b/696c1c314e500ad16565987e012e62e0af6bc855732e9c1aa06bbf9b3520/acmev2-0.1.1-py3-none-any.whl", hash = "sha256:7baa6e197dc5bfd5c7cd640a691db45a753902e2a7616ebfcb65cb141675bdd9", size = 63261, upload-time = "2025-06-18T15:12:11.3Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/4c/4077b69d95d4dfa10188f388d25672b92300c991a7312ea73c52b7dd0c43/acmev2-0.1.2-py3-none-any.whl", hash = "sha256:65d56ad44b5679b4de69a6978307428dcb06e0785335a096b113b78f136348d3", size = 63258, upload-time = "2026-04-10T13:20:56.98Z" },
 ]
 
 [[package]]
@@ -112,7 +112,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "acmev2", specifier = "==0.1.1" },
+    { name = "acmev2", specifier = "==0.1.2" },
     { name = "asn1", specifier = "==3.2.0" },
     { name = "django", specifier = "==6.0.3" },
     { name = "django-cotton", specifier = ">=2.6.1" },

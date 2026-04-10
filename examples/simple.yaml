@@ -16,7 +16,7 @@ services:
       - "8000:80"
     command: start_server
     volumes:
-      - ./simple:/etc/certificat
+      - ./simple:/etc/certificat:z
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     
@@ -28,7 +28,7 @@ services:
         condition: service_started
     command: start_huey
     volumes:
-      - ./simple:/etc/certificat
+      - ./simple:/etc/certificat:z
     environment:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     extra_hosts:

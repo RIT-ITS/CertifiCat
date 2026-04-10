@@ -150,6 +150,8 @@ class AccountService(IAccountService):
                 return db.Certificate.objects.filter(
                     order__name=resource_id, order__account__name=account_id
                 )
+            case _:
+                return False
 
 
 class OrderService(IOrderService):
@@ -336,7 +338,7 @@ class ChallengeService(IChallengeService):
     def queue_validation(self, chall):
         with transaction.atomic():
             self.update_status(chall, ChallengeStatus.processing)
-            tasks.validate_challenge.validate_challenge_task(chall.id)
+            tasks.validate_challenge.execute_validate_challenge_task(chall.id)
             db.TaggedEvent.record_by_type(
                 db.ChallengeEventType.VALIDATION_QUEUED, db.Challenge, chall.model_id
             )

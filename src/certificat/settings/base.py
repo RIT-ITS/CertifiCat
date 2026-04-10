@@ -13,10 +13,6 @@ __all__ = [
     "APPEND_SLASH",
     "STATIC_URL",
     "STATIC_ROOT",
-    "LOGIN_URL",
-    "LOGIN_REDIRECT_URL",
-    "LOGOUT_REDIRECT_URL",
-    "AUTHENTICATION_BACKENDS",
     "INSTALLED_APPS",
     "MIDDLEWARE",
     "ROOT_URLCONF",
@@ -51,13 +47,7 @@ STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(
 
 SESSION_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
 
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -68,7 +58,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "djangosaml2",
     "huey.contrib.djhuey",
-    "webpack_loader",
     "django_cotton",
     "import_export",
     "certificat.app.CertificatConfig",
@@ -83,6 +72,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "certificat.middleware.CustomHeaderRemoteUserMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "djangosaml2.middleware.SamlSessionMiddleware",
@@ -103,6 +93,8 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "certificat.modules.html.context_processors.nav",
+                "certificat.modules.html.context_processors.settings",
+                "certificat.modules.html.context_processors.version",
             ],
         },
     },

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+. "${SCRIPT_DIR}/.env"
+
+
+crane auth login registry.code.rit.edu -u "$GL_USER" -p "$GL_TOKEN"
+crane auth login ghcr.io -u "$GHCR_USER" -p "$GHCR_TOKEN"
+crane cp registry.code.rit.edu/its-operations-public/django-acmev2:${1} ghcr.io/rit-its/certificat:${1} 

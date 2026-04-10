@@ -86,7 +86,7 @@ export class OrderHistoryElement extends LitElement {
             return html`
                 <div class="history--tablewrap">
                     <table class="table table--light">
-                        <thead class="thead-light">
+                        <thead class="thead--light">
                             <tr>
                                 <th>Event Time</th>
                                 <th>Resource</th>

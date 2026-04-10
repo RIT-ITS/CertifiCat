@@ -1,6 +1,6 @@
-{% load render_bundle from webpack_loader %}
 {% load cache %}
 {% load static %}
+{% load vite %}
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr" xml:lang="en">
@@ -12,32 +12,33 @@
     <meta http-equiv="Content-Language" content="en">
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/vnd.microsoft.icon" />
     <meta charset="UTF-8" />
-    <style>
-        :root {
-            --primary-color: #F76902;
-            --link-color: #C75300;
-            --header-color: #FFF;
-            --header-text-color: #212529;
-        }
-    </style>
-    {% render_bundle 'app' 'css' %}
-    {% render_bundle 'vendor' 'css' %}
+    
+    {% comment %}
+    The next two includes are used during development.
+     - vite_hmr_client includes the hot-reload client
+     - vite_dev_style ensures that at page load the css is loaded before content is rendered. That
+        stops the "flash of unstyled content" you see if css is only loaded through javascript
+    {% endcomment %}
+    {% vite_hmr_client %}
+    {% vite_dev_style 'src/styles/common.scss' %}
+    
+    {% comment %}
+    The default app.ts resource is loaded site-wide. This will also include any CSS resources.
+    {% endcomment %}
+    {% vite_resource 'src/app.ts' %}
 
-    {% if request.user.is_authenticated %}
-    <script>
-        window.user = {
-            'username': '{{ request.user.username }}',
-            'email': '{{ request.user.email }}',
-        };    
-    </script>
+    {% if settings.theming.global_css %}
+    <style>
+        {{ settings.theming.global_css }}
+    </style>
     {% endif %}
 </head>
 
 <body>
-    <mobile-nav id="mobile-menu" class="hidden" trigger="#mobile-navigation-link">
+    <mobile-nav id="mobile-menu" class="mobile-menu--hidden" trigger="#mobile-navigation-link">
         <div class="overlay"></div>
         <div class="links">
-            <ol id="navlinks--mobile" class="row flex-column">
+            <ol id="navlinks--mobile" class="flex flex-col">
                 <li>
                     <a id="close-mobile-navigation-link" aria-label="Close Menu Button" role="button"><i class="fa-solid fa-x fa-sm"></i></a>
                 </li>
@@ -46,14 +47,43 @@
         </div>
     </mobile-nav>
 
-    <sticky-nav id="navigation-row" class="row center">
-        <div id="navigation" class="row">
-            <div class="container row">
+    <sticky-nav id="navigation-row" class="center">
+        <div id="navigation">
+            <div class="container flex">
                 <a id="mobile-navigation-link">
                     <i class="fa fa-bars px-2 py-2 mr-2"></i>
                 </a>
-                <div id="navlogo"></div>
-                <ol id="navlinks" class="row">
+                <a href="/" id="navlogo">
+                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 650 100">
+                        <defs>
+                            <style>
+                            .cls-1 {
+                                fill: var(--body-text-color);
+                            }
+
+                            .cls-2 {
+                                fill: var(--logo-accent-color);
+                            }
+                            </style>
+                        </defs>
+                        <g>
+                            <polygon class="cls-1" points="96.7 18 96.7 93 152.5 93 152.5 79.6 111.5 79.6 111.5 61.6 145.4 61.6 145.4 48.7 111.5 48.7 111.5 32.1 152.5 32.1 152.5 17.9 96.7 18"/>
+                            <polygon class="cls-1" points="301.8 18.3 316.6 18.2 316.6 93 301.8 93 301.8 18.3"/>
+                            <polygon class="cls-1" points="397.8 18.6 412.6 18.5 412.6 93 397.8 93 397.8 18.6"/>
+                            <polygon class="cls-1" points="253.5 32.1 253.5 93 268.5 93 268.5 32.1 290.7 32.1 290.7 17.7 231.9 17.6 231.9 32.1 253.5 32.1"/>
+                            <polygon class="cls-1" points="346.3 92.8 331.5 92.8 331.5 17.9 387.3 17.7 387.3 32 346.3 32 346.3 48.6 379 48.6 379 61.5 346.3 61.5 346.3 92.8"/>
+                            <path class="cls-1" d="M201.2,18.1c22.8,0,23.5,24.4,23.5,24.4,0,19.4-16,23.6-16,23.6l17.8,26.9h-18.2l-15.8-25.5h-12.3v25.5h-15.6V18.2h36.6ZM180.2,32.1v21.6h19.6s8.9.2,8.9-10.8c0,0,1.3-10.8-10.1-10.8h-18.4Z"/>
+                            <path class="cls-1" d="M86.1,65.9c-4.9,16.7-20.5,29.2-39,29.2S6.6,77.1,6.6,55,24.7,14.9,47.1,14.9s34.6,12.8,39.2,30h-16.1c-3.9-9.1-13-15.5-23.5-15.5s-25.6,11.5-25.6,25.6,11.5,25.6,25.6,25.6,19.1-6,23.2-14.7h16.2Z"/>
+                            <g>
+                            <polygon class="cls-2" points="606.2 32.6 606.2 93.4 621.2 93.4 621.2 32.6 643.4 32.6 643.4 18.2 584.6 18 584.6 32.6 606.2 32.6"/>
+                            <path class="cls-2" d="M502.3,66.6c-4.9,16.7-20.5,29.2-39,29.2s-40.6-17.9-40.6-40.1,6.7-25.3,17-32.6,2-6.8,23.6-6.8,16.8,2.1,23.4,6.8c7.6,5.4,13.3,13.4,15.8,22.6h-16.1c-3.9-9.1-13-15.5-23.5-15.5s-25.6,11.5-25.6,25.6,11.5,25.6,25.6,25.6,19.1-6,23.2-14.7h16.2Z"/>
+                            <polygon class="cls-2" points="435.4 4.2 429.1 34.8 454.7 20.1 435.4 4.2"/>
+                            <polygon class="cls-2" points="490.8 4.2 497.1 34.9 471.5 20.1 490.8 4.2"/>
+                            <path class="cls-2" d="M576.6,46.1v47.3h-14.1v-22.7h-36.4v22.2h-13.7v-48.1s.8-28,32.1-28,32.1,28,32.1,28v1.2ZM563,57.9v-9.4c0-18.5-18.5-18.5-18.5-18.5,0,0-18.5,0-18.5,18.5v9.4h37.1Z"/>
+                        </g>
+                    </svg>
+                </a>
+                <ol id="navlinks" class="flex">
                     {% include 'certificat/includes/navigation.html' %}
                 </ol>
                 {% if request.user.is_authenticated %}
@@ -74,12 +104,12 @@
         </div>
     </sticky-nav>
 
-    <div id="headline" class="container mt-5 mb-n2 row">
+    <div id="headline" class="container mb-n2 row">
         <h2 class="bold">{% block headline %}Headline{% endblock %}</h2>
     </div>
 
     <div class="container">
-        <ol class="breadcrumbs row">
+        <ol class="breadcrumbs flex">
             {% for breadcrumb in breadcrumbs.data %}
             <li>
                 {% if breadcrumb.link %}
@@ -96,17 +126,32 @@
     </div>
 
     {% block messages %}
-        <div class="container">{% include 'certificat/includes/messages.html' %}</div>
+        {% if messages %}
+        <div class="container container--messages mt-3">{% include 'certificat/includes/messages.html' %}</div>
+        {% endif %}
     {% endblock %}
 
 
     {% block body %}
     {% endblock %}
 
-    {% render_bundle 'app' 'js' %}
-    {% render_bundle 'vendor' 'js' %}
     <div id="footer">
-       <div class="container">Footer info will go here, like links to contribute, copyright, whatever.</div> 
+       <div class="container mt-3 mb-3 flex">
+            <div class="flex-grow">
+                CertifiCat is developed and distributed by <a href="https://www.rit.edu/">Rochester Institute of Technology</a>.
+                {% if settings.show_version %}
+                <br />
+                <span class='version'>v{{ certificat_version }}</span>
+                {% endif %}
+            </div>
+
+            <div class="ml-2">
+                <a href="https://github.com/RIT-ITS/CertifiCat" class="btn btn--outline btn--white btn--sm btn--github">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M237.9 461.4C237.9 463.4 235.6 465 232.7 465C229.4 465.3 227.1 463.7 227.1 461.4C227.1 459.4 229.4 457.8 232.3 457.8C235.3 457.5 237.9 459.1 237.9 461.4zM206.8 456.9C206.1 458.9 208.1 461.2 211.1 461.8C213.7 462.8 216.7 461.8 217.3 459.8C217.9 457.8 216 455.5 213 454.6C210.4 453.9 207.5 454.9 206.8 456.9zM251 455.2C248.1 455.9 246.1 457.8 246.4 460.1C246.7 462.1 249.3 463.4 252.3 462.7C255.2 462 257.2 460.1 256.9 458.1C256.6 456.2 253.9 454.9 251 455.2zM316.8 72C178.1 72 72 177.3 72 316C72 426.9 141.8 521.8 241.5 555.2C254.3 557.5 258.8 549.6 258.8 543.1C258.8 536.9 258.5 502.7 258.5 481.7C258.5 481.7 188.5 496.7 173.8 451.9C173.8 451.9 162.4 422.8 146 415.3C146 415.3 123.1 399.6 147.6 399.9C147.6 399.9 172.5 401.9 186.2 425.7C208.1 464.3 244.8 453.2 259.1 446.6C261.4 430.6 267.9 419.5 275.1 412.9C219.2 406.7 162.8 398.6 162.8 302.4C162.8 274.9 170.4 261.1 186.4 243.5C183.8 237 175.3 210.2 189 175.6C209.9 169.1 258 202.6 258 202.6C278 197 299.5 194.1 320.8 194.1C342.1 194.1 363.6 197 383.6 202.6C383.6 202.6 431.7 169 452.6 175.6C466.3 210.3 457.8 237 455.2 243.5C471.2 261.2 481 275 481 302.4C481 398.9 422.1 406.6 366.2 412.9C375.4 420.8 383.2 435.8 383.2 459.3C383.2 493 382.9 534.7 382.9 542.9C382.9 549.4 387.5 557.3 400.2 555C500.2 521.8 568 426.9 568 316C568 177.3 455.5 72 316.8 72zM169.2 416.9C167.9 417.9 168.2 420.2 169.9 422.1C171.5 423.7 173.8 424.4 175.1 423.1C176.4 422.1 176.1 419.8 174.4 417.9C172.8 416.3 170.5 415.6 169.2 416.9zM158.4 408.8C157.7 410.1 158.7 411.7 160.7 412.7C162.3 413.7 164.3 413.4 165 412C165.7 410.7 164.7 409.1 162.7 408.1C160.7 407.5 159.1 407.8 158.4 408.8zM190.8 444.4C189.2 445.7 189.8 448.7 192.1 450.6C194.4 452.9 197.3 453.2 198.6 451.6C199.9 450.3 199.3 447.3 197.3 445.4C195.1 443.1 192.1 442.8 190.8 444.4zM179.4 429.7C177.8 430.7 177.8 433.3 179.4 435.6C181 437.9 183.7 438.9 185 437.9C186.6 436.6 186.6 434 185 431.7C183.6 429.4 181 428.4 179.4 429.7z"/></svg>
+                    View on GitHub
+                </a>
+            </div>
+       </div> 
     </div>
 </body>
 

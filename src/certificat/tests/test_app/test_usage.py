@@ -33,7 +33,7 @@ def test_superuser(web_client: Client):
 def test_edit(authenticated_su_web_client: Client):
     text = "This is the new usage!"
 
-    response = authenticated_su_web_client.post(reverse("edit-usage"), {"usage": text})
+    response = authenticated_su_web_client.post(reverse("edit-usage"), {"text": text})
 
     assert response.status_code == 302
     usage = db.Usage.objects.order_by("-created_at").first()
@@ -41,7 +41,7 @@ def test_edit(authenticated_su_web_client: Client):
 
     changed_text = "This is the new changed usage!"
     response = authenticated_su_web_client.post(
-        reverse("edit-usage"), {"usage": changed_text}
+        reverse("edit-usage"), {"text": changed_text}
     )
 
     assert response.status_code == 302

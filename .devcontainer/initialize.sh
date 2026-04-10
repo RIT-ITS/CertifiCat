@@ -15,12 +15,13 @@ IDP_CERT_PATH=".devcontainer/pyidp/idp.crt"
 if [ ! -f "${IDP_KEY_PATH}" ]; then
     echo "Generating pyIdP keypair..."
     mkdir -p ".devcontainer/pyidp"
-    (cd ".devcontainer/pyidp" && openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout "idp.key" -out "idp.crt" -subj "/CN=pyidp.localtest.me" <<< "y")
+    (cd ".devcontainer/pyidp" && openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout "idp.key" -out "idp.crt" -subj "/CN=pyidp.dev.localhost" <<< "y")
 fi
 
 echo """
 # Created by initialize.sh, edits may be lost.
 _DJ_MYSQL_ROOT_PWD=${_DJ_MYSQL_ROOT_PWD:-$(gen-random 10)}
+_DJ_POSTGRES_PWD=${_DJ_POSTGRES_PWD:-$(gen-random 10)}
 _DJ_REDIS_PWD=${_DJ_REDIS_PWD:-$(gen-random 10)}
 _DJ_SECRET_KEY=${_DJ_SECRET_KEY:-$(gen-random 40)}
 _PYIDP_SECRET_KEY=${_PYIDP_SECRET_KEY:-$(gen-random 10)}

@@ -17,10 +17,10 @@
     },
     "python.defaultInterpreterPath": "/usr/local/bin/python",
     "python.autoComplete.extraPaths": [
-        "${workspaceFolder}/.venv/lib/python3.13/site-packages"
+        "${workspaceFolder}/src/.venv/lib/python3.14/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/.venv/lib/python3.13/site-packages"
+        "${workspaceFolder}/src/.venv/lib/python3.14/site-packages"
     ],
     "python.analysis.autoImportCompletions": true,
     

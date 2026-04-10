@@ -2,42 +2,39 @@ FROM python:3.13.3-alpine AS base
 
 FROM base AS builder
 
-ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v22.9.0/node-v22.9.0-linux-x64-musl.tar.gz
+ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v24.14.0/node-v24.14.0-linux-x64-musl.tar.gz
 
 RUN apk update && \
     apk add --no-cache \
     curl \
     libstdc++ \
-    gcc \        
     musl-dev \
     libffi-dev \
     make \
     mariadb-dev \
-    py3-virtualenv 
+    py3-virtualenv \
+    nodejs \
+    yarn \
+    compiler-rt \
+    clang
 
-RUN wget $NODE_PACKAGE_URL && \
-    mkdir -p /opt/nodejs && \
-    tar -zxvf *.tar.gz --directory /opt/nodejs --strip-components=1 && \
-    rm *.tar.gz && \
-    ln -s /opt/nodejs/bin/node /usr/local/bin/node && \
-    ln -s /opt/nodejs/bin/npm /usr/local/bin/npm && \
-    npm install --global yarn
-
+ENV CC=clang
 COPY --from=src ./ /code/
 
 WORKDIR /code/frontend
 
-RUN /opt/nodejs/lib/node_modules/yarn/bin/yarn && \
-    ./node_modules/.bin/webpack --env production 
+RUN yarn && \
+    yarn build
 
 WORKDIR /code/
 
+ARG CERTIFICAT_VERSION
 RUN pip3 install uv && \
+    uv version ${CERTIFICAT_VERSION} && \
     uv build && \
     uv export --no-emit-workspace --no-hashes -o requirements-frozen.txt
 
-ARG GUNICORN_VERSION=21.2.0
-
+ARG GUNICORN_VERSION=25.1.0
 RUN python3 -m venv /venv/ && \
     /venv/bin/pip install \
         --no-cache-dir \

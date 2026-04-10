@@ -1,5 +1,6 @@
 import acme.client
 from certificat.settings.dynamic import ApplicationSettings
+import inject
 import pytest
 from ..helpers import do_challenge, finalize_order
 from ..conftest import NewOrderRet
@@ -11,11 +12,11 @@ from acmev2.models import OrderStatus
 @pytest.mark.django_db
 def test_finalize_local(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
 ):
-    settings.finalizer_module = "certificat.modules.acme.backends.local.LocalFinalizer"
+    settings = inject.instance(ApplicationSettings)
+    settings.finalizer.type = "local"
 
     new_order: NewOrderRet = acme_neworder()
 
@@ -30,10 +31,9 @@ def test_finalize_local(
 @pytest.mark.django_db
 def test_finalize_fail_dispatch_task(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
-):
+):  
     new_order: NewOrderRet = acme_neworder()
 
     order = do_challenge(acme_client, new_order.response)
@@ -52,11 +52,11 @@ def test_finalize_fail_dispatch_task(
 @pytest.mark.django_db
 def test_finalize_mock_sectigo_fail_enroll(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
 ):
-    settings.finalizer_module = (
+    settings = inject.instance(ApplicationSettings)
+    settings.finalizer.module = (
         "certificat.tests.test_acme.finalizer_mocks.FailingEnrollMockSectigoFinalizer"
     )
 
@@ -80,11 +80,11 @@ def test_finalize_mock_sectigo_fail_enroll(
 @pytest.mark.django_db
 def test_finalize_mock_sectigo_fail_get(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
 ):
-    settings.finalizer_module = (
+    settings = inject.instance(ApplicationSettings)
+    settings.finalizer.module = (
         "certificat.tests.test_acme.finalizer_mocks.FailingGetMockSectigoFinalizer"
     )
 
@@ -108,11 +108,11 @@ def test_finalize_mock_sectigo_fail_get(
 @pytest.mark.django_db
 def test_finalize_mock_sectigo_fail_approve(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
 ):
-    settings.finalizer_module = (
+    settings = inject.instance(ApplicationSettings)
+    settings.finalizer.module = (
         "certificat.tests.test_acme.finalizer_mocks.FailingGetMockSectigoFinalizer"
     )
 
@@ -136,11 +136,11 @@ def test_finalize_mock_sectigo_fail_approve(
 @pytest.mark.django_db
 def test_finalize_mock_sectigo_fail_collect(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
 ):
-    settings.finalizer_module = (
+    settings = inject.instance(ApplicationSettings)
+    settings.finalizer.module = (
         "certificat.tests.test_acme.finalizer_mocks.FailingCollectMockSectigoFinalizer"
     )
 
@@ -164,11 +164,11 @@ def test_finalize_mock_sectigo_fail_collect(
 @pytest.mark.django_db
 def test_finalize_mock_sectigo_slow_collect(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
 ):
-    settings.finalizer_module = (
+    settings = inject.instance(ApplicationSettings)
+    settings.finalizer.module = (
         "certificat.tests.test_acme.finalizer_mocks.SlowCollectMockSectigoFinalizer"
     )
 
@@ -194,11 +194,11 @@ def test_finalize_mock_sectigo_slow_collect(
 @pytest.mark.django_db
 def test_flaky_sectigo_api(
     acme_client: acme.client.ClientV2,
-    settings: ApplicationSettings,
     acme_neworder,
     mocker,
 ):
-    settings.finalizer_module = (
+    settings = inject.instance(ApplicationSettings)
+    settings.finalizer.module = (
         "certificat.tests.test_acme.finalizer_mocks.FailingEnrollMockSectigoFinalizer"
     )
 
@@ -216,7 +216,7 @@ def test_flaky_sectigo_api(
     order = db.Order.objects.get(name=order_name)
 
     def resume_finalization(finalizer: str):
-        settings.finalizer_module = finalizer
+        settings.finalizer.module = finalizer
         order.status = OrderStatus.processing
         order.save()
 

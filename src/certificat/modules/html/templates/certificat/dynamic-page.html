@@ -1,0 +1,20 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}
+    {{ display_name }}
+    {% if can_edit %}
+        <a class="btn btn--primary btn--sm" href="{% url edit_route_name %}">Edit &nbsp;<span class="fa-solid fa-edit"></span></a>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+
+<div class="container my-4">
+    {% if text %}
+        {{ text|safe }}
+    {% else %}
+        <p>Your administrators haven't added anything here. Go bug them to set this up!</p>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -26,12 +26,12 @@ export class ConfirmButtonElement extends LitElement {
                     @click=${() => this.showWarning = false}
                     type="button"
                     value="Cancel" 
-                    class="btn btn-secondary btn-primary" />
+                    class="btn btn--secondary btn--primary" />
                 <input
                     .name="${this.name}" 
                     .type="${this.buttonType || "button"}"
                     .value="${this.value}" 
-                    class="btn btn-primary btn-danger" />
+                    class="btn btn--primary btn--danger" />
             `;
         }else{
             return html`
@@ -39,7 +39,7 @@ export class ConfirmButtonElement extends LitElement {
                     @click=${() => this.showWarning = true}
                     type="button"
                     .value="${this.value}" 
-                    class="btn btn-primary btn-danger" />
+                    class="btn btn--primary btn--danger" />
             `;
         }
     }

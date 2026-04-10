@@ -1,7 +1,9 @@
-@use 'theme';
+@use 'lib/theme';
 
 .pagination {
+    justify-self: center;
     display: flex;
+    flex-wrap: wrap;
     padding-left: 0;
     list-style: none;
     border-radius: 0;
@@ -14,22 +16,22 @@
     padding: 0.5rem 0.75rem;
     margin-left: -1px;
     line-height: 1.25;
-    color: theme.$primaryColor;
+    color: var(--primary-color);
     background-color: #fff;
-    border: 1px solid theme.$lightGrayColor;
+    border: 1px solid var(--gray-color--400);
 }
 
 .page-link:hover {
     z-index: 2;
-    color: theme.$bodyTextColor;
+    color: var(--body-text-color);
     text-decoration: none;
-    background-color: theme.$lightGrayColor;
+    background-color: var(--gray-color--400);
 }
 
 .page-link:focus {
     z-index: 3;
     outline: 0;
-    box-shadow: 0 0 0 0.2rem theme.$primaryColor;
+    box-shadow: 0 0 0 0.2rem var(--gray-color--400);
 }
 
 .page-item:first-child .page-link {
@@ -47,14 +49,14 @@
     cursor: auto;
     z-index: 3;
     color: #fff;
-    background-color: theme.$primaryColor;
-    border-color: theme.$primaryColor;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .page-item.disabled .page-link {
-    color: theme.$darkWarmGray;
+    color: var(--gray-color--400);
     pointer-events: none;
     cursor: auto;
     background-color: #fff;
-    border-color: theme.$lightGrayColor
+    border-color: var(--gray-color--400)
 }

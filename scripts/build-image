@@ -1,13 +1,19 @@
 #!/usr/bin/env sh
 
-set -euo pipefail
+set -eu
 
 HERE="$(dirname "$(readlink -f "$0")")"
 ROOT="$(realpath ${HERE}/../)"
-TAG="certificat:latest"
-
-docker buildx build \
-    --build-context "src=${ROOT}/src/" \
-    --build-context "dockerfiles=${ROOT}/docker/certificat" \
-    -f "${ROOT}/docker/certificat.Dockerfile" . --tag "${TAG}" "$@"
-    
+TAGS="$1"
+buildctl-daemonless.sh build \
+    --frontend dockerfile.v0 \
+    --opt filename=certificat.Dockerfile \
+    --local context=${ROOT}/docker \
+    --local dockerfile=${ROOT}/docker \
+    --local dockerfiles=${ROOT}/docker/certificat \
+    --opt context:dockerfiles=local:dockerfiles \
+    --local src=${ROOT}/src/ \
+    --opt context:src=local:src \
+    --opt platform=linux/amd64,linux/arm64 \
+    --opt build-arg:CERTIFICAT_VERSION=${APP_VERSION} \
+    --output type=image,\"name=${TAGS}\",push=true

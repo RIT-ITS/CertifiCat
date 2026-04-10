@@ -1,4 +1,6 @@
 from collections import namedtuple
+import re
+import uuid
 import acme.messages
 from certificat.modules.acme.services import (
     AccountService,
@@ -10,7 +12,11 @@ from certificat.modules.acme.services import (
     OrderService,
 )
 
-from certificat.settings.dynamic import ApplicationSettings, LocalACMESettings
+from certificat.settings.dynamic import (
+    ApplicationSettings,
+    EMSignFinalizerSettings,
+    LocalACMESettings,
+)
 from acmev2.settings import ACMESettings
 import inject
 import pytest
@@ -47,7 +53,7 @@ class TestDirectoryService(DirectoryService):
 
 
 @pytest.fixture(autouse=True)
-def setup():
+def setup(responses):
     import dnsmock
 
     # I have no idea why these are necessary. If they don't exist then DNS resolution
@@ -58,6 +64,11 @@ def setup():
     dnsmock.bind_ip("acme2.localhost", 443, "127.0.0.1")
     dnsmock.bind_ip("acme2.localhost", 80, "127.0.0.1")
     dnsmock.bind_ip("mock.me", 80, "127.0.0.1")
+
+    responses.add_passthru(re.compile(r"^http://acme2\.localhost.*"))
+    responses.add_passthru(re.compile(r"^http://acme\.localhost.*"))
+    responses.add_passthru(re.compile(r"^http://mock\.me.*"))
+    responses.add_passthru(re.compile(r"^https?://localhost.*"))
 
     acme_settings = LocalACMESettings.get(force_reload=True)
     acme_settings.eab_required = False
@@ -141,13 +152,18 @@ def authenticated_su_web_client():
 
 
 @pytest.fixture
-def settings():
+def app_settings():
     return inject.instance(ApplicationSettings)
 
 
 @pytest.fixture
 def acme_settings():
     return inject.instance(ACMESettings)
+
+
+@pytest.fixture
+def emsign_settings():
+    return EMSignFinalizerSettings.get()
 
 
 NewAcctRet = namedtuple("NewAcctRet", ["response", "binding", "user"])
@@ -216,3 +232,43 @@ def gen_acme_client():
         acme.client.messages.Directory.from_json(directory_service.get_directory()),
         net=net,
     )
+
+
+@pytest.fixture
+def gen_bound_client():
+    def wrapped():
+        user = helpers.gen_user()
+        binding = db.AccountBinding.generate(
+            user, name=uuid.uuid4().hex.upper()[0:6], note=uuid.uuid4().hex.upper()[0:6]
+        )
+
+        rsa_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        account_key = josepy.JWKRSA(key=rsa_key)
+
+        net = acme.client.ClientNetwork(account_key, user_agent="certificat.tests")
+        net.session.mount(f"{ROOT_URL}/acme/", LocalACMEAdapter())
+        directory_service = inject.instance(IDirectoryService)
+
+        acme_client = acme.client.ClientV2(
+            acme.client.messages.Directory.from_json(directory_service.get_directory()),
+            net=net,
+        )
+
+        account_public_key = acme_client.net.key.public_key()
+        eab = acme.client.messages.ExternalAccountBinding.from_data(
+            account_public_key=account_public_key,
+            kid=binding.hmac_id,
+            hmac_key=binding.hmac_key,
+            directory=acme_client.directory,
+        )
+
+        registration = acme.client.messages.NewRegistration.from_data(
+            email="email@acme.edu" if not user else user.email,
+            terms_of_service_agreed=True,
+            external_account_binding=eab,
+        )
+
+        acct = acme_client.new_account(registration)
+        return acme_client, acct, user
+
+    return wrapped

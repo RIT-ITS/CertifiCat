@@ -36,8 +36,6 @@ class CertificatConfig(AppConfig):
             CertService,
         )
 
-        import inject
-
         # Re-binds instances to the injector. Since it can only happen once
         # it needs to get the settings bindings and re-apply them.
         bindings = settings_bindings + [
@@ -76,8 +74,11 @@ def add_db_prefix(sender, **kwargs):
     from certificat.settings.dynamic import ApplicationSettings
 
     settings = inject.instance(ApplicationSettings)
-    if settings.db.table_prefix:
-        sender._meta.db_table = settings.db.table_prefix + sender._meta.db_table
+    try:
+        if settings.db.table_prefix:
+            sender._meta.db_table = settings.db.table_prefix + sender._meta.db_table
+    except AttributeError:
+        pass
 
 
 class_prepared.connect(add_db_prefix)

@@ -28,7 +28,7 @@ The standard way to expose the services is through Traefik. If you don't already
 
 docker-compose -f .devcontainer/traefik.yml up --detach
 
-Then navigate to https://certificat.localtest.me
+Then navigate to https://certificat.dev.localhost
 
 4. Enter secret pyIdP key when prompted
 Secret Key: ${_PYIDP_SECRET_KEY}

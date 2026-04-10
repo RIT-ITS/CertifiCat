@@ -7,9 +7,9 @@ import "./styles/hljs.scss";
 import "./styles/hljs-copy.scss";
 import hljs from 'highlight.js/lib/core';
 // @ts-ignore
-import * as hljsCopy from 'highlightjs-copy';
+import CopyButtonPlugin from 'highlightjs-copy';
 
 import bash from 'highlight.js/lib/languages/bash';
 hljs.registerLanguage('bash', bash);
 (window as any).hljs = hljs;
-(window as any).hljsCopyPlugin = hljsCopy;
+(window as any).hljsCopyPlugin = CopyButtonPlugin;

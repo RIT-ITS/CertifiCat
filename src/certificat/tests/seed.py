@@ -2,7 +2,7 @@
 
 """
 Before using this, you have to change the config.yml to make the url_root parameter
-agree with the seed.py domain. Likely you will have to change it to http://certificat.localtest.me
+agree with the seed.py domain. Likely you will have to change it to http://certificat.dev.localhost
 
 If you don't, you will get unauthorized errors
 """
@@ -78,7 +78,7 @@ def new_order(cn: str, sans: list[str], client: acme.client.ClientV2):
 
 def create_cert(client: acme.client.ClientV2, cn: str, sans: list[str]):
     settings = inject.instance(ApplicationSettings)
-    settings.finalizer_module = "certificat.modules.acme.backends.local.LocalFinalizer"
+    settings.finalizer.module = "certificat.modules.acme.backends.local.LocalFinalizer"
 
     order, csr = new_order(cn=cn, sans=sans, client=client)
     ord_id = order.uri.split("/")[-1]
@@ -105,7 +105,7 @@ def run():
         username = fake.user_name() + str(i)
         email = fake.email(domain="acme.edu")
         registration, client, binding, user = new_bound_client(
-            "http://certificat.localtest.me",
+            "http://certificat.dev.localhost",
             user_kwargs={
                 "username": username,
                 "email": email,

@@ -7,11 +7,12 @@ LOGLEVEL='DEBUG'
 
 ROOT="$(realpath ${HERE}/../)"
 SRC_PATH="${ROOT}/src"
-VENV_PATH="${ROOT}/.venv"
+VENV_PATH="${SRC_PATH}/.venv"
 VENV_PYTHON="${VENV_PATH}/bin/python3"
 VENV_PYTEST="${VENV_PATH}/bin/pytest"
 
 export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+export VIRTUAL_ENV="${VENV_PATH}"
 
 function log_output {
   # shellcheck disable=SC2046
@@ -75,12 +76,12 @@ sync_venv() {
 }
 
 start_services() {
-  # Start django, huey, and webpack
+  # Start django, huey, and vite
   start_django="${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py runserver"
   start_huey="${VENV_PATH}/bin/watchmedo auto-restart --directory '${SRC_PATH}' --recursiv --patterns *.py -- ${VENV_PYTHON} ${SRC_PATH}/certificat/manage.py run_huey"
-  start_webpack="cd ${SRC_PATH}/frontend && yarn && ${SRC_PATH}/frontend/node_modules/.bin/webpack --watch"
+  start_vite="cd ${SRC_PATH}/frontend && yarn && yarn dev"
 
-  npx concurrently --handle-input -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_webpack}" --names=django,huey,webpack --kill-others
+  npx concurrently --handle-input -c "#50C878,#FFF600,#2b3a42" "${start_django}" "${start_huey}" "${start_vite}" --names=django,huey,vite --kill-others
 }
 
 manage() {
@@ -100,40 +101,6 @@ build() {
     cd "${SRC_PATH}" &&
       uv build -o "${ROOT}/dist"
   )
-}
-
-bump_version() {
-  PYPROJECT_FILE="${SRC_PATH}/pyproject.toml"
-
-  CURRENT_VERSION="$(tomlq -r ".project.version" "${PYPROJECT_FILE}")"
-  # Makes a version like 2025.5.1746545274
-  # This needs to be a valid python, helm, and docker version
-  NEW_VERSION=$(date '+%Y.%-m.%s')
-
-  log_info "Current version: ${CURRENT_VERSION}"
-  log_info "Setting new version: ${NEW_VERSION}"
-  sed -i "s/version = \"${CURRENT_VERSION}\"/version = \"${NEW_VERSION}\"/g" "${PYPROJECT_FILE}"
-
-  CHART="${ROOT}/charts/Chart.yaml"
-  yq -yi ".appVersion |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
-  yq -yi ".version |= \"${NEW_VERSION}\"" "${CHART}" &>/dev/null
-
-  # Update uv lock
-  sync_venv
-}
-
-gen_tag() {
-  [ ! -z "$(git status --untracked-files=no --porcelain)" ] && {
-    log_err "Working directory must be clean before creating a new tag."
-    exit 1
-  }
-
-  CHART="${HERE}/../charts/Chart.yaml"
-  NEW_VERSION="$(yq .version "${CHART}" -r)"
-
-  log_info "Creating new git tag. Release changes and start the build pipeline with 'git push <repository> ${NEW_VERSION}'"
-  log_info "You can delete the tag at any time before releasing with 'git tag -d ${NEW_VERSION}"
-  git tag "${NEW_VERSION}"
 }
 
 sync_venv
@@ -169,14 +136,6 @@ gen-bom)
 
 build)
   build "$@"
-  ;;
-
-bump-version)
-  bump_version "$@"
-  ;;
-
-gen-tag)
-  gen_tag "$@"
   ;;
 
 *) usage ;;

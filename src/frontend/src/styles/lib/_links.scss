@@ -1,0 +1,17 @@
+@use 'theme';
+
+a {
+    text-decoration: none;
+}
+
+p a {
+    color: var(--link-color);
+
+    &:hover {
+        text-decoration: underline;
+        text-decoration-thickness: 0.125rem;
+        text-decoration-style: solid;
+        text-underline-offset: 0.125rem;
+        text-decoration-color: var(--body-text-color);
+    }
+}

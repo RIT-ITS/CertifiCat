@@ -4,23 +4,23 @@
 
 {% block body %}
 
-<c-layouts.left-col>
-    <c-slot name="left">
-        <h3 class="icon mb-1 mt-2"><i class="fa-solid fa-cat"></i>Get Started</h3>
+<c-layouts.base>
+    <form-modal 
+        class="new-account-modal"
+        trigger="#add-new-account"
+        header="Create New Account"
+        addButtonText="Create New Account"
+        addButtonName="new-account"
+        autoFocus="#id_name">
         <new-account-form-manager>
-            <form action='.' id='add_new_binding_form' method='post'>
+            <div>
                 {% csrf_token %}
                 {{ new_binding_form }}
 
-                <input 
-                    class="btn btn-primary row-btn mt-2" 
-                    type="submit"
-                    id="new-account-submit" 
-                    name="new-account" 
-                    value="Add New Account">
-            </form>
+                <label><input type="checkbox" required />I agree to the <a href="{% url 'TOS' %}" class="ml-1">terms of service</a></label>
+            </div>
         </new-account-form-manager>
-    </c-slot>
+    </form-modal>
     
     <form action="." id="search_form" method="get">
         <div class="search mb-3">
@@ -28,63 +28,60 @@
                 <i class="fa fa-magnifying-glass icon"></i>
                 <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by name or description" class="search--box" />
             </div>
-            <button class="btn btn-secondary search--button">Search</button>
+            <button class="btn btn--secondary search--button">Search</button>
             {% if request.GET.filter %}
-                <a href="{% url 'ACCOUNTS' %}" class="btn btn-secondary-outline"><i class="fa-solid fa-xmark"></i></a>
+                <a href="{% url 'ACCOUNTS' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
             {% endif %}
+            <a id="add-new-account" class="btn btn--primary search--button ml-3">
+                Create New Account&nbsp;
+                <i class="fa-solid fa-plus"></i>
+            </a>
         </div>
     </form>
 
-    <c-table name="accounts">
+    <c-link-table name="accounts">
         <c-slot name="head">
-            <tr>
-                <th>Created</th>
-                <th>Access</th>                        
-                <th>Description</th>
-                <th>Activated</th>                        
-                <th><!-- edit --></th>
-            </tr>
+            <div class="tr">
+                <div class="th">Created</div>
+                <div class="th">Access</div>                        
+                <div class="th">Description</div>
+                <div class="th">Activated</div>                        
+                <div class="th"><!-- edit --></div>
+            </div>
         </c-slot>
         <c-slot name="body">
             {% for binding in bindings.page %}
-                <tr>
-                    <td class="created_at">
+                <a class="link-row" href="{% url 'account' binding.id %}">
+                    <div class="td shrink-cell">
                         {{ binding.created_at|date:"DATE_FORMAT" }}
-                    </td>
-                    <td class="access">
+                    </div>
+                    <div class="td access">
                         {% for scope in binding.group_scopes.all %}
                             {{ scope.friendly_name }}{% if not forloop.last %}<br />{% endif %}
                         {% empty %}
                             <c-user :user="binding.creator" />
                         {% endfor %}
-                    </td>
-                    <td class="description">
+                    </div>
+                    <div class="td description">
                         <b class="bold">{{ binding.name }}</b>
                         <p>{{ binding.note }}</p>
-                    </td>
-                    <td class="activated">
+                    </div>
+                    <div class="td activated shrink-cell centered">
                         {% if binding.bound_to %}
-                        <i class="fa-solid fa-check"></i>
+                        <i class="fa-solid fa-circle-check"></i>
                         {% endif %}
-                    </td>
-                    <td class="edit row-button">
-                        <a class="btn btn-primary-outline btn-sm" href="{% url 'account' binding.id %}">Manage
-                            &nbsp;<span class="fa-solid fa-angle-right"></span></a>
-                    </td>
-                </tr>
+                    </div>
+                    <div class="td edit large table--row-button shrink-cell" data-text="View">
+                        <span class="fa-solid fa-chevron-right"></span>
+                    </div>
+                </a>
             {% empty %}
-                <tr>
-                    <td colspan="100%">
-                        <p>
-                            No accounts found.
-                        </p>
-                    </td>
-                </tr>
+                <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No accounts found.</div></div>
             {% endfor %}
         </c-slot>
-    </c-table>
+    </c-link-table>
 
-    <div class="row mt-2 center-xs">
+    <div class="row mt-2 centered">
         <c-pagination :page="bindings.page" />
     </div>
 </c-layouts.left-col>

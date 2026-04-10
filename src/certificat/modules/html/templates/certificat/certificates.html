@@ -12,43 +12,42 @@
                 <i class="fa fa-magnifying-glass icon"></i>
                 <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by SAN, separated by ','. Surround each identifier in '/' to use regular expressions." class="search--box" />
             </div>
-            <button class="btn btn-secondary search--button">Search</button>
+            <button class="btn btn--secondary search--button">Search</button>
             {% if request.GET.filter %}
-                <a href="{% url 'CERTIFICATES' %}" class="btn btn-secondary-outline"><i class="fa-solid fa-xmark"></i></a>
+                <a href="{% url 'CERTIFICATES' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
             {% endif %}
         </div>
     </form>
-    <c-table name="certificates">
+    <c-link-table name="certificates">
         <c-slot name="head">
-            <tr>
-                <th>Created</th>
-                <th>Expiration</th>                        
-                <th>SANs</th>                        
-                <th><!-- details --></th>
-            </tr>
+            <div class="tr">
+                <div class="th">Created</div>
+                <div class="th">Expiration</div>                        
+                <div class="th">SANs</div>
+                <div class="th"><!-- edit --></div>
+            </div>
         </c-slot>
         <c-slot name="body">
             {% for cert in certificates.page %}
-                <tr>
-                    <td class="created_at">
+                <a class="link-row" href="{% url 'certificate' cert.id %}">
+                    <div class="td shrink-cell">
                         {{ cert.created_at }}
-                    </td>
-                    <td class="expires">
+                    </div>
+                    <div class="td shrink-cell">
                         {{ cert.metadata.not_valid_after|to_datetime }}
-                    </td>
-                    <td class="sans">
+                    </div>
+                    <div class="td sans">
                         {{ cert.metadata.sans|join:", " }}
-                    </td>
-                    <td class="edit row-button">
-                        <a class="btn btn-primary-outline btn-sm" href="{% url 'certificate' cert.id %}">Details
-                            &nbsp;<span class="fa-solid fa-angle-right"></span></a>
-                    </td>
-                </tr>
+                    </div>
+                    <div class="td edit table--row-button shrink-cell" data-text="View">
+                        <span class="fa-solid fa-chevron-right"></span>
+                    </div>
+                </a>
             {% empty %}
-                <tr><td colspan="100%">No certificates created yet.</td></tr>
+                <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No certificates found.</div></div>
             {% endfor %}
         </c-slot>
-    </c-table>
+    </c-link-table>
     <div class="row mt-2 center-xs">
         <c-pagination :page="certificates.page" />
     </div>

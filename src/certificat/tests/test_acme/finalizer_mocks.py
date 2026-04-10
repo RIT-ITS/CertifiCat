@@ -1,5 +1,7 @@
 import datetime
 from certificat.modules.acme.backends import ErrorResponse
+from certificat.modules.acme.backends.emsign.backend import EMSignBackend
+from certificat.modules.acme.backends.emsign.finalizer import EMSignFinalizer
 from certificat.modules.acme.backends.sectigo import (
     ApproveResponse,
     CollectResponse,
@@ -7,6 +9,11 @@ from certificat.modules.acme.backends.sectigo import (
     GetResponse,
     SectigoFinalizer,
     SectigoBackend,
+)
+from certificat.modules.acme import models as db
+from certificat.modules.acme.backends.emsign.api import (
+    generate_order_schema as generate,
+    Client as EMSignClient,
 )
 
 bundle = """-----BEGIN CERTIFICATE-----
@@ -243,3 +250,23 @@ class SlowCollectMockSectigoFinalizer(SectigoFinalizer):
 class FlakyMockSectigoFinalizer(SectigoFinalizer):
     def __init__(self):
         self.backend = FlakySectigoBackend()
+
+
+class MockEMSignBackend(EMSignBackend):
+    def __init__(self):
+        self.poll_deadline = 1
+
+    def generate_order(self, order: db.Order, pem_csr: str) -> generate.Response:
+        client = EMSignClient()
+        payload = super().generate_order(order, pem_csr)
+        return payload
+
+
+class MockEmsignFinalizer(EMSignFinalizer):
+    def __init__(self):
+        self.backend = MockEMSignBackend()
+
+
+class FailingGetMockEmSignFinalizer(MockEmsignFinalizer):
+    def finalize(self, order: db.Order, pem_csr: str):
+        return super().finalize(order, pem_csr)

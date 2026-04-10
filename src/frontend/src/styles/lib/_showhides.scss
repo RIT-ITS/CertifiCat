@@ -1,0 +1,77 @@
+@use 'theme';
+@use 'spacing' as *;
+
+.showhide{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    
+    padding-right: 10px;
+
+    &:not(:last-of-type) {
+        border-bottom: 1px solid var(--neutral-cool-color--100);
+    }
+
+    >input[type="checkbox"], >input[type="radio"] {
+        display: none;
+
+        &:checked + label + .showhide-content {
+            position: unset;
+            width: 100%;
+            top: unset;
+            transform: translateY(0);
+            position: unset;
+            opacity: 1;
+            pointer-events: all;
+            transition: all 100ms ease-in-out 25ms;
+        }
+
+        &:checked + label {
+            &::before {
+                opacity: 1;
+                transition: opacity 100ms ease-in-out 25ms;
+            }
+            &::after {
+                content: '\f056';
+            }
+        }
+    }
+
+    
+    >label {
+        padding: $spacer*1.5;
+        cursor: pointer;
+
+        &::before {
+            content: '';
+            position: absolute;
+            opacity: 0;
+            background-color: var(--primary-color);
+            top: 0px;
+            bottom: -1px;
+            right: 0px;
+            width: 10px;
+            z-index: 1;
+        }
+        
+        &::after {
+            content: '\f055';
+            color: var(--primary-color);
+            font-family: "Font Awesome 6 Free";
+            position: absolute;
+            right: calc(10px + $spacer);
+        }
+    }
+
+    .showhide-content {
+        transform: translateY(-10px);
+        position:absolute;
+        padding: 0 $spacer*1.5 $spacer $spacer*1.5;
+        
+        top:-99999px;
+        opacity: 0;
+        order: 10;
+        
+        pointer-events: none;
+    }
+}

@@ -10,7 +10,6 @@ from lxml_html_clean import Cleaner
 from certificat.modules.acme import models as db
 from django.db.models import Count, DateField
 from django.utils.dateformat import format
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone, dateparse
 from django.db.models import Func
 from django.views.decorators.cache import cache_page
@@ -23,11 +22,23 @@ class TruncDayNaive(Func):
     the graph using this to have that level of fidelity anyway.
     """
 
-    # TODO: Make sure other databases besides MySQL allow this format
-
-    function = "DATE_FORMAT"
-    template = "%(function)s(%(expressions)s, '%%%%Y-%%%%m-%%%%d')"
     output_field = DateField()
+
+    def as_postgresql(self, compiler, connection):
+        return self.as_sql(
+            compiler,
+            connection,
+            template="%(function)s(%(expressions)s)::text",
+            function="DATE",
+        )
+
+    def as_mysql(self, compiler, connection):
+        return self.as_sql(
+            compiler,
+            connection,
+            template="%(function)s(%(expressions)s, '%%%%Y-%%%%m-%%%%d')",
+            function="DATE_FORMAT",
+        )
 
     def convert_value(self, value, expression, connection):
         return dateparse.parse_date(value)
@@ -46,6 +57,7 @@ def cert_activity(request: HttpRequest):
         .annotate(count=Count("id"))
         .values("date", "count")
     )
+
     return JsonResponse(
         {format(item["date"], "Y/m/d"): item["count"] for item in activity},
         safe=False,
@@ -64,7 +76,6 @@ def my_groups(request: HttpRequest):
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(["POST"])
 def edit_binding(request: HttpRequest, binding_name):
     binding = get_object_or_404(

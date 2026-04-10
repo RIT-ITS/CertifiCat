@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
+import { getCsrfToken } from "../util";
 
 @customElement("editable-text")
 export class EditableTextElement extends LitElement {
@@ -57,6 +58,7 @@ export class EditableTextElement extends LitElement {
             }catch{
                 value.contentEditable = "true";
             }
+            value.removeEventListener("beforeinput", this.cancelInput);
             value.focus();
         });
     };
@@ -70,12 +72,14 @@ export class EditableTextElement extends LitElement {
     };
 
     private transitionToReadonly = () => {
-        this.classList.remove("editing");
         this.editMode = false;
         this.editableElements().forEach((value) => {
             value.contentEditable = "false";
         });
+        this.classList.remove("editing");
     };
+
+    private cancelInput = (e:InputEvent) => e.preventDefault();
 
     private save = async () => {
         if (this.saving) return;
@@ -83,7 +87,7 @@ export class EditableTextElement extends LitElement {
 
         var body: { [key: string]: string } = {};
         this.editableElements().forEach((value, key) => {
-            value.contentEditable = "false";
+            value.addEventListener("beforeinput", this.cancelInput);
             body[key] = value.innerText = value.innerText.trim();
         });
 
@@ -94,6 +98,7 @@ export class EditableTextElement extends LitElement {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRFToken": getCsrfToken()!,
                 },
                 body: JSON.stringify(body),
                 credentials: "same-origin",
@@ -128,15 +133,15 @@ export class EditableTextElement extends LitElement {
             const cancelClasses = {
                 'cancel': true,
                 'btn': this.actionButtonDisplay == 'button',
-                'btn-light': this.actionButtonDisplay == 'button',
-                'btn-sm': this.actionButtonDisplay == 'button'
+                'btn--light': this.actionButtonDisplay == 'button',
+                'btn--sm': this.actionButtonDisplay == 'button'
             }
 
             const saveClasses = {
                 'save': true,
                 'btn': this.actionButtonDisplay == 'button',
-                'btn-primary': this.actionButtonDisplay == 'button',
-                'btn-sm': this.actionButtonDisplay == 'button'
+                'btn--primary': this.actionButtonDisplay == 'button',
+                'btn--sm': this.actionButtonDisplay == 'button'
             }
 
             return html`
@@ -160,8 +165,8 @@ export class EditableTextElement extends LitElement {
         } else {
             const editClasses = {
                 'btn': this.editButtonDisplay == 'button',
-                'btn-primary': this.editButtonDisplay == 'button',
-                'btn-sm': this.editButtonDisplay == 'button'
+                'btn--primary': this.editButtonDisplay == 'button',
+                'btn--sm': this.editButtonDisplay == 'button'
             }
 
             return html`

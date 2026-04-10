@@ -2,16 +2,13 @@
 # support local authentication, but we can create a local user for an example.
 
 # docker-compose -f simple.yaml up
-# docker-compose -f simple.yaml exec web /bin/bash
-#   /srv/www/.venv/bin/python /srv/www/manage.py createsuperuser
-# Log in at http://localhost:8000
-# After creating and registering your account:
+# Log in at http://localhost:8000 with admin:admin
 # certbot certonly --standalone --server "http://localhost:8000/directory" -d host.docker.internal
 
 services:
   web:
-    image: ghcr.io/rit-its/certificat:latest
-    restart: always
+    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    restart: unless-stopped
     depends_on:
       mariadb:
         condition: service_started
@@ -24,8 +21,8 @@ services:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     
   tasks:
-    image: ghcr.io/rit-its/certificat:latest
-    restart: always
+    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    restart: unless-stopped
     depends_on:
       mariadb:
         condition: service_started
@@ -38,7 +35,7 @@ services:
     - "host.docker.internal:host-gateway"
 
   mariadb:
-    image: mariadb:10.5.23-focal
+    image: mariadb:10.11.16-jammy
     volumes:
       - mariadb-data:/var/lib/mysql
     environment:

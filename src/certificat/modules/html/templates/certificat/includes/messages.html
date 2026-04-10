@@ -1,17 +1,11 @@
 {% if messages %}
 {% for message in messages %}
 {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
-<div role="contentinfo" class="messages messages--error">
-    {{ message }}
-</div>
+    <c-message type="error">{{ message }}</c-message>
 {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
-<div role="contentinfo" class="messages messages--warning">
-    {{ message }}
-</div>
+    <c-message type="warning">{{ message }}</c-message>
 {% else %}
-<div role="contentinfo" class="messages messages--status">
-    {{ message }}
-</div>
+    <c-message type="success">{{ message }}</c-message>
 {% endif %}
 {% endfor %}
 {% endif %}

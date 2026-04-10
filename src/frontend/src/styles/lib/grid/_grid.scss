@@ -1,0 +1,79 @@
+// Creds to https://github.com/kristoferjoseph/flexboxgrid
+// No gutters
+// No text alignment with justified container classes (center-xs, for example)
+@use 'mixins/grid-mixins' as grid;
+@use 'variables/grid-variables' as variables;
+@use 'sass:math';
+@use 'sass:list';
+
+.row {
+  @include grid.row();
+  > * {
+    grid-column: span variables.$grid-columns / span variables.$grid-columns;
+  }
+}
+
+.col {
+  @include grid.col();
+}
+
+// Mixin to run inside of for loop - creates col/breakpoint classes * Not for developer use *
+@mixin col-factory($thisPrefix) {
+  .col-#{$thisPrefix} {
+    box-sizing: border-box;
+    flex-grow: 1;
+    flex-basis: 0;
+    max-width: 100%;
+    padding: variables.$gutter;
+  }
+  @for $i from 1 through variables.$grid-columns {
+    .col-#{$thisPrefix}-#{$i} {
+      box-sizing: border-box;
+      @if $i == variables.$grid-columns {
+        grid-column: span $i / span $i;
+        //flex-basis: 100%;
+        //max-width: 100%;
+      }@else{
+        grid-column: span $i / span $i;
+        //flex-basis: calc((math.div(100%, variables.$grid-columns) * $i) - variables.$gutter/2); 
+        //flex: math.div(100%, variables.$grid-columns) * $i;
+        //max-width: calc((math.div(100%, variables.$grid-columns) * $i) - variables.$gutter/2);
+
+      }
+    }
+    .col-#{$thisPrefix}-offset-#{$i} {
+      margin-left: math.div(100%, variables.$grid-columns) * $i;
+    }
+  }
+} // Mixin to run inside of for loop - creates col/breakpoint classes
+
+@for $i from 1 through list.length(variables.$breakpoint-up-prefixes) {
+  $thisPrefix: list.nth(variables.$breakpoint-up-prefixes, $i);
+  @if $thisPrefix == "xs" {
+    @include col-factory($thisPrefix);
+  } @else if $thisPrefix == "sm" {
+    @media #{variables.$breakpoint-sm-up} {
+      @include col-factory($thisPrefix);
+    }
+  } @else if $thisPrefix == "md" {
+    @media #{variables.$breakpoint-md-up} {
+      @include col-factory($thisPrefix);
+    }
+  } @else if $thisPrefix == "lg" {
+    @media #{variables.$breakpoint-lg-up} {
+      @include col-factory($thisPrefix);
+    }
+  } @else if $thisPrefix == "xl" {
+    @media #{variables.$breakpoint-xl-up} {
+      @include col-factory($thisPrefix);
+    }
+  }
+}
+
+.col-gutter-lr {
+    padding: 0 variables.$gutter;
+}
+
+.col-no-gutter {
+    padding: 0;
+}

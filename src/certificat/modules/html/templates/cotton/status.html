@@ -1,13 +1,38 @@
-<span class="chip {% if status == 'valid' %}
-                        chip-success
-                    {% elif status == 'invalid' %}
-                        chip-danger
-                    {% elif status == 'processing' %}
-                        chip-info
-                    {% elif status == 'pending' %}
-                        chip-info
-                    {% else %}
-                        chip-info
-                    {% endif %}">
-    {{ status }}
+<span class="badge--group">
+    <span class="badge {% if status == 'valid' %}
+                            badge--success
+                        {% elif status == 'invalid' %}
+                            badge--error
+                        {% elif status == 'processing' %}
+                            badge--info
+                        {% elif status == 'pending' %}
+                            badge--info
+                        {% else %}
+                            badge--info
+                        {% endif %}">
+        <i class="fa {% if status == 'valid' %}
+                            fa-check
+                        {% elif status == 'invalid' %}
+                            fa-xmark
+                        {% elif status == 'processing' %}
+                            fa-info
+                        {% elif status == 'pending' %}
+                            fa-info
+                        {% else %}
+                            fa-info
+                        {% endif %} icon"></i>
+    </span>
+    <span class="badge badge--outlined {% if status == 'valid' %}
+                            badge--success
+                        {% elif status == 'invalid' %}
+                            badge--error
+                        {% elif status == 'processing' %}
+                            badge--info
+                        {% elif status == 'pending' %}
+                            badge--info
+                        {% else %}
+                            badge--info
+                        {% endif %}">
+        {{ status }}
+    </span>
 </span>

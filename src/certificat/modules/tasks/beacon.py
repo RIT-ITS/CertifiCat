@@ -9,6 +9,7 @@ from importlib.metadata import version
 from certificat.modules.acme import models as db
 import uuid
 import requests
+from django.conf import settings as django_settings
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,8 @@ logger = logging.getLogger(__name__)
 @db_periodic_task(crontab(minute="0", hour="*/12"))
 def send_beacon():
     settings = inject.instance(ApplicationSettings)
+    if django_settings.DEBUG:
+        return
 
     if not settings.beacon_enabled:
         logger.info("Skipping beacon, disabled in settings")

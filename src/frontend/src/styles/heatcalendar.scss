@@ -1,9 +1,17 @@
-@use '_theme';
+@use 'lib/theme';
+@use 'lib/spacing' as *;
+
+activity-graph {
+    --heat-calendar--start-color: #9eeb84;
+    --heat-calendar--end-color: #f9f871;
+}
 
 .heat-calendar {
     --square-size: 15px;
     --square-gap: 5px;
     --week-width: calc(var(--square-size) + var(--square-gap));
+
+    margin: 0 1rem 0 1rem;
 
     display: inline-grid;
     grid-gap: 10px;
@@ -11,6 +19,12 @@
     grid-template-areas: "empty months"
                          "days squares";
     
+    @media(max-width: theme.$smallDesktop) {
+        grid-template-columns: 1fr;
+        grid-template-areas: "months"
+                             "squares";
+    }
+
     * {
         transform:translateY(0);
         opacity: 1;

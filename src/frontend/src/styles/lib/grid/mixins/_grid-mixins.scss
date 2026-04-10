@@ -1,0 +1,123 @@
+@use '../variables/grid-variables' as variables;
+@use 'sass:meta';
+
+@mixin row($full-width: "false") {
+  box-sizing: border-box;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(variables.$grid-columns, minmax(0, 1fr));
+  
+  gap: variables.$gutter;
+}
+
+// Condition to run inside of the col mixin * not for developer use *
+@mixin col-condition($col-number) {
+  @if meta.type-of($col-number) == number {
+    @if $col-number > variables.$grid-columns or $col-number == 0 {
+      @warn "Column number must be greater than 0 and less than or equal to total number of columns in the grid (#{$grid-columns})";
+    } @else {
+      box-sizing: border-box;
+      grid-column: span $col-number / span $col-number;
+    }
+  // If no col number is passed then arg is set to "auto" by default
+  // "auto" mode fills the horizontal space with evenly sized containers
+  } @else if $col-number == "auto" {
+    box-sizing: border-box;
+  } @else {
+    @warn "Column number argument must either be the string 'auto' or a number greater than 0 and less than or equal to total number of columns in the grid (#{$grid-columns})";
+  }
+} // Condition to run inside of the col mixin * not for developer use *
+
+@mixin col($breakpoint: "xs", $col-number: "auto") {
+  // If no breakpoint is passed and a col number is just use the first arg as the col number and act like xs
+  @if meta.type-of($breakpoint) == number {
+    $col-number: $breakpoint;
+    @include col-condition($col-number);
+  } @else if $breakpoint == "xs" {
+    @include col-condition($col-number);
+  } @else if $breakpoint == "sm" {
+    @media #{variables.$breakpoint-sm-up} {
+      @include col-condition($col-number);
+    }
+  } @else if $breakpoint == "md" {
+    @media #{variables.$breakpoint-md-up} {
+      @include col-condition($col-number);
+    }
+  } @else if $breakpoint == "lg" {
+    @media #{variables.$breakpoint-lg-up} {
+      @include col-condition($col-number);
+    }
+  } @else if $breakpoint == "xl" {
+    @media #{variables.$breakpoint-xl-up} {
+      @include col-condition($col-number);
+    }
+  } @else {
+    @warn "col mixin requires one of the existing breakpoint prefixes (#{variables.$breakpoint-up-prefixes})";
+  }
+}
+
+// Condition to run inside of the col-offset mixin * not for developer use *
+@mixin col-offset-condition($offset-number) {
+  @if meta.type-of($offset-number) != number {
+    @warn "Column offset number must be a number (only arg or second arg in the col mixin)";
+  } @else if $offset-number == 0 {
+    @warn "Column offset number must be greater than 0 and less than or equal to total number of columns in the grid (#{$grid-columns})";
+  } @else if $offset-number > variables.$grid-columns {
+    @warn "Column offset number must be greater than 0 and less than or equal to total number of columns in the grid (#{$grid-columns})";
+  } @else {
+    margin-left: 100% / variables.$grid-columns * $offset-number;
+  }
+} // Condition to run inside of the col-offset mixin * not for developer use *
+
+@mixin col-offset($breakpoint: "xs", $offset-number: 0) {
+  // If no breakpoint is passed and a col number is just use the first arg as the col number and act like xs
+  @if meta.type-of($breakpoint) == number {
+    $offset-number: $breakpoint;
+    @include col-offset-condition($offset-number);
+  } @else if $breakpoint == "xs" {
+    @include col-offset-condition($offset-number);
+  } @else if $breakpoint == "sm" {
+    @media #{variables.$breakpoint-sm-up} {
+      @include col-offset-condition($offset-number);
+    }
+  } @else if $breakpoint == "md" {
+    @media #{variables.$breakpoint-md-up} {
+      @include col-offset-condition($offset-number);
+    }
+  } @else if $breakpoint == "lg" {
+    @media #{variables.$breakpoint-lg-up} {
+      @include col-offset-condition($offset-number);
+    }
+  } @else if $breakpoint == "xl" {
+    @media #{variables.$breakpoint-xl-up} {
+      @include col-offset-condition($offset-number);
+    }
+  } @else {
+    @warn "col mixin requires one of the existing breakpoint prefixes (#{variables.$breakpoint-up-prefixes})";
+  }
+}
+
+@mixin center($breakpoint: "xs") {
+  @if $breakpoint == "xs" {
+    justify-content: center;
+  } @else if $breakpoint == "sm" {
+    @media #{variables.$breakpoint-sm-up} {
+      justify-content: center;
+    }
+  } @else if $breakpoint == "md" {
+    @media #{variables.$breakpoint-md-up} {
+      justify-content: center;
+    }
+  } @else if $breakpoint == "lg" {
+    @media #{variables.$breakpoint-lg-up} {
+      justify-content: center;
+    }
+  } @else if $breakpoint == "xl" {
+    @media #{variables.$breakpoint-xl-up} {
+      justify-content: center;
+    }
+  } @else {
+    @warn "center mixin arg must be one of the existing breakpoints (#{variables.$breakpoint-up-prefixes})";
+  }
+}

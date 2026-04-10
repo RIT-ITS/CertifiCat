@@ -14,6 +14,4 @@ inject.configure(
 )
 
 # Don't move this, the DI container must be configured before settings are accessed.
-# Is using the DI container for settings wise? I don't know.
-
 from .all import *  # noqa: F403, E402

@@ -1,4 +1,5 @@
 from .base import *  # noqa: F403
+from .auth import *  # noqa: F403
 from .db import *  # noqa: F403
 from .i18n import *  # noqa: F403
 from .cache import *  # noqa: F403

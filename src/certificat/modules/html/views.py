@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse
 from django.views.generic.base import ContextMixin
 from django.views import View
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator, EmptyPage
 from certificat.modules.acme.models import (
     Certificate,
@@ -21,7 +21,7 @@ from certificat.modules.html.forms import (
     TermsOfServiceEditForm,
     UsageEditForm,
 )
-from certificat.settings.dynamic import ApplicationSettings, SAMLSettings
+from certificat.settings.dynamic import ApplicationSettings, RemoteAuthSettings
 from certificat.utils import unprefix_group
 import inject
 from .nav import BreadCrumb, BreadCrumbs, build_breadcrumbs, Sections
@@ -66,7 +66,8 @@ class IndexView(ViewBase):
         recent_orders = (
             Order.objects.by_user(request.user)
             .order_by("-created_at")
-            .prefetch_related("identifiers")[:10]
+            .prefetch_related("identifiers")
+            .distinct()[:10]
         )
         recent_certificates = Certificate.objects.all().order_by("-created_at")[:10]
 
@@ -76,109 +77,96 @@ class IndexView(ViewBase):
         return render(request, "certificat/index.html", context)
 
 
-class UsageView(ViewBase):
-    section = Sections.Usage
-
-    def get_breadcrumbs(self, **kwargs):
-        return build_breadcrumbs("Usage")
-
-    def get(self, request):
-        # TODO: Maybe cache this
-
-        last_usage = Usage.objects.order_by("-created_at").first()
-        parsed_markdown = ""
-        if last_usage:
-            parsed_markdown = markdown.markdown(last_usage.text)
-        context = self.get_context_data(
-            text=parsed_markdown,
-            can_edit=request.user.is_superuser,
-        )
-        return render(request, "certificat/usage.html", context)
-
-
-class EditUsageView(ViewBase):
-    section = Sections.Usage
+class EditDynamicPageView(ViewBase):
+    route_name: str = None
+    display_name: str = None
+    model_klass: type = None
+    edit_form_klass: type = None
 
     def test_func(self):
         return self.request.user.is_superuser
 
     def get_breadcrumbs(self, **kwargs):
-        return build_breadcrumbs(("Usage", reverse(Sections.Usage.value)), "Edit")
-
-    def post(self, request):
-        usage_form = UsageEditForm(request.POST)
-        if usage_form.is_valid():
-            try:
-                usage_form.save(request)
-                messages.success(request, "Successfully saved usage.")
-                return HttpResponseRedirect(reverse("USAGE"))
-            except:  # noqa: E722
-                messages.error(request, "There was an error saving usage.")
-                logger.exception("Error saving usage")
-
-        context = self.get_context_data(form=usage_form)
-        return render(request, "certificat/edit-usage.html", context)
+        return build_breadcrumbs((self.display_name, reverse(self.route_name)), "Edit")
 
     def get(self, request):
-        last_usage = Usage.objects.order_by("-created_at").first()
-        usage_form = UsageEditForm(
-            initial={"usage": last_usage.text if last_usage else ""}, label_suffix=""
-        )
-        context = self.get_context_data(form=usage_form)
-        return render(request, "certificat/edit-usage.html", context)
-
-
-class TermsOfServiceView(ViewBase):
-    section = Sections.TOS
-
-    def get_breadcrumbs(self, **kwargs):
-        return build_breadcrumbs("Terms of Service")
-
-    def get(self, request):
-        last_tos = TermsOfService.objects.order_by("-created_at").first()
-        parsed_markdown = ""
-        if last_tos:
-            parsed_markdown = markdown.markdown(last_tos.text)
-        context = self.get_context_data(
-            text=parsed_markdown,
-            can_edit=request.user.is_superuser,
-        )
-        return render(request, "certificat/terms-of-service.html", context)
-
-
-class EditTermsOfServiceView(ViewBase):
-    section = Sections.TOS
-
-    def test_func(self):
-        return self.request.user.is_superuser
-
-    def get_breadcrumbs(self, **kwargs):
-        return build_breadcrumbs(
-            ("Terms of Service", reverse(Sections.TOS.value)), "Edit"
-        )
-
-    def post(self, request):
-        tos_form = TermsOfServiceEditForm(request.POST)
-        if tos_form.is_valid():
-            try:
-                tos_form.save(request)
-                messages.success(request, "Successfully saved terms of service.")
-                return HttpResponseRedirect(reverse("TOS"))
-            except:  # noqa: E722
-                messages.error(request, "There was an error saving terms of service.")
-                logger.exception("Error saving tos")
-
-        context = self.get_context_data(form=tos_form)
-        return render(request, "certificat/edit-tos.html", context)
-
-    def get(self, request):
-        last_tos = TermsOfService.objects.order_by("-created_at").first()
-        tos_form = TermsOfServiceEditForm(
-            initial={"terms_of_service": last_tos.text if last_tos else ""},
+        last_page = self.model_klass.objects.order_by("-created_at").first()
+        obj_form = self.edit_form_klass(
+            initial={"text": last_page.text if last_page else ""},
             label_suffix="",
         )
-        context = self.get_context_data(form=tos_form)
-        return render(request, "certificat/edit-tos.html", context)
+        context = self.get_context_data(
+            form=obj_form, display_name=self.display_name, route_name=self.route_name
+        )
+        return render(request, "certificat/edit-dynamic-page.html", context)
+
+    def post(self, request):
+        obj_form = self.edit_form_klass(request.POST)
+        if obj_form.is_valid():
+            try:
+                obj_form.save(request)
+                messages.success(request, "Successfully saved edits.")
+                return HttpResponseRedirect(reverse(self.route_name))
+            except:  # noqa: E722
+                messages.error(request, "There was an error saving your edits.")
+                logger.exception("Error saving edits")
+
+        context = self.get_context_data(
+            form=obj_form, display_name=self.display_name, route_name=self.route_name
+        )
+        return render(request, "certificat/edit-dynamic-page.html", context)
+
+
+class DynamicPageView(ViewBase):
+    edit_route_name: str = None
+    display_name: str = None
+    model_klass: type = None
+
+    def get_breadcrumbs(self, **kwargs):
+        return build_breadcrumbs(self.display_name)
+
+    def get(self, request):
+        last_page = self.model_klass.objects.order_by("-created_at").first()
+        parsed_markdown = ""
+        if last_page:
+            parsed_markdown = markdown.markdown(last_page.text)
+
+        context = self.get_context_data(
+            text=parsed_markdown,
+            display_name=self.display_name,
+            edit_route_name=self.edit_route_name,
+            can_edit=request.user.is_superuser,
+        )
+        return render(request, "certificat/dynamic-page.html", context)
+
+
+class UsageView(DynamicPageView):
+    section = Sections.Usage
+    edit_route_name = "edit-usage"
+    display_name = "Usage"
+    model_klass = Usage
+
+
+class EditUsageView(EditDynamicPageView):
+    section = Sections.Usage
+    route_name = "USAGE"
+    display_name = "Usage"
+    model_klass = Usage
+    edit_form_klass = UsageEditForm
+
+
+class TermsOfServiceView(DynamicPageView):
+    section = Sections.TOS
+    edit_route_name = "edit-tos"
+    display_name = "Terms of Service"
+    model_klass = TermsOfService
+
+
+class EditTermsOfServiceView(EditDynamicPageView):
+    route_name = "TOS"
+    display_name = "Terms of Service"
+    model_klass = TermsOfService
+    edit_form_klass = TermsOfServiceEditForm
 
 
 class AccountsView(ViewBase):
@@ -197,7 +185,7 @@ class AccountsView(ViewBase):
             .select_related("bound_to", "creator")
             .prefetch_related("group_scopes", "group_scopes__group")
             .order_by("-created_at")
-        )
+        ).distinct()
 
         filter = self.request.GET.get("filter")
         if filter:
@@ -423,11 +411,17 @@ class CertificateView(ViewBase):
         cert = get_object_or_404(
             Certificate.objects.select_related("order__account__binding"), pk=cert_id
         )
+        user_can_access_binding = False
+        try:
+            user_can_access_binding = cert.order.account.binding.accessible_by(
+                request.user
+            )
+        except AccountBinding.DoesNotExist:
+            user_can_access_binding = False
+
         context = self.get_context_data(
             cert=cert,
-            user_can_access_order=cert.order.account.binding.accessible_by(
-                request.user
-            ),
+            user_can_access_order=user_can_access_binding,
         )
 
         return render(request, "certificat/certificate.html", context)
@@ -466,8 +460,22 @@ def acs_failure(request, exception, status, **kwargs):
         {
             "attributes": attributes,
             "exception": exception,
-            "saml_settings": SAMLSettings.get(),
+            "saml_settings": inject.attr(ApplicationSettings).authentication,
         },
+    )
+
+
+def remote_login_redirect(request, *args, **kwargs):
+    app_settings = inject.instance(ApplicationSettings)
+
+    if app_settings.authentication.type != "remote":
+        raise Exception("What are you doing?")
+
+    redirect_target = request.GET.get("next", "/")
+    remote_auth_settings: RemoteAuthSettings = app_settings.authentication
+
+    return redirect(
+        remote_auth_settings.redirect_template.format(redirect=redirect_target)
     )
 
 

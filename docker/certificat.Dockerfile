@@ -2,8 +2,6 @@ FROM python:3.13.3-alpine AS base
 
 FROM base AS builder
 
-ARG NODE_PACKAGE_URL=https://unofficial-builds.nodejs.org/download/release/v24.14.0/node-v24.14.0-linux-x64-musl.tar.gz
-
 RUN apk update && \
     apk add --no-cache \
     curl \

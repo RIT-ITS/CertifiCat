@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import json
 import time
+import inject
 import requests
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
@@ -93,7 +94,9 @@ class SectigoBackend:
     poll_deadline: int
 
     def __init__(self):
-        ca_settings = dynamic.SectigoSettings.get()
+        ca_settings: dynamic.SectigoFinalizerSettings = inject.instance(
+            dynamic.ApplicationSettings
+        ).finalizer
         self.api_base = ca_settings.api_base
         self.api_password = ca_settings.api_password
         self.api_user = ca_settings.api_user

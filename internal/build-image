@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# shellcheck disable=SC3020
+if ! command -v buildctl-daemonless.sh &> /dev/null; then
+    echo "This script must be run inside the moby/buildkit:rootless container or on a system that has buildctl-daemonless.sh
+
+Official CertifiCat images are hosted at https://github.com/RIT-ITS/CertifiCat/pkgs/container/certificat
+
+Building your own image is unsupported, but you can try it with the following commands run at the root of the repository:
+
+docker run \\
+    -e APP_VERSION=2.0.0 \\
+    -e PLATFORMS="linux/amd64" \\
+    -e OUTPUT="type=docker,name=certificat,dest=/workspace/certificat.tar" \\
+    --rm \\
+    --name buildkitd \\
+    -v`pwd`:/workspace \\
+    --privileged \\
+    --entrypoint=/workspace/internal/build-image \\
+    -it moby/buildkit:rootless local
+
+This will produce a certificat.tar file that you can load with docker or the container runtime of your choice
+
+docker load < certificat.tar
+"
+    exit 1
+fi
+
+HERE="$(dirname "$(readlink -f "$0")")"
+ROOT="$(realpath "${HERE}"/../)"
+TAGS="$1"
+
+PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
+OUTPUT=""${OUTPUT:-type=image,\"name="${TAGS}"\",push=true}
+
+buildctl-daemonless.sh build \
+    --frontend dockerfile.v0 \
+    --opt filename=certificat.Dockerfile \
+    --local context="${ROOT}"/docker \
+    --local dockerfile="${ROOT}"/docker \
+    --local dockerfiles="${ROOT}"/docker/certificat \
+    --opt context:dockerfiles=local:dockerfiles \
+    --local src="${ROOT}"/src/ \
+    --opt context:src=local:src \
+    --opt platform="${PLATFORMS}" \
+    --opt build-arg:CERTIFICAT_VERSION="${APP_VERSION}" \
+    --output "${OUTPUT}"

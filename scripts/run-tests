@@ -149,7 +149,7 @@ run-tests() {
     --mount "type=bind,source=${CONFIG_FILE},target=/etc/certificat/config.yml" \
     --mount "type=bind,source=${ROOT}/,target=/workspaces/certificat" \
     --user 1000 \
-    -it "${TAG}" bash -c '. $HOME/.local/bin/env && /workspaces/certificat/scripts/omnidev test'
+    -it "${TAG}" bash -c '. $HOME/.local/bin/env && /workspaces/certificat/internal/omnidev test'
 }
 
 create-redis-container

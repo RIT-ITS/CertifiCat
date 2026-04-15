@@ -5,7 +5,7 @@ ENV_FILE="${HERE}/.env"
 
 # shellcheck disable=SC1090
 test -f $ENV_FILE && source $ENV_FILE
-sudo ln -sf "${HERE}/../scripts/omnidev" /usr/local/bin/omnidev
+sudo ln -sf "${HERE}/../internal/omnidev" /usr/local/bin/omnidev
 
 cat <<- EOF >/home/vscode/.bashrc
 cat << EOD

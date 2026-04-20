@@ -46,6 +46,7 @@ STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(
 )
 
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_AGE = dynamic_settings.session_cookie_age
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 

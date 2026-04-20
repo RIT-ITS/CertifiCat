@@ -28,14 +28,15 @@ class RemoteUserBackend(BaseRemoteUserBackend):
             ApplicationSettings
         ).authentication
 
-        for header, attribute in remote_auth_settings.attribute_mapping.items():
+        for header, attributes in remote_auth_settings.attribute_mapping.items():
             if header in request.META:
-                try:
-                    setattr(user, attribute, request.META[header])
-                except:  # noqa: E722
-                    logger.exception(
-                        "Error settings attribute %s on user object", attribute
-                    )
+                for attribute in attributes:
+                    try:
+                        setattr(user, attribute, request.META[header])
+                    except:  # noqa: E722
+                        logger.exception(
+                            "Error settings attribute %s on user object", attribute
+                        )
 
         remote_auth_settings: RemoteAuthSettings = inject.instance(
             ApplicationSettings

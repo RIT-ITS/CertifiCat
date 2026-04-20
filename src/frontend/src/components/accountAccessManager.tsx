@@ -143,7 +143,7 @@ export class AccountAccessManagerElement extends LitElement {
                     complete: (groups) => {
                         if(groups.length > 0) {
                             return html`
-                                ${!this.clientIsOwner ? html`<div class='messages messages--info messages-small mb-2'>You are not the owner of this account. If you edit groups you could remove your access to this resource.</div>` : null}
+                                ${!this.clientIsOwner ? html`<div class='message message--info messages-small mb-2'>You are not the owner of this account. If you edit groups you could remove your access to this resource.</div>` : null}
                                 ${this.renderGroupDisplay()}
                                 ${this.renderAdd()}
                             `;
@@ -159,7 +159,7 @@ export class AccountAccessManagerElement extends LitElement {
     protected renderError() {
         const err = (this.loadGroupsTask.error ?? this.modifyGroupsTask.error) as Error | null;
 
-        return err ? html`<div class='messages messages--error messages-small mb-2'>${err.message}</div>` : null;
+        return err ? html`<div class='message message--error message-small mb-2'>${err.message}</div>` : null;
     }
 
     protected renderHeader() {

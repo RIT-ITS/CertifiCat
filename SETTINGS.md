@@ -26,10 +26,12 @@
 | [`certificat.logging.certificat_level`](#certificat-logging-certificat_level) |  | `INFO` | Logging level for the CertifiCat frontend. |
 | [`certificat.logging.django_level`](#certificat-logging-django_level) |  | `INFO` | Logging level for Django components. |
 | [`certificat.logging.huey_level`](#certificat-logging-huey_level) |  | `INFO` | Logging level for the task runner. |
+| [`certificat.logging.root_level`](#certificat-logging-root_level) |  | `INFO` | Logging level for root logger. |
 | [`certificat.redis.host`](#certificat-redis-host) | ✓ | `-` | Host for the redis connection. |
 | [`certificat.redis.password`](#certificat-redis-password) | ✓ | `-` | Password for the Redis connection |
 | [`certificat.redis.port`](#certificat-redis-port) |  | `6379` | Port for the Redis connection |
 | [`certificat.secret_key`](#certificat-secret_key) | ✓ | `-` | Django SECRET_KEY. This should be set to a unique, unpredictable value. |
+| [`certificat.session_cookie_age`](#certificat-session_cookie_age) |  | `480` | Django SESSION_COOKIE_AGE. This is the maximum age of the session cookie in seconds. |
 | [`certificat.show_version`](#certificat-show_version) |  | `false` | Show the version on the website. |
 | [`certificat.task_queue.workers`](#certificat-task_queue-workers) |  | `100` | Number of workers in the Huey task queue. |
 | [`certificat.theming.global_css`](#certificat-theming-global_css) |  | `null` | Global CSS injected into a style tag rendered on every page. |
@@ -48,11 +50,24 @@ This is a polymorphic property controlled by the `type` attribute. Use the follo
 <a id="certificat-authentication-type-remote"></a>
 
 ### `certificat.authentication.type: remote`
-
+```yaml
+certificat:
+  authentication:
+    type: remote
+    administrators:
+      - admin_username
+    user_header: HTTP_USER
+    attribute_mapping:
+      HTTP_MAIL: [email]
+      HTTP_FIRSTNAME: [first_name]
+      HTTP_LASTNAME: [last_name]
+    redirect_template: https://auth.my.edu/authenticate?redirect={redirect}
+```
 | Key | Required | Default | Description |
 | --- | --- | --- | --- |
 | [`certificat.authentication.type`](#certificat-authentication-type) |  | `remote` | - |
 | [`certificat.authentication.administrators`](#certificat-authentication-administrators) |  | `[]` | A list of user principals who will automatically be given administrator privileges on login. |
+| [`certificat.authentication.attribute_mapping`](#certificat-authentication-attribute_mapping) |  | `{"HTTP_USER_EMAIL": ["email"], "HTTP_USER_FIRSTNAME": ["first_name"], "HTTP_USER_LASTNAME": ["last_name"]}` | A dictionary mapping of src:[targets] where attributes are mapped from headers to Django attributes. |
 | [`certificat.authentication.force_logout_if_no_header`](#certificat-authentication-force_logout_if_no_header) |  | `true` | - |
 | [`certificat.authentication.log_http_headers`](#certificat-authentication-log_http_headers) |  | `false` | - |
 | [`certificat.authentication.redirect_template`](#certificat-authentication-redirect_template) | ✓ | `-` | Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource. |
@@ -88,12 +103,15 @@ certificat:
 | --- | --- | --- | --- |
 | [`certificat.authentication.type`](#certificat-authentication-type) |  | `saml` | - |
 | [`certificat.authentication.administrators`](#certificat-authentication-administrators) |  | `[]` | A list of user principals who will automatically be given administrator privileges on login. |
+| [`certificat.authentication.attribute_mapping`](#certificat-authentication-attribute_mapping) |  | `{"eduPersonPrincipalName": ["username"], "eduPersonTargetedID": ["username"], "givenName": ["first_name"], "mail": ["email"], "sn": ["last_name"], "uid": ["username"]}` | A dictionary mapping of src:[target] where attributes are mapped from SAML responses to Django attributes. This is designed to work with a yaml config, not environment variables. |
 | [`certificat.authentication.debug`](#certificat-authentication-debug) |  | `false` | The debug setting for the Django SAML plugin. |
 | [`certificat.authentication.group_attribute`](#certificat-authentication-group_attribute) |  | `memberof` | The name (or translated name) of the group attribute in the returned SAML assertion |
 | [`certificat.authentication.group_sync_prefix`](#certificat-authentication-group_sync_prefix) |  | `SAML/` | New groups synced from SAML will be prefixed with this identifier. |
+| [`certificat.authentication.idp`](#certificat-authentication-idp) | ✓ | `-` | - |
 | [`certificat.authentication.idp.local`](#certificat-authentication-idp-local) |  | `[]` | A list of local metadata files. |
 | [`certificat.authentication.idp.remote`](#certificat-authentication-idp-remote) |  | `[]` | A list of remote metadata providers. |
 | [`certificat.authentication.session_cookie`](#certificat-authentication-session_cookie) |  | `snickerdoodle` | The name of the session cookie. |
+| [`certificat.authentication.sp`](#certificat-authentication-sp) | ✓ | `-` | - |
 | [`certificat.authentication.sp.allow_unsolicited`](#certificat-authentication-sp-allow_unsolicited) |  | `true` | Allow IdP-initiated SSO. |
 | [`certificat.authentication.sp.cert_file`](#certificat-authentication-sp-cert_file) | ✓ | `-` | The location of the PEM-formatted public key file |
 | [`certificat.authentication.sp.digest_algorithm`](#certificat-authentication-sp-digest_algorithm) |  | `http://www.w3.org/2001/04/xmlenc#sha256` | The default digest algorithm |
@@ -102,7 +120,6 @@ certificat:
 | [`certificat.authentication.sp.key_file`](#certificat-authentication-sp-key_file) | ✓ | `-` | The location of the PEM-formatted private key file |
 | [`certificat.authentication.sp.name`](#certificat-authentication-sp-name) |  | `CertifiCat` | The SP name |
 | [`certificat.authentication.sp.signing_algorithm`](#certificat-authentication-sp-signing_algorithm) |  | `http://www.w3.org/2001/04/xmldsig-more#rsa-sha256` | The default signing algorithm. |
-| [`certificat.authentication.xmlsec_binary`](#certificat-authentication-xmlsec_binary) |  | `-` | - |
 
 <a id="certificat-db" name="certificat-db"></a>
 
@@ -119,20 +136,20 @@ This is a polymorphic property controlled by the `type` attribute. Use the follo
 certificat:
   db: 
     type: "mysql"
+    host: "mariadb.my.edu"
     name: "certificat"
     user: "certificat_user"
     password: "super-s3cret-p@ssw0rd"
-    host: "mariadb.my.edu"
-    port: 3306
 ```
 | Key | Required | Default | Description |
 | --- | --- | --- | --- |
 | [`certificat.db.type`](#certificat-db-type) |  | `mysql` | - |
 | [`certificat.db.host`](#certificat-db-host) |  | `null` | Host for the database connection |
 | [`certificat.db.name`](#certificat-db-name) | ✓ | `-` | The database to use after a connection is established. |
+| [`certificat.db.options`](#certificat-db-options) |  | `{}` | Key-value options passed to the driver |
 | [`certificat.db.password`](#certificat-db-password) |  | `null` | Password for the database connection |
 | [`certificat.db.port`](#certificat-db-port) |  | `3306` | - |
-| [`certificat.db.table_prefix`](#certificat-db-table_prefix) |  | `""` | An optional table prefix for every table in the database. |
+| [`certificat.db.table_prefix`](#certificat-db-table_prefix) |  | `` | An optional table prefix for every table in the database. |
 | [`certificat.db.user`](#certificat-db-user) | ✓ | `-` | User for the database connection. |
 
 <a id="certificat-db-type-postgresql"></a>
@@ -142,20 +159,20 @@ certificat:
 certificat:
   db: 
     type: "postgresql"
+    host: "postgres.my.edu"
     name: "certificat"
     user: "certificat_user"
     password: "super-s3cret-p@ssw0rd"
-    host: "mariadb.my.edu"
-    port: 3306
 ```
 | Key | Required | Default | Description |
 | --- | --- | --- | --- |
 | [`certificat.db.type`](#certificat-db-type) |  | `postgresql` | - |
 | [`certificat.db.host`](#certificat-db-host) |  | `null` | Host for the database connection |
 | [`certificat.db.name`](#certificat-db-name) | ✓ | `-` | The database to use after a connection is established. |
+| [`certificat.db.options`](#certificat-db-options) |  | `{}` | Key-value options passed to the driver |
 | [`certificat.db.password`](#certificat-db-password) |  | `null` | Password for the database connection |
 | [`certificat.db.port`](#certificat-db-port) |  | `5432` | - |
-| [`certificat.db.table_prefix`](#certificat-db-table_prefix) |  | `""` | An optional table prefix for every table in the database. |
+| [`certificat.db.table_prefix`](#certificat-db-table_prefix) |  | `` | An optional table prefix for every table in the database. |
 | [`certificat.db.user`](#certificat-db-user) | ✓ | `-` | User for the database connection. |
 
 <a id="certificat-finalizer" name="certificat-finalizer"></a>
@@ -164,19 +181,19 @@ certificat:
 This is a polymorphic property controlled by the `type` attribute. Use the following templates as an example of how to configure different `finalizer` types.
 - Required: `Yes`
 - Description: Which order finalizer module to use. The server is designed to finalize all requests against one backend.
-- Types: [`emsign`](#certificat-finalizer-type-emsign), [`local`](#certificat-finalizer-type-local), [`sectigo`](#certificat-finalizer-type-sectigo)
+- Types: [`certinext`](#certificat-finalizer-type-certinext), [`local`](#certificat-finalizer-type-local), [`sectigo`](#certificat-finalizer-type-sectigo)
 
-<a id="certificat-finalizer-type-emsign"></a>
+<a id="certificat-finalizer-type-certinext"></a>
 
-### `certificat.finalizer.type: emsign`
+### `certificat.finalizer.type: certinext`
 
 | Key | Required | Default | Description |
 | --- | --- | --- | --- |
-| [`certificat.finalizer.type`](#certificat-finalizer-type) |  | `emsign` | - |
+| [`certificat.finalizer.type`](#certificat-finalizer-type) |  | `certinext` | - |
 | [`certificat.finalizer.account_number`](#certificat-finalizer-account_number) | ✓ | `-` | Account number (Org. ID) |
-| [`certificat.finalizer.api_base`](#certificat-finalizer-api_base) |  | `https://localhost/api/` | Base URL of the emSign API |
+| [`certificat.finalizer.api_base`](#certificat-finalizer-api_base) |  | `https://localhost/api/` | Base URL of the CERTInext API |
 | [`certificat.finalizer.auth_key`](#certificat-finalizer-auth_key) | ✓ | `-` | Authorization key for API access |
-| [`certificat.finalizer.poll_deadline`](#certificat-finalizer-poll_deadline) |  | `300` | The finalizer task will continue to poll the EMSign backend to check if the certificate is fulfilled until hitting this deadline in seconds. |
+| [`certificat.finalizer.poll_deadline`](#certificat-finalizer-poll_deadline) |  | `300` | The finalizer task will continue to poll the CertiNext backend to check if the certificate is fulfilled until hitting this deadline in seconds. |
 | [`certificat.finalizer.poll_interval`](#certificat-finalizer-poll_interval) |  | `1` | - |
 | [`certificat.finalizer.prevetted_org_number`](#certificat-finalizer-prevetted_org_number) | ✓ | `-` | Pre-vetted organization id to pair with the pre-vetting token |
 | [`certificat.finalizer.prevetting_token`](#certificat-finalizer-prevetting_token) | ✓ | `-` | Pre-vetting token for automatically submitting an order |
@@ -189,7 +206,7 @@ This is a polymorphic property controlled by the `type` attribute. Use the follo
 <a id="certificat-finalizer-type-local"></a>
 
 ### `certificat.finalizer.type: local`
-```
+```yaml
 certificat:
   finalizer: 
     type: local

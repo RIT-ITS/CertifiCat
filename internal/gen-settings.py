@@ -54,7 +54,7 @@ class SchemaDocGenerator:
                 "| "
                 f"[`{entry.key_path}`](#{self._anchor(entry.key_path)}) | "
                 f"{'✓' if entry.required == 'Yes' else ''} | "
-                f"`{self._extract_default(entry.schema, suppress=self._has_discriminator(entry.schema))}` | "
+                f"{self._extract_default(entry.schema, suppress=self._has_discriminator(entry.schema))} | "
                 f"{self._escape_pipes(self._extract_description(entry.schema) or '-')}"
                 " |"
             )
@@ -115,8 +115,6 @@ class SchemaDocGenerator:
         schema = entry.schema
         discriminator = self._get_discriminator(schema)
         children = self._collect_direct_properties(schema, parent_path=entry.key_path)
-
-        default = self._extract_default(schema, suppress=bool(discriminator))
 
         lines = [
             "",
@@ -194,9 +192,6 @@ class SchemaDocGenerator:
         for child in sorted(
             children, key=lambda child: "" if child.name == "type" else child.key_path
         ):
-            if child.schema.get("type") == "object":
-                continue
-
             default = self._extract_default(
                 child.schema, suppress=self._has_discriminator(child.schema)
             )
@@ -204,7 +199,7 @@ class SchemaDocGenerator:
                 "| "
                 f"[`{child.key_path}`](#{self._anchor(child.key_path)}) | "
                 f"{'✓' if child.required == 'Yes' else ''} | "
-                f"`{'""' if default == '' else default}` | "
+                f"{default} | "
                 f"{self._escape_pipes(self._extract_description(child.schema) or '-')}"
                 " |"
             )
@@ -283,14 +278,14 @@ class SchemaDocGenerator:
 
     def _extract_default(self, schema: dict[str, Any], suppress: bool = False) -> str:
         if suppress:
-            return "-"
+            return "`-`"
         resolved = self._resolve_schema(schema)
         if "default" in resolved:
             default_value = resolved["default"]
             # if isinstance(default_value, (dict, list)):
             #    return "-"
-            return self._format_value(default_value)
-        return "-"
+            return "`" + self._format_value(default_value) + "`"
+        return "`-`"
 
     def _get_discriminator(self, schema: dict[str, Any]) -> dict[str, Any] | None:
         resolved = self._resolve_schema(schema)
@@ -315,6 +310,7 @@ class SchemaDocGenerator:
             return "null"
         if isinstance(value, (dict, list, bool, int, float)):
             return json.dumps(value, sort_keys=True)
+
         return str(value)
 
     @staticmethod

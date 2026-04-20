@@ -241,11 +241,11 @@ class RemoteAuthSettings(BaseModel):
     log_http_headers: bool = False
     attribute_mapping: Mapping[str, List[str]] = Field(
         {
-            "HTTP_USER_EMAIL": "email",
-            "HTTP_USER_FIRSTNAME": "first_name",
-            "HTTP_USER_LASTNAME": "last_name",
+            "HTTP_USER_EMAIL": ["email"],
+            "HTTP_USER_FIRSTNAME": ["first_name"],
+            "HTTP_USER_LASTNAME": ["last_name"],
         },
-        description="A dictionary mapping of src:target where attributes are mapped from headers to Django attributes.",
+        description="A dictionary mapping of src:[targets] where attributes are mapped from headers to Django attributes.",
     )
     redirect_template: str = Field(
         description="Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource.",
@@ -270,9 +270,10 @@ class SAMLAuthSettings(BaseModel):
         False,
         description="The debug setting for the Django SAML plugin.",
     )
-    xmlsec_binary: str = SkipJsonSchema[
-        Field("/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary.")
-    ]
+    xmlsec_binary: SkipJsonSchema[str] = Field(
+        "/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary."
+    )
+
     session_cookie: str = Field(
         "snickerdoodle", description="The name of the session cookie."
     )
@@ -312,24 +313,20 @@ class FinalizerSettings(BaseModel):
     module: str
 
 
-class EMSignFinalizerSettings(FinalizerSettings):
-    model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="EMSIGN__", env_nested_delimiter="__"
-    )
-
-    type: Literal["emsign"] = "emsign"
+class CertiNextFinalizerSettings(FinalizerSettings):
+    type: Literal["certinext"] = "certinext"
     module: SkipJsonSchema[str] = (
-        "certificat.modules.acme.backends.emsign.EMSignFinalizer"
+        "certificat.modules.acme.backends.certinext.CertiNextFinalizer"
     )
 
     @classmethod
     def get(cls) -> Self:
         settings = inject.instance(ApplicationSettings)
-        if settings.finalizer.type == "emsign":
+        if settings.finalizer.type == "certinext":
             return settings.finalizer
 
     api_base: str = Field(
-        "https://localhost/api/", description="Base URL of the emSign API"
+        "https://localhost/api/", description="Base URL of the CERTInext API"
     )
     account_number: str = Field(description="Account number (Org. ID)")
     auth_key: str = Field(description="Authorization key for API access")
@@ -349,7 +346,7 @@ class EMSignFinalizerSettings(FinalizerSettings):
 
     poll_deadline: int = Field(
         60 * 5,
-        description="The finalizer task will continue to poll the EMSign backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
+        description="The finalizer task will continue to poll the CertiNext backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
     )
     poll_interval: int = 1
 
@@ -473,6 +470,10 @@ class ApplicationSettings(Settings):
     secret_key: str = Field(
         description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
     )
+    session_cookie_age: int = Field(
+        60 * 8,
+        description="Django SESSION_COOKIE_AGE. This is the maximum age of the session cookie in seconds.",
+    )
     time_zone: str = Field(
         "America/New_York",
         description="Django time zone, used mostly for date localization.",
@@ -549,14 +550,14 @@ class ApplicationSettings(Settings):
     )
 
     finalizer: Union[
-        SectigoFinalizerSettings, EMSignFinalizerSettings, LocalFinalizerSettings
+        SectigoFinalizerSettings, CertiNextFinalizerSettings, LocalFinalizerSettings
     ] = Field(
         discriminator="type",
         description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
         examples=[
             "local",
             "sectigo",
-            "emsign",
+            "certinext",
         ],
     )
     delete_invalid_orders: bool = Field(
@@ -648,4 +649,5 @@ class ConfigFile(BaseSettings):
         Returns:
             A tuple containing the sources and their order for loading the settings values.
         """
+
         return (init_settings,)

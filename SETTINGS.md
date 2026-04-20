@@ -149,7 +149,6 @@ certificat:
 | [`certificat.db.options`](#certificat-db-options) |  | `{}` | Key-value options passed to the driver |
 | [`certificat.db.password`](#certificat-db-password) |  | `null` | Password for the database connection |
 | [`certificat.db.port`](#certificat-db-port) |  | `3306` | - |
-| [`certificat.db.table_prefix`](#certificat-db-table_prefix) |  | `` | An optional table prefix for every table in the database. |
 | [`certificat.db.user`](#certificat-db-user) | ✓ | `-` | User for the database connection. |
 
 <a id="certificat-db-type-postgresql"></a>
@@ -172,7 +171,6 @@ certificat:
 | [`certificat.db.options`](#certificat-db-options) |  | `{}` | Key-value options passed to the driver |
 | [`certificat.db.password`](#certificat-db-password) |  | `null` | Password for the database connection |
 | [`certificat.db.port`](#certificat-db-port) |  | `5432` | - |
-| [`certificat.db.table_prefix`](#certificat-db-table_prefix) |  | `` | An optional table prefix for every table in the database. |
 | [`certificat.db.user`](#certificat-db-user) | ✓ | `-` | User for the database connection. |
 
 <a id="certificat-finalizer" name="certificat-finalizer"></a>

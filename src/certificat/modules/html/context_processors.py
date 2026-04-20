@@ -13,11 +13,6 @@ def settings(request):
 
 
 def version(request):
-    from importlib.metadata import version
+    from certificat import __version__
 
-    try:
-        certificat_version = version("certificat")
-    except Exception:
-        certificat_version = "0.0.1-dev1"
-
-    return {"certificat_version": certificat_version}
+    return {"certificat_version": __version__}

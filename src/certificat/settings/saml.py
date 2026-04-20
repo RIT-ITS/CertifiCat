@@ -59,7 +59,7 @@ if dynamic_settings.authentication.type == "saml":
                         ),
                     ],
                 },
-                "signing_algorithm": saml_settings.sp.signing_algorthm,
+                "signing_algorithm": saml_settings.sp.signing_algorithm,
                 "digest_algorithm": saml_settings.sp.digest_algorithm,
                 # Mandates that the identity provider MUST authenticate the
                 # presenter directly rather than rely on a previous security context.

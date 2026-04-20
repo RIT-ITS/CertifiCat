@@ -34,7 +34,7 @@ dev-dependencies = [
     "watchdog>=5.0.3",
     "faker>=33.1.0",
     "pytest-cov>=5.0.0",
-    "pytest-responses>=0.5.1"
+    "pytest-responses>=0.5.1",
 ]
 
 

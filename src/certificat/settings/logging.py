@@ -1,7 +1,9 @@
 __all__ = ["LOGGING"]
 
+
 import inject
 from .dynamic import ApplicationSettings
+
 
 dynamic_settings = inject.instance(ApplicationSettings)
 
@@ -40,6 +42,11 @@ LOGGING = {
         },
         "acmev2": {
             "level": dynamic_settings.logging.acmev2_level,
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "root": {
+            "level": dynamic_settings.logging.root_level,
             "handlers": ["console"],
             "propagate": False,
         },

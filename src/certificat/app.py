@@ -1,9 +1,12 @@
 from django.apps import AppConfig
 from certificat.settings import bindings as settings_bindings
 from django.db.models.signals import class_prepared
+from certificat.settings.dynamic import ApplicationSettings
 import inject
 from acmev2.settings import ACMESettings
 import logging
+import os
+from certificat import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -60,12 +63,37 @@ class CertificatConfig(AppConfig):
         certificat.modules.tasks.deferred_task_setup()
 
         acme_settings = inject.instance(ACMESettings)
+        app_settings = inject.instance(ApplicationSettings)
 
-        if not acme_settings.eab_required:
+        if os.environ.get("RUN_MAIN") == "true":
+            if app_settings.beacon_enabled:
+                logger.info(
+                    "A stat-gathering beacon has been enabled. This will send installed version, certificates issued per day, and a non-identifiable guid to RIT for usage data collection. To disable, set beacon_enabled to false in the config."
+                )
+            else:
+                logger.info("Stat-gathering beacon disabled.")
+
+            if not acme_settings.eab_required:
+                logger.warning(
+                    "Forcing external account binding to True. CertifiCat can not run with anonymous account binding. To suppress this message set the acme.eab_required flag to True in your config."
+                )
+                acme_settings.eab_required = True
+
+            try:
+                deprecations = app_settings.get_deprecations()
+                if deprecations:
+                    logger.warning(
+                        "You have deprecated settings. These settings will be removed in the future. Please take action to ensure the service will start when updates are applied."
+                    )
+                    for deprecation in deprecations:
+                        logger.warning(deprecation)
+            except Exception:
+                logger.exception("Error getting setting deprecations")
+
             logger.info(
-                "Forcing external account binding to True. CertifiCat can not run with anonymous account binding. To suppress this message set the acme.eab_required flag to True in your config."
+                "CertifiCat has completed initialization and is ready. Version: "
+                + __version__
             )
-            acme_settings.eab_required = True
 
         return super().ready()
 

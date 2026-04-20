@@ -1,4 +1,4 @@
-from typing import List, Literal, Mapping, Self, Optional, Union
+from typing import List, Literal, Mapping, Self, Optional, Tuple, Type, Union
 
 from pydantic import Field, ValidationError, BaseModel
 from pydantic_settings import (
@@ -11,6 +11,7 @@ import yaml
 from acmev2.settings import ACMESettings
 import multiprocessing
 import inject
+from pydantic.json_schema import SkipJsonSchema
 
 
 class Settings(BaseSettings):
@@ -18,15 +19,15 @@ class Settings(BaseSettings):
 
 
 class DatabaseSettings(BaseModel):
-    type: Literal["none"]
+    type: Literal["none"] = "None"
 
     def to_backend(self):
         raise Exception("Databaser settings were not configured.")
 
 
 class MariaDBDatabaseSettings(BaseModel):
-    type: Literal["mysql"]
-    engine: str = "django.db.backends.mysql"
+    type: Literal["mysql"] = "mysql"
+    engine: SkipJsonSchema[str] = "django.db.backends.mysql"
     name: str = Field(
         description="The database to use after a connection is established."
     )
@@ -34,7 +35,7 @@ class MariaDBDatabaseSettings(BaseModel):
     password: str = Field(None, description="Password for the database connection")
     host: str = Field(None, description="Host for the database connection")
     port: int = 3306
-    options: dict = Field({}, description="Options passed to the driver")
+    options: dict = Field({}, description="Key-value options passed to the driver")
     table_prefix: str = Field(
         "", description="An optional table prefix for every table in the database."
     )
@@ -52,8 +53,8 @@ class MariaDBDatabaseSettings(BaseModel):
 
 
 class PostgresDatabaseSettings(BaseModel):
-    type: Literal["postgresql"]
-    engine: str = "django.db.backends.postgresql"
+    type: Literal["postgresql"] = "postgresql"
+    engine: SkipJsonSchema[str] = "django.db.backends.postgresql"
     name: str = Field(
         description="The database to use after a connection is established."
     )
@@ -61,7 +62,7 @@ class PostgresDatabaseSettings(BaseModel):
     password: str = Field(None, description="Password for the database connection")
     host: str = Field(None, description="Host for the database connection")
     port: int = 5432
-    options: dict = Field({}, description="Options passed to the driver")
+    options: dict = Field({}, description="Key-value options passed to the driver")
     table_prefix: str = Field(
         "", description="An optional table prefix for every table in the database."
     )
@@ -79,10 +80,10 @@ class PostgresDatabaseSettings(BaseModel):
 
 
 class SQLiteDatabaseSettings(BaseModel):
-    type: Literal["sqlite"]
-    engine: str = "django.db.backends.sqlite3"
+    type: Literal["sqlite"] = "sqlite"
+    engine: SkipJsonSchema[str] = "django.db.backends.sqlite3"
     name: str = Field(description="The location of the sqlite database.")
-    options: dict = Field({}, description="Options passed to the driver")
+    options: dict = Field({}, description="Key-value options passed to the driver")
 
     def to_backend(self):
         return {
@@ -100,7 +101,7 @@ class TaskQueueSettings(BaseModel):
 
 
 class CacheSettings(BaseModel):
-    type: Literal["django.core.cache.backends.None"]
+    type: Literal["django.core.cache.backends.None"] = "django.core.cache.backends.None"
 
     def to_backend(self):
         raise Exception("Cache settings were not configured.")
@@ -120,7 +121,7 @@ class RedisCacheSettings(CacheSettings):
 
 
 class LocalMemoryCacheSettings(CacheSettings):
-    type: Literal["local"]
+    type: Literal["local"] = "local"
     backend: str = "django.core.cache.backends.locmem.LocMemCache"
 
     def to_backend(self):
@@ -128,23 +129,34 @@ class LocalMemoryCacheSettings(CacheSettings):
 
 
 class RedisSettings(BaseModel):
-    backend: Literal["django.core.cache.backends.redis.RedisCache"] = (
+    backend: SkipJsonSchema[Literal["django.core.cache.backends.redis.RedisCache"]] = (
         "django.core.cache.backends.redis.RedisCache"
     )
     host: str = Field(description="Host for the redis connection.")
     password: str = Field(description="Password for the Redis connection")
-    port: int = 6379
+    port: int = Field(6379, description="Port for the Redis connection")
 
 
 class LoggingSettings(BaseModel):
-    certificat_level: str | None = "INFO"
-    huey_level: str | None = "INFO"
-    django_level: str | None = "INFO"
-    acmev2_level: str | None = "INFO"
+    certificat_level: str | None = Field(
+        "INFO", description="Logging level for the CertifiCat frontend."
+    )
+    huey_level: str | None = Field(
+        "INFO", description="Logging level for the task runner."
+    )
+    django_level: str | None = Field(
+        "INFO", description="Logging level for Django components."
+    )
+    acmev2_level: str | None = Field(
+        "INFO", description="Logging level for ACME server component."
+    )
+    root_level: str | None = Field("INFO", description="Logging level for root logger.")
 
 
 class ThemeSettings(BaseModel):
-    global_css: str | None = None
+    global_css: str | None = Field(
+        None, description="Global CSS injected into a style tag rendered on every page."
+    )
 
 
 class SAMLSPSettings(BaseModel):
@@ -158,7 +170,7 @@ class SAMLSPSettings(BaseModel):
     cert_file: str = Field(
         description="The location of the PEM-formatted public key file"
     )
-    signing_algorthm: str = Field(
+    signing_algorithm: str = Field(
         "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
         description="The default signing algorithm.",
     )
@@ -192,7 +204,7 @@ class SAMLIdPSettings(BaseModel):
     remote: List[RemoteIdP] = Field(
         [], description="A list of remote metadata providers.", required=False
     )
-    mdq: List[MDQ] = Field(
+    mdq: SkipJsonSchema[List[MDQ]] = Field(
         [], description="A list of metadata query providers.", required=False
     )
 
@@ -214,7 +226,7 @@ class LocalAuthAdminSettings(BaseModel):
 
 
 class LocalAuthSettings(BaseModel):
-    type: Literal["local"]
+    type: Literal["local"] = "local"
     admin: LocalAuthAdminSettings
 
 
@@ -255,11 +267,12 @@ class SAMLAuthSettings(BaseModel):
         return ConfigFile.load(force_reload=force_reload).saml
 
     debug: bool = Field(
-        False, description="The debug setting for the Django SAML plugin."
+        False,
+        description="The debug setting for the Django SAML plugin.",
     )
-    xmlsec_binary: str = Field(
-        "/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary."
-    )
+    xmlsec_binary: str = SkipJsonSchema[
+        Field("/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary.")
+    ]
     session_cookie: str = Field(
         "snickerdoodle", description="The name of the session cookie."
     )
@@ -279,7 +292,7 @@ class SAMLAuthSettings(BaseModel):
 
     sp: SAMLSPSettings
     idp: SAMLIdPSettings
-    discovery: SAMLDiscoverySettings | None = None
+    discovery: SkipJsonSchema[SAMLDiscoverySettings | None] = None
 
     attribute_mapping: Mapping[str, List[str]] = Field(
         {
@@ -295,7 +308,7 @@ class SAMLAuthSettings(BaseModel):
 
 
 class FinalizerSettings(BaseModel):
-    type: Literal["none"]
+    type: Literal["none"] = "none"
     module: str
 
 
@@ -305,7 +318,9 @@ class EMSignFinalizerSettings(FinalizerSettings):
     )
 
     type: Literal["emsign"] = "emsign"
-    module: str = "certificat.modules.acme.backends.emsign.EMSignFinalizer"
+    module: SkipJsonSchema[str] = (
+        "certificat.modules.acme.backends.emsign.EMSignFinalizer"
+    )
 
     @classmethod
     def get(cls) -> Self:
@@ -344,8 +359,10 @@ class SectigoFinalizerSettings(FinalizerSettings):
         validate_default=False, env_prefix="SECTIGO__", env_nested_delimiter="__"
     )
 
-    type: Literal["sectigo"]
-    module: str = "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
+    type: Literal["sectigo"] = "sectigo"
+    module: SkipJsonSchema[str] = (
+        "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
+    )
 
     @classmethod
     def get(cls) -> Self:
@@ -387,8 +404,10 @@ class SectigoFinalizerSettings(FinalizerSettings):
 
 
 class LocalFinalizerSettings(FinalizerSettings):
-    type: Literal["local"]
-    module: str = "certificat.modules.acme.backends.local.LocalFinalizer"
+    type: Literal["local"] = "local"
+    module: SkipJsonSchema[str] = (
+        "certificat.modules.acme.backends.local.LocalFinalizer"
+    )
 
     model_config = SettingsConfigDict(
         validate_default=False, env_prefix="LOCAL_CA__", env_nested_delimiter="__"
@@ -400,50 +419,95 @@ class LocalFinalizerSettings(FinalizerSettings):
         if settings.finalizer.type == "local":
             return settings.finalizer
 
-    key: str = Field(description="PEM-formatted private key for the CA")
+    key: str = Field(
+        description="PEM-formatted private key for the CA",
+    )
     cert: str = Field(description="PEM-formatted public key for the CA")
 
 
 class ApplicationSettings(Settings):
     model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="CERTIFICAT__", env_nested_delimiter="__"
+        validate_default=False,
+        env_prefix="CERTIFICAT__",
+        env_nested_delimiter="__",
     )
 
     @classmethod
     def get(cls, force_reload=False) -> Self:
         return ConfigFile.load(force_reload=force_reload).certificat
 
+    def get_deprecations(self):
+        deprecations = []
+        models: List[Tuple[Settings, Type[Settings], str]] = [
+            (self, ApplicationSettings, "certificat")
+        ]
+
+        while models:
+            curr_model, model_type, prefix = models.pop(0)
+            for field_name, field in model_type.model_fields.items():
+                concrete_field = getattr(curr_model, field_name)
+
+                if issubclass(type(concrete_field), BaseModel):
+                    models.append(
+                        (
+                            concrete_field,
+                            concrete_field.__class__,
+                            f"{prefix}.{field_name}",
+                        )
+                    )
+
+                if field.deprecated and field_name in curr_model.model_fields_set:
+                    deprecations.append(f"{prefix}.{field_name}: {field.deprecated}")
+
+        return deprecations
+
     debug: Optional[bool] = Field(
         False,
         description="Debug mode for the application. This should never be True for production.",
+        deprecated="This field will be removed in a future version and is currently ignored.",
     )
-    proto: Optional[Literal["http", "https"]] = Field("https")
+    proto: Optional[Literal["http", "https"]] = Field(
+        "https",
+        deprecated="This field is unused and will be removed in a future version, protocol is now determined at runtime.",
+    )
     secret_key: str = Field(
         description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
     )
-    time_zone: str = "America/New_York"
+    time_zone: str = Field(
+        "America/New_York",
+        description="Django time zone, used mostly for date localization.",
+    )
     url_root: str = Field(
         description="The url root is used to generate absolute urls to the application.",
         examples=["https://acme.edu"],
     )
-    staticfiles_root: Optional[str] = Field(
+    staticfiles_root: SkipJsonSchema[Optional[str]] = Field(
         None,
         description="Location of static files. This usually doesn't have to be changed.",
         required=False,
     )
-    root_urlconf: Optional[str] = Field(
+    root_urlconf: SkipJsonSchema[Optional[str]] = Field(
         None,
         description="Dotted path to the root urlconfig. This usually doesn't have to be changed.",
         required=False,
     )
 
-    logging: LoggingSettings = LoggingSettings()
+    logging: LoggingSettings = Field(
+        LoggingSettings(), description="Logging levels for CertifiCat components"
+    )
     db: Union[
-        MariaDBDatabaseSettings, PostgresDatabaseSettings, SQLiteDatabaseSettings
-    ] = Field(discriminator="type")
+        MariaDBDatabaseSettings,
+        PostgresDatabaseSettings,
+        SkipJsonSchema[SQLiteDatabaseSettings],
+    ] = Field(
+        discriminator="type",
+        description="Database engine settings.",
+    )
     redis: RedisSettings
-    cache: Optional[Union[RedisCacheSettings, LocalMemoryCacheSettings]] = Field(
-        RedisCacheSettings(), discriminator="type"
+    cache: SkipJsonSchema[Union[RedisCacheSettings, LocalMemoryCacheSettings]] = Field(
+        RedisCacheSettings(),
+        discriminator="type",
+        exclude=True,  # This isn't exposed in documentation for the user
     )
     task_queue: TaskQueueSettings = TaskQueueSettings()
     theming: ThemeSettings = ThemeSettings()
@@ -452,8 +516,11 @@ class ApplicationSettings(Settings):
         False,
         description="Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True.",
     )
-    authentication: Union[SAMLAuthSettings, LocalAuthSettings, RemoteAuthSettings] = (
-        Field(discriminator="type")
+    authentication: Union[
+        SAMLAuthSettings, SkipJsonSchema[LocalAuthSettings], RemoteAuthSettings
+    ] = Field(
+        discriminator="type",
+        description="Authentication settings for the web frontend.",
     )
 
     hmac_id_length: int = Field(
@@ -505,7 +572,7 @@ class ApplicationSettings(Settings):
     healthcheck_allowed_networks: List[str] = Field(
         ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
     )
-    huey_health_file: str = Field("/tmp/huey-ping")
+    huey_health_file: SkipJsonSchema[str] = Field("/tmp/huey-ping")
 
 
 class LocalACMESettings(ACMESettings):
@@ -518,7 +585,7 @@ class ConfigFile(BaseSettings):
     model_config = SettingsConfigDict(validate_default=False, from_attributes=True)
 
     certificat: ApplicationSettings
-    acme: LocalACMESettings = Field(default=ACMESettings())
+    acme: LocalACMESettings = Field(default=ACMESettings(eab_required=True))
 
     @classmethod
     def load(cls, force_reload=False) -> Self:

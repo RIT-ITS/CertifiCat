@@ -1,6 +1,4 @@
 certificat:
-  debug: False
-  proto: "http"
   secret_key: "wanQstjc85VEMRouW8ZQJLeBtdm84W2B"
   time_zone: "America/New_York"
   url_root: "http://localhost:8000"
@@ -10,11 +8,9 @@ certificat:
     user: "root"
     password: "m@ri@dbr00t"
     host: "mariadb."
-    port: 3306
   redis: 
     host: "redis."
     password: "r3d1s"
-    port: 6379
   logging:
     certificat_level: DEBUG
     acmev2_level: DEBUG

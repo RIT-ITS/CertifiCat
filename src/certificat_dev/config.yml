@@ -1,7 +1,6 @@
 certificat:
   # provided by env
   # secret_key: ""
-  debug: True
   show_version: True
   url_root: "https://certificat.dev.localhost"
   finalizer:
@@ -85,8 +84,8 @@ certificat:
     # password: ""
 
   # Uses Redis cache if omitted
-  cache:
-    type: local
+  #cache:
+  #  type: local
 
   # authentication:
   #   type: remote

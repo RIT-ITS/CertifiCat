@@ -28,7 +28,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 SECRET_KEY = dynamic_settings.secret_key
 
-DEBUG = dynamic_settings.debug
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [dynamic_settings.url_root]

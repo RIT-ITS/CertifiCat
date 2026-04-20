@@ -78,7 +78,6 @@ secretProviders:
           # Login with "saml" or "local" accounts
           authentication: 
             type: "saml"
-            debug: False
             # Maps default attributes released by the InCommon federation
             # https://incommon.org/federation/attributes/
 

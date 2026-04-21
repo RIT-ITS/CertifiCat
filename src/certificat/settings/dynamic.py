@@ -36,7 +36,7 @@ class MariaDBDatabaseSettings(BaseModel):
     host: str = Field(None, description="Host for the database connection")
     port: int = 3306
     options: dict = Field({}, description="Key-value options passed to the driver")
-    table_prefix: str = Field(
+    table_prefix: SkipJsonSchema[str] = Field(
         "", description="An optional table prefix for every table in the database."
     )
 
@@ -63,7 +63,7 @@ class PostgresDatabaseSettings(BaseModel):
     host: str = Field(None, description="Host for the database connection")
     port: int = 5432
     options: dict = Field({}, description="Key-value options passed to the driver")
-    table_prefix: str = Field(
+    table_prefix: SkipJsonSchema[str] = Field(
         "", description="An optional table prefix for every table in the database."
     )
 
@@ -232,14 +232,29 @@ class LocalAuthSettings(BaseModel):
 
 class RemoteAuthSettings(BaseModel):
     type: Literal["remote"] = "remote"
-    user_header: str = "HTTP_USER"
+    user_header: str = Field(
+        "HTTP_USER",
+        description="The header that will be used to populate user principal.",
+    )
+    groups_header: str | None = Field(
+        None,
+        description="The header that will be used to populate groups. This is delimited by the groups_header_delimiter setting.",
+    )
+    groups_header_delimiter: str = Field(
+        ";", description="The delimiter used when parsing the groups_header value."
+    )
+    group_sync_prefix: SkipJsonSchema[str] = Field(
+        "REMOTE/",
+        description="New groups synced from remote auth will be prefixed with this identifier.",
+    )
+
     administrators: List[str] = Field(
         [],
         description="A list of user principals who will automatically be given administrator privileges on login.",
     )
     force_logout_if_no_header: bool = True
     log_http_headers: bool = False
-    attribute_mapping: Mapping[str, List[str]] = Field(
+    attribute_mapping: Mapping[str, List[str] | str] = Field(
         {
             "HTTP_USER_EMAIL": ["email"],
             "HTTP_USER_FIRSTNAME": ["first_name"],

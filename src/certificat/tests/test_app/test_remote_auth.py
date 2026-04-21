@@ -41,21 +41,43 @@ class TestRemoteAuth:
 
     @pytest.mark.django_db
     def test_authenticated_with_mappings(self, web_client: Client):
-        headers = {
-            self.USER_HEADER: "remusr",
-            "USER_EMAIL": "remusr@nomail.com",
-            "USER_FIRSTNAME": "First",
-            "USER_LASTNAME": "Last",
+        mappings = {
+            "HTTP_USER_EMAIL": ["email"],
+            "HTTP_USER_FIRSTNAME": ["first_name"],
+            "HTTP_USER_LASTNAME": ["last_name"],
         }
-        response = web_client.get(reverse(Sections.Accounts.value), headers=headers)
+        alt_mappings = {
+            "HTTP_USER_EMAIL": "email",
+            "HTTP_USER_FIRSTNAME": "first_name",
+            "HTTP_USER_LASTNAME": "last_name",
+        }
 
-        assert response.status_code == 200
+        auth_settings: RemoteAuthSettings = ApplicationSettings.get().authentication
 
-        user = response.context["user"]
-        assert user.username == headers[self.USER_HEADER]
-        assert user.first_name == headers["USER_FIRSTNAME"]
-        assert user.last_name == headers["USER_LASTNAME"]
-        assert user.email == headers["USER_EMAIL"]
+        for mapping in [mappings, alt_mappings]:
+            auth_settings.attribute_mapping = mapping
+            web_client.logout()
+            headers = {
+                self.USER_HEADER: "remusr",
+                "USER_EMAIL": "remusr@nomail.com",
+                "USER_FIRSTNAME": "First",
+                "USER_LASTNAME": "Last",
+            }
+            response = web_client.get(reverse(Sections.Accounts.value), headers=headers)
+
+            assert response.status_code == 200
+
+            user = response.context["user"]
+            assert user.username == headers[self.USER_HEADER]
+            assert user.first_name == headers["USER_FIRSTNAME"]
+            assert user.last_name == headers["USER_LASTNAME"]
+            assert user.email == headers["USER_EMAIL"]
+
+            user.first_name = ""
+            user.last_name = ""
+            user.email = ""
+
+            user.save()
 
     @pytest.mark.django_db
     def test_header_removed(self, web_client: Client):
@@ -124,3 +146,55 @@ class TestRemoteAuth:
         )
         user.refresh_from_db()
         assert not user.is_superuser
+
+    @pytest.mark.django_db
+    def test_group_mapping(self, web_client: Client):
+        auth_settings: RemoteAuthSettings = ApplicationSettings.get().authentication
+        auth_settings.groups_header = "HTTP_GROUPS"
+
+        tests = (
+            (
+                r"group1;group2;weird\;group;group4",
+                ["group1", "group2", "weird;group", "group4"],
+            ),
+            (
+                "group1;group2",
+                [
+                    "group1",
+                    "group2",
+                ],
+            ),
+            (
+                "group1",
+                [
+                    "group1",
+                ],
+            ),
+            (
+                "group1;",
+                [
+                    "group1",
+                ],
+            ),
+            (
+                "",
+                [],
+            ),
+        )
+
+        username = "remusr"
+        for header_val, groups in tests:
+            web_client.get(
+                reverse(Sections.Accounts.value),
+                headers={
+                    self.USER_HEADER: username,
+                    "GROUPS": header_val,
+                },
+            )
+
+            user = User.objects.get(username=username)
+
+            assert sorted([g.name for g in user.groups.all()]) == sorted(
+                [f"{auth_settings.group_sync_prefix}{g}" for g in groups]
+            )
+            web_client.logout()

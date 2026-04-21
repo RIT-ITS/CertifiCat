@@ -34,8 +34,14 @@ class CustomHeaderRemoteUserMiddleware(RemoteUserMiddleware):
             if self.app_settings.authentication.log_http_headers:
                 logger.info(
                     "Logging headers starting with HTTP_: %s",
-                    sorted(
-                        {k: v for k, v in request.META.items() if k.startswith("HTTP_")}
+                    dict(
+                        sorted(
+                            {
+                                k: v
+                                for k, v in request.META.items()
+                                if k.startswith("HTTP_")
+                            }.items()
+                        )
                     ),
                 )
 

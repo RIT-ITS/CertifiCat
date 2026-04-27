@@ -6,7 +6,6 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from certificat.utils import unprefix_group
-from lxml_html_clean import Cleaner
 from certificat.modules.acme import models as db
 from django.db.models import Count, DateField
 from django.utils.dateformat import format
@@ -87,9 +86,6 @@ def edit_binding(request: HttpRequest, binding_name):
         return HttpResponse(status=403)
 
     request_json = json.loads(request.body)
-    cleaner = Cleaner()
-    cleaner.javascript = True
-    cleaner.style = True
 
     if "name" in request_json:
         binding.name = request_json.get("name")

@@ -1,4 +1,7 @@
+from functools import reduce
 from os import path
+
+import urllib
 from .dynamic import ApplicationSettings, SAMLAuthSettings
 import inject
 import saml2
@@ -41,7 +44,14 @@ if dynamic_settings.authentication.type == "saml":
                     # do not change the binding or service name
                     "assertion_consumer_service": [
                         (
-                            f"{dynamic_settings.url_root}/saml2/acs/",
+                            reduce(
+                                urllib.parse.urljoin,
+                                [
+                                    dynamic_settings.url_root,
+                                    dynamic_settings.web_ui_mountpoint,
+                                    "saml2/acs/",
+                                ],
+                            ),
                             saml2.BINDING_HTTP_POST,
                         ),
                     ],
@@ -50,11 +60,25 @@ if dynamic_settings.authentication.type == "saml":
                     "single_logout_service": [
                         # Disable next two lines for HTTP_REDIRECT for IDP's that only support HTTP_POST. Ex. Okta:
                         (
-                            f"{dynamic_settings.url_root}/saml2/ls/",
+                            reduce(
+                                urllib.parse.urljoin,
+                                [
+                                    dynamic_settings.url_root,
+                                    dynamic_settings.web_ui_mountpoint,
+                                    "saml2/ls/",
+                                ],
+                            ),
                             saml2.BINDING_HTTP_REDIRECT,
                         ),
                         (
-                            f"{dynamic_settings.url_root}/saml2/ls/post",
+                            reduce(
+                                urllib.parse.urljoin,
+                                [
+                                    dynamic_settings.url_root,
+                                    dynamic_settings.web_ui_mountpoint,
+                                    "saml2/ls/post/",
+                                ],
+                            ),
                             saml2.BINDING_HTTP_POST,
                         ),
                     ],

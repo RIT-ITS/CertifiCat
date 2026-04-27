@@ -49,7 +49,11 @@ class RemoteUserBackend(BaseRemoteUserBackend):
                 ),
             )
 
-        _reconcile_superuser(user, remote_auth_settings.administrators)
+        _reconcile_superuser(
+            user,
+            remote_auth_settings.administrators,
+            remote_auth_settings.administrators_groups,
+        )
         user.save()
 
         return user
@@ -109,18 +113,29 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 
         from certificat.settings.saml import saml_settings
 
-        _reconcile_superuser(user, saml_settings.administrators)
+        logger.debug("adding groups for user %s", user.username)
+        _reconcile_idp_groups(user, attributes)
+        _reconcile_superuser(
+            user, saml_settings.administrators, saml_settings.administrators_groups
+        )
         user = super()._update_user(
             user, attributes, attribute_mapping, force_save=force_save
         )
-        logger.debug("adding groups for user %s", user.username)
-        _reconcile_idp_groups(user, attributes)
 
         return user
 
 
-def _reconcile_superuser(user: User, admins: List[str] = []):
-    if user.username in admins:
+def _reconcile_superuser(
+    user: User, admins: List[str] = [], admin_groups: List[str] = []
+):
+    normalized_user_group_names = [g.name.lower() for g in user.groups.all()]
+    user_in_admin_group = False
+    for name in admin_groups:
+        if name.lower() in normalized_user_group_names:
+            user_in_admin_group = True
+            break
+
+    if user.username in admins or user_in_admin_group:
         logger.debug(
             "user %s found in administrators config, granting superuser access",
             user.username,
@@ -131,6 +146,8 @@ def _reconcile_superuser(user: User, admins: List[str] = []):
     elif user.is_superuser:
         user.is_superuser = False
         user.save()
+
+    return user
 
 
 def _prefix_idp_groups(groups: List[str]):

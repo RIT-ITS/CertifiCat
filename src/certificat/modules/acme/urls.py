@@ -1,25 +1,16 @@
-from django.urls import path, re_path, include
+from django.urls import path
 from . import views
 
 app_name = "acme"
 
-acme_resource_patterns = (
-    [
-        path("newNonce", views.newNonce),
-        path("newAcct", views.newAccount),
-        path("newOrder", views.newOrder),
-        path("authz/<authz_id>", views.authz),
-        path("chall/<chall_id>", views.chall),
-        path("order/<order_id>", views.order),
-        path("order/<order_id>/finalize", views.finalize),
-        path("cert/<cert_id>", views.cert),
-    ],
-    "acme",
-)
 
 urlpatterns = [
-    # Support optional trailing slash for difficult clients
-    re_path(r"directory/?$", views.directory, name="directory"),
-    re_path(r"acme/?$", views.directory, name="directory-index"),
-    path("acme/", include(acme_resource_patterns)),
+    path("newNonce", views.newNonce, name="new-nonce"),
+    path("newAcct", views.newAccount, name="new-account"),
+    path("newOrder", views.newOrder, name="new-order"),
+    path("authz/<authz_id>", views.authz, name="authz"),
+    path("chall/<chall_id>", views.chall, name="chall"),
+    path("order/<order_id>", views.order, name="order"),
+    path("order/<order_id>/finalize", views.finalize, name="finalize"),
+    path("cert/<cert_id>", views.cert, name="cert"),
 ]

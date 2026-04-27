@@ -15,11 +15,10 @@ certificat:
     certificat_level: DEBUG
     acmev2_level: DEBUG
   authentication: 
-    type: local
-    admin:
-      username: admin
-      password: admin
-      email: noreply@localhost
+    type: remote
+    user_header: HTTP_REMOTE_USER
+    log_http_headers: True
+    redirect_template: http://auth.localhost
   finalizer: 
     type: local
     key: |
@@ -69,7 +68,6 @@ certificat:
       0aRuPpTug5Kgc1VrD97fjbNVn5Q/v0d8eL+eB7jujTSSXg/iBTH9D/0MSTp0u2Mm
       qIQFqQ2WEBc=
       -----END CERTIFICATE-----  
-acme:
-  eab_required: True
+  
 
   

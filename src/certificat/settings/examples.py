@@ -43,6 +43,9 @@ certificat:
     type: saml
     administrators:
       - admin_username
+    administrators_groups:
+      - admin-group1
+      - admin-group2
     attribute_mapping:
       mail: [username, email]
       uid: [username]
@@ -67,6 +70,9 @@ certificat:
     type: remote
     administrators:
       - admin_username
+    administrators_groups:
+      - admin-group1
+      - admin-group2
     user_header: HTTP_USER
     attribute_mapping:
       HTTP_MAIL: [email]

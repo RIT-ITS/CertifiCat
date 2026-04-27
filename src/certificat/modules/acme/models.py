@@ -398,7 +398,7 @@ class SectigoOrderProcessingState(TimestampMixin):
         self.save()
 
 
-class EMSignOrderProcessingState(TimestampMixin):
+class CertiNextOrderProcessingState(TimestampMixin):
     class Choices(models.TextChoices):
         SUBMITTED = "SU", "Submitted"
         ORDERED = "OR", "Ordered"
@@ -415,8 +415,8 @@ class EMSignOrderProcessingState(TimestampMixin):
     )
 
     @classmethod
-    def for_order(cls, order: Order) -> "SectigoOrderProcessingState":
-        state, _ = EMSignOrderProcessingState.objects.get_or_create(order=order)
+    def for_order(cls, order: Order) -> "CertiNextOrderProcessingState":
+        state, _ = CertiNextOrderProcessingState.objects.get_or_create(order=order)
         return state
 
     def transition_to(self, choice: Choices):
@@ -579,6 +579,19 @@ class TaggedEvent(models.Model):
             models.Index(fields=["event_type"]),
             models.Index(fields=["content_type", "object_id"]),
         ]
+
+
+class ACMEFinalizerBinding(TimestampMixin):
+    directory = models.URLField()
+    account_id = models.URLField()
+    key_id = models.CharField(max_length=255)
+    private_key = models.TextField()
+
+    def get(key_id: str) -> Self | None:
+        try:
+            return ACMEFinalizerBinding.objects.get(key_id=key_id)
+        except ACMEFinalizerBinding.DoesNotExist:
+            return None
 
 
 class Config(models.Model):

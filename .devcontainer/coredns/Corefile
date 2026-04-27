@@ -1,0 +1,25 @@
+.:53 {
+    forward . 8.8.8.8 8.8.4.4
+    log
+    errors
+    health :8080
+}
+
+certificat.dev.localhost:53 {
+    # file /etc/coredns/certificat.zone certificat.dev.localhost
+
+    etcd {
+        path /coredns
+        endpoint http://etcd:2379
+        
+    }
+
+    tsig {
+        secrets /etc/coredns/tsig.key
+        require AXFR IXFR
+    }
+
+    transfer {
+        to *
+    }
+}

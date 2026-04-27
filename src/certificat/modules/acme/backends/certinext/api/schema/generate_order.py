@@ -1,14 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-
-
-class Meta(BaseModel):
-    ver: str = "1.0"
-    ts: str
-    txn: str
-    accountNumber: str
-    authKey: str
+from .base import RequestMeta, ResponseMeta
 
 
 class RequestorInformation(BaseModel):
@@ -42,9 +35,9 @@ class OrganizationDetails(BaseModel):
 
 class CertificateInformation(BaseModel):
     # Primary domain name for the server
-    domainName: str
+    domainName: str | None = None
     # Additional domain (SAN) for the server
-    additionalDomains: list[str]
+    additionalDomains: list[str] = []
     # TODO: Come back to this
     autoSecureWWW: str = "1"
 
@@ -80,13 +73,13 @@ class TechnicalPointOfContact(BaseModel):
 
 class AdditionalInformation(BaseModel):
     # Reporting tags used to filter reports
-    tags: list[str]
+    tags: list[str] | None = []
     # Mandatory only if your administrator requires custom fields
-    customFields: list[CustomField]
+    customFields: list[CustomField] | None = []
     remarks: str
     # Additional email recipients
-    recipientEmail: str
-    technicalPointOfContact: TechnicalPointOfContact
+    recipientEmail: str | None = None
+    technicalPointOfContact: TechnicalPointOfContact | None = None
 
 
 class OrderDetails(BaseModel):
@@ -101,7 +94,7 @@ class OrderDetails(BaseModel):
     emailNotifications: str = "1"
     # Group number for accounting, set to default group number if None
     # groupNumber: str = None
-    requestorInformation: RequestorInformation
+    requestorInformation: RequestorInformation | None = None
     # Optional delegation information
     delegationInformation: DelegationInformation | None = None
     # Optional organization details, required with pre-vetting
@@ -113,26 +106,8 @@ class OrderDetails(BaseModel):
     subscriptionDetails: SubscriptionDetails
     csr: str
     additionalInformation: AdditionalInformation | None = None
-
-
-class Request(BaseModel):
-    meta: Meta
-    orderDetails: OrderDetails
-
-
-class ResponseOrderMeta(BaseModel):
-    # Should always be 1
-    ver: str
-    # May only exist on error
-    errorMessage: str = ""
-    # May only exist on error
-    errorCode: str = ""
-    # Transaction from passed-in request
-    txn: str
-    # Timestamp in ISO 8601 format
-    ts: str
-    # 1 - success, 2 - failure
-    status: str
+    # Do not generate www variant
+    autoSecureWWW: str = "0"
 
 
 class ResponseOrderDetails(BaseModel):
@@ -144,6 +119,11 @@ class ResponseOrderDetails(BaseModel):
     trackingURL: str = ""
 
 
+class Request(BaseModel):
+    meta: RequestMeta
+    orderDetails: OrderDetails
+
+
 class Response(BaseModel):
-    meta: ResponseOrderMeta
-    orderDetails: ResponseOrderDetails
+    meta: ResponseMeta
+    orderDetails: ResponseOrderDetails | None = None

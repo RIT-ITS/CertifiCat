@@ -8,15 +8,15 @@ from certificat.modules.acme.backends import (
     Finalizer,
     StopFinalization,
 )
-from certificat.settings.dynamic import ApplicationSettings, EMSignFinalizerSettings
+from certificat.settings.dynamic import ApplicationSettings, CertiNextFinalizerSettings
 import inject
-from .backend import EMSignBackend
+from .backend import CertiNextBackend
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class EMSignFinalizer(Finalizer):
+class CertiNextFinalizer(Finalizer):
     # These states fail the order straight away
     invalid_order_states = [
         4,  # Rejected
@@ -58,10 +58,10 @@ class EMSignFinalizer(Finalizer):
     ]
 
     def __init__(self):
-        self.backend = EMSignBackend()
+        self.backend = CertiNextBackend()
 
     def finalize(self, order: db.Order, pem_csr: str):
-        ca_settings: EMSignFinalizerSettings = inject.instance(
+        ca_settings: CertiNextFinalizerSettings = inject.instance(
             ApplicationSettings
         ).finalizer
         log_prefix = "order " + order.name
@@ -69,12 +69,12 @@ class EMSignFinalizer(Finalizer):
         # The latest state of the order. Orders go from
         # Submitted -> Ordered -> Fulfilled and can fail at any
         # point in the process.
-        processing_state: db.EMSignOrderProcessingState = (
-            db.EMSignOrderProcessingState.for_order(order)
+        processing_state: db.CertiNextOrderProcessingState = (
+            db.CertiNextOrderProcessingState.for_order(order)
         )
 
         # Client has submitted an order to CertifiCat
-        if processing_state.state == db.EMSignOrderProcessingState.Choices.SUBMITTED:
+        if processing_state.state == db.CertiNextOrderProcessingState.Choices.SUBMITTED:
             logger.info(f"{log_prefix}: generating upstream order")
 
             gen_order_response = self.backend.generate_order(order, pem_csr)
@@ -83,15 +83,15 @@ class EMSignFinalizer(Finalizer):
             processing_state.order_number = gen_order_response.order_number
             logger.info(f"{log_prefix}: order successfully generated")
             processing_state.transition_to(
-                db.EMSignOrderProcessingState.Choices.ORDERED
+                db.CertiNextOrderProcessingState.Choices.ORDERED
             )
 
-        # CertifiCat has submitted the order to EMSign
-        if processing_state.state == db.EMSignOrderProcessingState.Choices.ORDERED:
+        # CertifiCat has submitted the order to CertiNext
+        if processing_state.state == db.CertiNextOrderProcessingState.Choices.ORDERED:
             start = datetime.now()
             while (
                 processing_state.state
-                != db.EMSignOrderProcessingState.Choices.FULFILLED
+                != db.CertiNextOrderProcessingState.Choices.FULFILLED
             ):
                 logger.info(f"{log_prefix}: polling for fulfillment")
                 track_order_response = self.backend.track_order(
@@ -115,18 +115,18 @@ class EMSignFinalizer(Finalizer):
                 ):
                     logger.info(f"{log_prefix}: order fulfilled")
                     processing_state.transition_to(
-                        db.EMSignOrderProcessingState.Choices.FULFILLED
+                        db.CertiNextOrderProcessingState.Choices.FULFILLED
                     )
 
                 if (
                     processing_state.state
-                    != db.EMSignOrderProcessingState.Choices.FULFILLED
+                    != db.CertiNextOrderProcessingState.Choices.FULFILLED
                 ):
                     if (datetime.now() - start).seconds >= ca_settings.poll_deadline:
                         raise Exception(f"{log_prefix}: polling deadline exceeded")
                     time.sleep(ca_settings.poll_interval)
 
-        if processing_state.state == db.EMSignOrderProcessingState.Choices.FULFILLED:
+        if processing_state.state == db.CertiNextOrderProcessingState.Choices.FULFILLED:
             logger.info(f"{log_prefix}: downloading certificate")
             cert_response = self.backend.get_certificate(processing_state.order_number)
             cert_response.raise_if_not_ok()
@@ -134,11 +134,11 @@ class EMSignFinalizer(Finalizer):
             logger.info(f"{log_prefix}: certificate downloaded")
             # Certs are stored in client -> intermediate(s) -> root order
             chain = (
-                cert_response.endEntityCertificate
+                self._normalize_cert(cert_response.endEntityCertificate)
                 + "\n"
-                + cert_response.caCertificate
+                + self._normalize_cert(cert_response.caCertificate)
                 + "\n"
-                + cert_response.rootCertificate
+                + self._normalize_cert(cert_response.rootCertificate)
             )
 
             # Some clients (like certbot) expect the bundle to end with a newline and will
@@ -155,3 +155,18 @@ class EMSignFinalizer(Finalizer):
             return FinalizeResponse(
                 bundle=db.Certificate.objects.get(order=order).chain
             )
+
+    def _normalize_cert(self, pem_cert: str) -> str:
+        if "BEGIN CERTIFICATE" in pem_cert:
+            return pem_cert
+
+        clean_base64 = "".join(pem_cert.split())
+        wrapped_cert = "\n".join(
+            [clean_base64[i : i + 64] for i in range(0, len(clean_base64), 64)]
+        )
+
+        formatted_cert = (
+            f"-----BEGIN CERTIFICATE-----\n{wrapped_cert}\n-----END CERTIFICATE-----"
+        )
+
+        return formatted_cert

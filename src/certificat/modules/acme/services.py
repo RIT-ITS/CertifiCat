@@ -1,5 +1,7 @@
 import uuid
 from certificat.modules.acme.util import gen_id
+from django.urls import reverse
+from certificat.modules.html.nav import Sections
 import inject
 from josepy.jwk import JWK
 from acmev2.errors import ACMEError
@@ -51,7 +53,21 @@ class DirectoryService(IDirectoryService):
 
     @property
     def root_url(self) -> str:
-        return urllib.parse.urljoin(self.app_settings.url_root, "/acme")
+        return urllib.parse.urljoin(
+            self.app_settings.url_root,
+            "/" + self.app_settings.web_acme_mountpoint.rstrip("/"),
+        )
+
+    def tos_url(self) -> str:
+        """Overridable ToS url returned in the directory meta."""
+        return urllib.parse.urljoin(self.app_settings.url_root, reverse(Sections.TOS))
+
+    def website_url(self) -> str:
+        """Overridable website url returned in the directory meta."""
+        return urllib.parse.urljoin(
+            self.app_settings.url_root,
+            "/" + self.app_settings.web_ui_mountpoint,
+        )
 
     def url_base(self) -> str:
         return self.root_url

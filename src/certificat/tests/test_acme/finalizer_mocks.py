@@ -1,7 +1,10 @@
 import datetime
 from certificat.modules.acme.backends import ErrorResponse
-from certificat.modules.acme.backends.emsign.backend import EMSignBackend
-from certificat.modules.acme.backends.emsign.finalizer import EMSignFinalizer
+from certificat.modules.acme.backends.certinext.api.schema import (
+    generate_order as generate,
+)
+from certificat.modules.acme.backends.certinext.backend import CertiNextBackend
+from certificat.modules.acme.backends.certinext.finalizer import CertiNextFinalizer
 from certificat.modules.acme.backends.sectigo import (
     ApproveResponse,
     CollectResponse,
@@ -11,9 +14,8 @@ from certificat.modules.acme.backends.sectigo import (
     SectigoBackend,
 )
 from certificat.modules.acme import models as db
-from certificat.modules.acme.backends.emsign.api import (
-    generate_order_schema as generate,
-    Client as EMSignClient,
+from certificat.modules.acme.backends.certinext.api import (
+    CertiNextAPIClient,
 )
 
 bundle = """-----BEGIN CERTIFICATE-----
@@ -252,21 +254,21 @@ class FlakyMockSectigoFinalizer(SectigoFinalizer):
         self.backend = FlakySectigoBackend()
 
 
-class MockEMSignBackend(EMSignBackend):
+class MockCertiNextBackend(CertiNextBackend):
     def __init__(self):
         self.poll_deadline = 1
 
     def generate_order(self, order: db.Order, pem_csr: str) -> generate.Response:
-        client = EMSignClient()
+        client = CertiNextAPIClient()
         payload = super().generate_order(order, pem_csr)
         return payload
 
 
-class MockEmsignFinalizer(EMSignFinalizer):
+class MockCertiNextFinalizer(CertiNextFinalizer):
     def __init__(self):
-        self.backend = MockEMSignBackend()
+        self.backend = MockCertiNextBackend()
 
 
-class FailingGetMockEmSignFinalizer(MockEmsignFinalizer):
+class FailingGetMockCertiNextFinalizer(MockCertiNextFinalizer):
     def finalize(self, order: db.Order, pem_csr: str):
         return super().finalize(order, pem_csr)

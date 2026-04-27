@@ -1,6 +1,7 @@
-from typing import List, Literal, Mapping, Self, Optional, Tuple, Type, Union
+import re
+from typing import ClassVar, List, Literal, Mapping, Self, Optional, Tuple, Type, Union
 
-from pydantic import Field, ValidationError, BaseModel
+from pydantic import Field, HttpUrl, ValidationError, BaseModel, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -12,6 +13,8 @@ from acmev2.settings import ACMESettings
 import multiprocessing
 import inject
 from pydantic.json_schema import SkipJsonSchema
+
+BetaFeature = SkipJsonSchema
 
 
 class Settings(BaseSettings):
@@ -252,15 +255,19 @@ class RemoteAuthSettings(BaseModel):
         [],
         description="A list of user principals who will automatically be given administrator privileges on login.",
     )
+    administrators_groups: List[str] = Field(
+        [],
+        description="A list of groups that will automatically give included users administrator privileges on login.",
+    )
     force_logout_if_no_header: bool = True
     log_http_headers: bool = False
     attribute_mapping: Mapping[str, List[str] | str] = Field(
         {
-            "HTTP_USER_EMAIL": ["email"],
-            "HTTP_USER_FIRSTNAME": ["first_name"],
-            "HTTP_USER_LASTNAME": ["last_name"],
+            "HTTP_USER_EMAIL": "email",
+            "HTTP_USER_FIRSTNAME": "first_name",
+            "HTTP_USER_LASTNAME": "last_name",
         },
-        description="A dictionary mapping of src:[targets] where attributes are mapped from headers to Django attributes.",
+        description="A dictionary mapping of src:targets where attributes are mapped from headers to Django attributes.",
     )
     redirect_template: str = Field(
         description="Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource.",
@@ -296,6 +303,10 @@ class SAMLAuthSettings(BaseModel):
         [],
         description="A list of user principals who will automatically be given administrator privileges on login.",
     )
+    administrators_groups: List[str] = Field(
+        [],
+        description="A list of groups that will automatically give administrator privileges to any included users on login.",
+    )
 
     group_attribute: str = Field(
         "memberof",
@@ -326,6 +337,37 @@ class SAMLAuthSettings(BaseModel):
 class FinalizerSettings(BaseModel):
     type: Literal["none"] = "none"
     module: str
+
+
+class ACMEFinalizerSettings(FinalizerSettings):
+    type: Literal["acme"] = "acme"
+    module: SkipJsonSchema[str] = "certificat.modules.acme.backends.acme.ACMEFinalizer"
+
+    @classmethod
+    def get(cls) -> Self:
+        settings = inject.instance(ApplicationSettings)
+        if settings.finalizer.type == "acme":
+            return settings.finalizer
+
+    directory: HttpUrl = Field(
+        description="Path to the ACME API endpoint. This usually ends with /directory."
+    )
+    account_kid: str = Field(description="External account binding key identifier.")
+    account_hmac_key: str = Field(description="External account binding HMAC key.")
+    account_email: str = Field(
+        description="Email address used as a contact when binding an account."
+    )
+    skip_answering_challenges: bool = Field(
+        False,
+        description="Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.",
+    )
+    finalization_timeout: int = Field(
+        90,
+        description="How long to poll the upstream server before finalization is canceled.",
+    )
+    client_user_agent: SkipJsonSchema[str] = Field(
+        "certificat/acme-python", description="User agent of the ACME client."
+    )
 
 
 class CertiNextFinalizerSettings(FinalizerSettings):
@@ -444,6 +486,8 @@ class ApplicationSettings(Settings):
         env_nested_delimiter="__",
     )
 
+    DEFAULT_ACME_MOUNTPOINT: ClassVar[str] = "acme/"
+
     @classmethod
     def get(cls, force_reload=False) -> Self:
         return ConfigFile.load(force_reload=force_reload).certificat
@@ -494,8 +538,17 @@ class ApplicationSettings(Settings):
         description="Django time zone, used mostly for date localization.",
     )
     url_root: str = Field(
-        description="The url root is used to generate absolute urls to the application.",
-        examples=["https://acme.edu"],
+        description="The url root is used to generate absolute urls to the application. It should not contain path and parameters.",
+        examples=["https://acme.edu/"],
+    )
+    web_ui_mountpoint: BetaFeature[str] = Field(
+        "", description="The root of the web UI."
+    )
+    web_api_mountpoint: BetaFeature[str] = Field(
+        "api/", description="The root of the web API."
+    )
+    web_acme_mountpoint: BetaFeature[str] = Field(
+        DEFAULT_ACME_MOUNTPOINT, description="The root of the ACME server."
     )
     staticfiles_root: SkipJsonSchema[Optional[str]] = Field(
         None,
@@ -565,7 +618,10 @@ class ApplicationSettings(Settings):
     )
 
     finalizer: Union[
-        SectigoFinalizerSettings, CertiNextFinalizerSettings, LocalFinalizerSettings
+        SectigoFinalizerSettings,
+        CertiNextFinalizerSettings,
+        LocalFinalizerSettings,
+        ACMEFinalizerSettings,
     ] = Field(
         discriminator="type",
         description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
@@ -589,6 +645,18 @@ class ApplicationSettings(Settings):
         ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
     )
     huey_health_file: SkipJsonSchema[str] = Field("/tmp/huey-ping")
+
+    @field_validator("web_ui_mountpoint", "web_api_mountpoint", "web_acme_mountpoint")
+    @classmethod
+    def validate_mountpoint(cls, value: str) -> str:
+        value = value.strip("/")
+        pattern = r"[a-zA-Z0-9/\-_]*"
+        if not re.fullmatch(pattern, value):
+            raise ValueError(
+                "mountpoint may only contain letters, numbers, forward slashes, hyphens, and underscores."
+            )
+
+        return value + "/"
 
 
 class LocalACMESettings(ACMESettings):

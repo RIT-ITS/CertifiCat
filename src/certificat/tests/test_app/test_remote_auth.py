@@ -1,10 +1,13 @@
+from dataclasses import dataclass, field
+from typing import List
+
 from django.urls import reverse
 
 from certificat.modules.html.nav import Sections
 from certificat.settings.dynamic import ApplicationSettings, RemoteAuthSettings
 import pytest
 from django.test import Client
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 
 
 class TestRemoteAuth:
@@ -106,46 +109,107 @@ class TestRemoteAuth:
 
         assert first_user.username != second_user.username
 
+    @pytest.mark.django_db
     def test_redirect(self, web_client: Client):
+        web_client.logout()
+
         response = web_client.get(reverse(Sections.Accounts.value))
 
         assert self.LOGIN_URL in response.url
         redirect = web_client.get(response.url)
+
         assert redirect.url == "http://example.com/?rd=/accounts/"
 
+    @pytest.mark.django_db
     def test_unprotected_resources(self, web_client: Client):
-        response = web_client.get(reverse("acme:directory"))
+        web_client.logout()
+        response = web_client.get(reverse("directory"))
         assert response.status_code == 200
         assert "newAccount" in response.json()
 
+    @dataclass
+    class ReconcileSuperTestCase:
+        admins: List[str]
+        admin_groups: List[str]
+        username: str
+        expected_admin: bool
+        initial_groups: List[str] = field(default_factory=list)
+        initial_superuser: bool = False
+
     @pytest.mark.django_db
     def test_reconcile_superuser(self, web_client: Client):
-        """Test that an average user is not a superuser unless they're in the admin list."""
+        """Test that an average user is not a superuser unless they're in the admin list. A lot of this is redundant from test_login_hooks"""
         auth_settings: RemoteAuthSettings = ApplicationSettings.get().authentication
         username = "remusr"
 
-        web_client.get(
-            reverse(Sections.Accounts.value), headers={self.USER_HEADER: username}
-        )
-        user = User.objects.get(username=username)
-        user.refresh_from_db()
-        assert not user.is_superuser
+        case = TestRemoteAuth.ReconcileSuperTestCase
 
-        web_client.logout()
-        auth_settings.administrators = [user.username, "dummy-user"]
-        web_client.get(
-            reverse(Sections.Accounts.value), headers={self.USER_HEADER: username}
-        )
-        user.refresh_from_db()
-        assert user.is_superuser
+        test_cases = [
+            # ensure basic user doesn't have access
+            case(admins=[], admin_groups=[], username=username, expected_admin=False),
+            # ensure user is superuser when added manually
+            case(
+                admins=[username],
+                admin_groups=[],
+                username=username,
+                expected_admin=True,
+            ),
+            # ensure superuser is removed when removed from admins
+            case(
+                admins=[],
+                admin_groups=[],
+                username=username,
+                expected_admin=False,
+                initial_superuser=True,
+            ),
+            # ensure superuser is added when user is in group
+            case(
+                admins=[],
+                admin_groups=["admin-group"],
+                username=username,
+                expected_admin=True,
+                initial_groups=["admin-group"],
+            ),
+            # ensure superuser is removed when user is not in group
+            case(
+                admins=[],
+                admin_groups=["admin-group"],
+                username=username,
+                expected_admin=False,
+                initial_superuser=True,
+                initial_groups=["nonadmin-group"],
+            ),
+            # ensure erroneous groups are ignored
+            case(
+                admins=["different-usr"],
+                admin_groups=["admin-group"],
+                username=username,
+                expected_admin=False,
+                initial_groups=["nonadmin-group", "another-nonadmin-group"],
+            ),
+        ]
 
-        web_client.logout()
-        auth_settings.administrators = ["dummy-user"]
-        web_client.get(
-            reverse(Sections.Accounts.value), headers={self.USER_HEADER: username}
-        )
-        user.refresh_from_db()
-        assert not user.is_superuser
+        for idx, case in enumerate(test_cases):
+            try:
+                initial_user = User.objects.get(username=username)
+                initial_user.groups.clear()
+                initial_user.is_superuser = case.initial_superuser
+                for group_name in case.initial_groups:
+                    group, _ = Group.objects.get_or_create(name=group_name)
+                    initial_user.groups.add(group)
+                initial_user.save()
+            except User.DoesNotExist:
+                initial_user = None
+
+            auth_settings.administrators_groups = case.admin_groups
+            auth_settings.administrators = case.admins
+            web_client.get(
+                reverse(Sections.Accounts.value), headers={self.USER_HEADER: username}
+            )
+            user = User.objects.get(username=username)
+            assert user.is_superuser == case.expected_admin, f"Case {idx + 1} failed."
+
+            web_client.logout()
 
     @pytest.mark.django_db
     def test_group_mapping(self, web_client: Client):

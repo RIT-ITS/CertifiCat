@@ -65,7 +65,10 @@ class CertificatConfig(AppConfig):
         acme_settings = inject.instance(ACMESettings)
         app_settings = inject.instance(ApplicationSettings)
 
-        if os.environ.get("RUN_MAIN") == "true":
+        if (
+            os.environ.get("RUN_MAIN") == "true"
+            or os.environ.get("DJANGO_WSGI") == "true"
+        ):
             if app_settings.beacon_enabled:
                 logger.info(
                     "A stat-gathering beacon has been enabled. This will send installed version, certificates issued per day, and a non-identifiable guid to RIT for usage data collection. To disable, set beacon_enabled to false in the config."

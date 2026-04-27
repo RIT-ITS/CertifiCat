@@ -1,33 +1,12 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-
-
-class Meta(BaseModel):
-    ver: str = "1.0"
-    ts: str
-    txn: str
-    accountNumber: str
-    authKey: str
+from .base import RequestMeta, ResponseMeta
 
 
 class RequestOrderDetails(BaseModel):
     orderNumber: str
     requestorEmail: str
-
-
-class Request(BaseModel):
-    meta: Meta
-    orderDetails: RequestOrderDetails
-
-
-class ResponseMeta(BaseModel):
-    ver: str
-    ts: str
-    txn: str
-    status: str
-    errorCode: str
-    errorMessage: str
 
 
 class ResponseCertDetails(BaseModel):
@@ -38,6 +17,11 @@ class ResponseCertDetails(BaseModel):
     subCACertificate: str = None
 
 
+class Request(BaseModel):
+    meta: RequestMeta
+    orderDetails: RequestOrderDetails
+
+
 class Response(BaseModel):
     meta: ResponseMeta
-    certificateDetails: ResponseCertDetails
+    certificateDetails: ResponseCertDetails | None = None

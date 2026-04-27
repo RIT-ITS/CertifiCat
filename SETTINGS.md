@@ -2,14 +2,15 @@
 
 | Key | Required | Default | Description |
 | --- | --- | --- | --- |
-| [`acme.authorization_client_delay`](#acme-authorization_client_delay) |  | `15` | - |
-| [`acme.blacklisted_domains`](#acme-blacklisted_domains) |  | `[]` | - |
-| [`acme.challenges_available`](#acme-challenges_available) |  | `["http-01"]` | - |
-| [`acme.eab_required`](#acme-eab_required) |  | `false` | - |
-| [`acme.http_01_challenge_user_agent`](#acme-http_01_challenge_user_agent) |  | `python-acmev2/0.1.2` | - |
-| [`acme.mask_order_processing_status_ua_match`](#acme-mask_order_processing_status_ua_match) |  | `^cert-manager-clusterissuers.*` | - |
-| [`acme.max_identifiers`](#acme-max_identifiers) |  | `50` | - |
-| [`acme.resource_expiration_delta`](#acme-resource_expiration_delta) |  | `PT8H` | - |
+| [`acme.authorization_client_delay`](#acme-authorization_client_delay) |  | `15` | The Retry-After header sent to ACME clients. |
+| [`acme.blacklisted_domains`](#acme-blacklisted_domains) |  | `[]` | The server will refuse to issue domains for any identifiers in this list. It supports regular expressions. |
+| [`acme.challenges_available`](#acme-challenges_available) |  | `["http-01"]` | Default set of challenges created when an authorization is created |
+| [`acme.dns_challenge_nameservers`](#acme-dns_challenge_nameservers) |  | `[]` | A list of servers in the format ip or ip:port. The DNS challenge resolver will use these nameservers. If left blank the system nameservers will be used. |
+| [`acme.eab_required`](#acme-eab_required) |  | `false` | Whether all accounts are required to use external account binding or not. |
+| [`acme.http_01_challenge_user_agent`](#acme-http_01_challenge_user_agent) |  | `python-acmev2/0.2.0` | User agent the http-01 challenge validator uses when requesting the challenge document from the client server |
+| [`acme.mask_order_processing_status_ua_match`](#acme-mask_order_processing_status_ua_match) |  | `^cert-manager-clusterissuers.*` | Any order requests from this user agent will mask the processing state as pending |
+| [`acme.max_identifiers`](#acme-max_identifiers) |  | `50` | Max number of identifiers that can be passed to a new order request. |
+| [`acme.resource_expiration_delta`](#acme-resource_expiration_delta) |  | `PT8H` | How long should the order and authorization objects be valid for after generation? |
 | [`certificat.authentication`](#certificat-authentication) | ✓ | `-` | Authentication settings for the web frontend. |
 | [`certificat.beacon_enabled`](#certificat-beacon_enabled) |  | `true` | If true, will send tracking information about usage to RIT. All tracking info is logged. |
 | [`certificat.challenge_max_retries`](#certificat-challenge_max_retries) |  | `5` | How many challenge retries to perform before marking the challenge invalid. |
@@ -37,7 +38,7 @@
 | [`certificat.theming.global_css`](#certificat-theming-global_css) |  | `null` | Global CSS injected into a style tag rendered on every page. |
 | [`certificat.time_zone`](#certificat-time_zone) |  | `America/New_York` | Django time zone, used mostly for date localization. |
 | [`certificat.trust_proxy_forwarded_proto`](#certificat-trust_proxy_forwarded_proto) |  | `false` | Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True. |
-| [`certificat.url_root`](#certificat-url_root) | ✓ | `-` | The url root is used to generate absolute urls to the application. |
+| [`certificat.url_root`](#certificat-url_root) | ✓ | `-` | The url root is used to generate absolute urls to the application. It should not contain path and parameters. |
 
 <a id="certificat-authentication" name="certificat-authentication"></a>
 
@@ -56,6 +57,9 @@ certificat:
     type: remote
     administrators:
       - admin_username
+    administrators_groups:
+      - admin-group1
+      - admin-group2
     user_header: HTTP_USER
     attribute_mapping:
       HTTP_MAIL: [email]
@@ -67,11 +71,14 @@ certificat:
 | --- | --- | --- | --- |
 | [`certificat.authentication.type`](#certificat-authentication-type) |  | `remote` | - |
 | [`certificat.authentication.administrators`](#certificat-authentication-administrators) |  | `[]` | A list of user principals who will automatically be given administrator privileges on login. |
-| [`certificat.authentication.attribute_mapping`](#certificat-authentication-attribute_mapping) |  | `{"HTTP_USER_EMAIL": ["email"], "HTTP_USER_FIRSTNAME": ["first_name"], "HTTP_USER_LASTNAME": ["last_name"]}` | A dictionary mapping of src:[targets] where attributes are mapped from headers to Django attributes. |
+| [`certificat.authentication.administrators_groups`](#certificat-authentication-administrators_groups) |  | `[]` | A list of groups that will automatically give included users administrator privileges on login. |
+| [`certificat.authentication.attribute_mapping`](#certificat-authentication-attribute_mapping) |  | `{"HTTP_USER_EMAIL": "email", "HTTP_USER_FIRSTNAME": "first_name", "HTTP_USER_LASTNAME": "last_name"}` | A dictionary mapping of src:targets where attributes are mapped from headers to Django attributes. |
 | [`certificat.authentication.force_logout_if_no_header`](#certificat-authentication-force_logout_if_no_header) |  | `true` | - |
+| [`certificat.authentication.groups_header`](#certificat-authentication-groups_header) |  | `null` | The header that will be used to populate groups. This is delimited by the groups_header_delimiter setting. |
+| [`certificat.authentication.groups_header_delimiter`](#certificat-authentication-groups_header_delimiter) |  | `;` | The delimiter used when parsing the groups_header value. |
 | [`certificat.authentication.log_http_headers`](#certificat-authentication-log_http_headers) |  | `false` | - |
 | [`certificat.authentication.redirect_template`](#certificat-authentication-redirect_template) | ✓ | `-` | Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource. |
-| [`certificat.authentication.user_header`](#certificat-authentication-user_header) |  | `HTTP_USER` | - |
+| [`certificat.authentication.user_header`](#certificat-authentication-user_header) |  | `HTTP_USER` | The header that will be used to populate user principal. |
 
 <a id="certificat-authentication-type-saml"></a>
 
@@ -82,6 +89,9 @@ certificat:
     type: saml
     administrators:
       - admin_username
+    administrators_groups:
+      - admin-group1
+      - admin-group2
     attribute_mapping:
       mail: [username, email]
       uid: [username]
@@ -103,6 +113,7 @@ certificat:
 | --- | --- | --- | --- |
 | [`certificat.authentication.type`](#certificat-authentication-type) |  | `saml` | - |
 | [`certificat.authentication.administrators`](#certificat-authentication-administrators) |  | `[]` | A list of user principals who will automatically be given administrator privileges on login. |
+| [`certificat.authentication.administrators_groups`](#certificat-authentication-administrators_groups) |  | `[]` | A list of groups that will automatically give administrator privileges to any included users on login. |
 | [`certificat.authentication.attribute_mapping`](#certificat-authentication-attribute_mapping) |  | `{"eduPersonPrincipalName": ["username"], "eduPersonTargetedID": ["username"], "givenName": ["first_name"], "mail": ["email"], "sn": ["last_name"], "uid": ["username"]}` | A dictionary mapping of src:[target] where attributes are mapped from SAML responses to Django attributes. This is designed to work with a yaml config, not environment variables. |
 | [`certificat.authentication.debug`](#certificat-authentication-debug) |  | `false` | The debug setting for the Django SAML plugin. |
 | [`certificat.authentication.group_attribute`](#certificat-authentication-group_attribute) |  | `memberof` | The name (or translated name) of the group attribute in the returned SAML assertion |
@@ -179,7 +190,21 @@ certificat:
 This is a polymorphic property controlled by the `type` attribute. Use the following templates as an example of how to configure different `finalizer` types.
 - Required: `Yes`
 - Description: Which order finalizer module to use. The server is designed to finalize all requests against one backend.
-- Types: [`certinext`](#certificat-finalizer-type-certinext), [`local`](#certificat-finalizer-type-local), [`sectigo`](#certificat-finalizer-type-sectigo)
+- Types: [`acme`](#certificat-finalizer-type-acme), [`certinext`](#certificat-finalizer-type-certinext), [`local`](#certificat-finalizer-type-local), [`sectigo`](#certificat-finalizer-type-sectigo)
+
+<a id="certificat-finalizer-type-acme"></a>
+
+### `certificat.finalizer.type: acme`
+
+| Key | Required | Default | Description |
+| --- | --- | --- | --- |
+| [`certificat.finalizer.type`](#certificat-finalizer-type) |  | `acme` | - |
+| [`certificat.finalizer.account_email`](#certificat-finalizer-account_email) | ✓ | `-` | Email address used as a contact when binding an account. |
+| [`certificat.finalizer.account_hmac_key`](#certificat-finalizer-account_hmac_key) | ✓ | `-` | External account binding HMAC key. |
+| [`certificat.finalizer.account_kid`](#certificat-finalizer-account_kid) | ✓ | `-` | External account binding key identifier. |
+| [`certificat.finalizer.directory`](#certificat-finalizer-directory) | ✓ | `-` | Path to the ACME API endpoint. This usually ends with /directory. |
+| [`certificat.finalizer.finalization_timeout`](#certificat-finalizer-finalization_timeout) |  | `90` | How long to poll the upstream server before finalization is canceled. |
+| [`certificat.finalizer.skip_answering_challenges`](#certificat-finalizer-skip_answering_challenges) |  | `false` | Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization. |
 
 <a id="certificat-finalizer-type-certinext"></a>
 

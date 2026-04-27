@@ -1,7 +1,10 @@
 from collections import namedtuple
+from importlib import reload
 import re
+import sys
 import uuid
 import acme.messages
+from django.conf import settings
 from certificat.modules.acme.services import (
     AccountService,
     AuthorizationService,
@@ -14,10 +17,11 @@ from certificat.modules.acme.services import (
 
 from certificat.settings.dynamic import (
     ApplicationSettings,
-    EMSignFinalizerSettings,
+    CertiNextFinalizerSettings,
     LocalACMESettings,
 )
 from acmev2.settings import ACMESettings
+from django.urls import clear_url_caches
 import inject
 import pytest
 from urllib.parse import urlparse
@@ -47,13 +51,11 @@ ROOT_URL = "http://mock.me"
 
 
 class TestDirectoryService(DirectoryService):
-    @property
-    def root_url(self) -> str:
-        return f"{ROOT_URL}/acme"
+    pass
 
 
-@pytest.fixture(autouse=True)
-def setup(responses):
+@pytest.fixture(autouse=True, scope="function")
+def setup(responses, reload_urls):
     import dnsmock
 
     # I have no idea why these are necessary. If they don't exist then DNS resolution
@@ -89,6 +91,24 @@ def setup(responses):
         bind_in_runtime=False,
         clear=True,
     )
+
+    # has to happen at the end, note the force_reload when setting applicationsettings
+    app_settings = ApplicationSettings.get()
+    app_settings.url_root = ROOT_URL
+
+    reload_urls()
+
+
+@pytest.fixture
+def reload_urls():
+    def wrapped():
+        urlconf = settings.ROOT_URLCONF
+
+        if urlconf in sys.modules:
+            clear_url_caches()  # Clears the URL resolver cache
+            reload(sys.modules[urlconf])  # Reloads the root URL module
+
+    return wrapped
 
 
 class LocalACMEAdapter(requests.adapters.HTTPAdapter):
@@ -162,8 +182,8 @@ def acme_settings():
 
 
 @pytest.fixture
-def emsign_settings():
-    return EMSignFinalizerSettings.get()
+def certinext_settings():
+    return CertiNextFinalizerSettings.get()
 
 
 NewAcctRet = namedtuple("NewAcctRet", ["response", "binding", "user"])

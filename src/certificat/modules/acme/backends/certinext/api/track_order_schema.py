@@ -1,14 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
-
-
-class Meta(BaseModel):
-    ver: str = "1.0"
-    ts: str
-    txn: str
-    accountNumber: str
-    authKey: str
+from .schema.base import RequestMeta, ResponseMeta
 
 
 class RequestOrderDetails(BaseModel):
@@ -16,17 +9,8 @@ class RequestOrderDetails(BaseModel):
 
 
 class Request(BaseModel):
-    meta: Meta
+    meta: RequestMeta
     orderDetails: RequestOrderDetails
-
-
-class ResponseMeta(BaseModel):
-    ver: str
-    ts: str
-    txn: str
-    status: str
-    errorCode: str
-    errorMessage: str
 
 
 class ResponseOrderDetails(BaseModel):

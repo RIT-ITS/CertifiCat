@@ -1,8 +1,14 @@
+acme:
+  challenges_available:
+    - dns-01
+    - http-01
 certificat:
   # provided by env
   # secret_key: ""
   show_version: True
-  url_root: "https://certificat.dev.localhost"
+  url_root: "https://certificat.dev.localhost/"
+  #web_ui_mountpoint: /web/
+  #web_acme_mountpoint: /acmev2/
   finalizer:
     type: "local"
     key: |
@@ -93,35 +99,35 @@ certificat:
   #   redirect_template: https://example.localhost/rd={redirect}
 
   authentication:
-    # type: saml
-    # debug: True
-    # administrators:
-    #   - admusr
-    # attribute_mapping:
-    #   mail: [username, email]
-    #   uid: [username]
-    #   eduPersonPrincipalName: [username]
-    #   givenName: [first_name]
-    #   sn: [last_name]
-    # #discovery:
-    # #  service: "https://service.seamlessaccess.org/ds"
-    # sp:
-    #   entity_id: "http://certificat.dev.localhost/saml2/metadata/"
-    #   key_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
-    #   cert_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
-    # idp:
-    #   remote: 
-    #     - url: "http://idp./saml2/metadata"
-    #   mdq: 
-    #     - url: "https://mdq.incommon.org"
-    #       cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
-    #       freshness_period: "P0Y0M0DT2H0M0S"
+    type: saml
+    debug: True
+    administrators:
+      - admusr
+    attribute_mapping:
+      mail: [username, email]
+      uid: [username]
+      eduPersonPrincipalName: [username]
+      givenName: [first_name]
+      sn: [last_name]
+    #discovery:
+    #  service: "https://service.seamlessaccess.org/ds"
+    sp:
+      entity_id: "http://certificat.dev.localhost/saml2/metadata/"
+      key_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.key"
+      cert_file: "/workspaces/certificat/src/certificat_dev/saml/insecure.crt"
+    idp:
+      remote: 
+        - url: "http://idp./saml2/metadata"
+      mdq: 
+        - url: "https://mdq.incommon.org"
+          cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
+          freshness_period: "P0Y0M0DT2H0M0S"
 
-    type: local
-    admin:
-      username: admin
-      password: super-secret
-      email: noreply@localhost
+    # type: local
+    # admin:
+    #   username: admin
+    #   password: super-secret
+    #   email: noreply@localhost
 
   logging:
     certificat_level: DEBUG
@@ -172,26 +178,3 @@ certificat:
           --heat-calendar--start-color: #cff182 !important;
           --heat-calendar--end-color: #fff8a4 !important;
       }
-      
-
-# emsign_finalizer:
-#   api_base: "http://emsign.localhost/api/"
-#   account_number: "1234"
-#   auth_key: "1234567890"
-#   product_code: "prod1"
-#   prevetted_org_number: "819"
-#   prevetting_token: "tok-12345"
-#   requestor_mobile_number: "123-432-0481"
-#   requestor_email: "email@localhost"
-
-# sectigo_finalizer:
-#   org_id: 12345
-#   cert_profile_id: 1234
-#   customer_uri: InCommon_test
-#   api_base: https://cert-manager.com/api/
-#   api_user: user@acme.edu
-#   api_password: "password"
-#   approval_api_user: user@acme.edu
-#   approval_api_password: "password"
-#   external_requester_override: override@acme.edu
-#   cert_validity_period: 365

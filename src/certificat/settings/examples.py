@@ -2,25 +2,23 @@ MYSQL_DB_YAML_EXAMPLE = """yaml
 certificat:
   db: 
     type: "mysql"
+    host: "mariadb.my.edu"
     name: "certificat"
     user: "certificat_user"
     password: "super-s3cret-p@ssw0rd"
-    host: "mariadb.my.edu"
-    port: 3306
 """
 
 POSTGRES_DB_YAML_EXAMPLE = """yaml
 certificat:
   db: 
     type: "postgresql"
+    host: "postgres.my.edu"
     name: "certificat"
     user: "certificat_user"
     password: "super-s3cret-p@ssw0rd"
-    host: "mariadb.my.edu"
-    port: 3306
 """
 
-LOCAL_FINALIZER_EXAMPLE = """
+LOCAL_FINALIZER_EXAMPLE = """yaml
 certificat:
   finalizer: 
     type: local
@@ -45,6 +43,9 @@ certificat:
     type: saml
     administrators:
       - admin_username
+    administrators_groups:
+      - admin-group1
+      - admin-group2
     attribute_mapping:
       mail: [username, email]
       uid: [username]
@@ -63,9 +64,27 @@ certificat:
         - url: "http://idp.my.edu/saml2/metadata"
 """
 
+REMOTE_AUTH_EXAMPLE = """yaml
+certificat:
+  authentication:
+    type: remote
+    administrators:
+      - admin_username
+    administrators_groups:
+      - admin-group1
+      - admin-group2
+    user_header: HTTP_USER
+    attribute_mapping:
+      HTTP_MAIL: [email]
+      HTTP_FIRSTNAME: [first_name]
+      HTTP_LASTNAME: [last_name]
+    redirect_template: https://auth.my.edu/authenticate?redirect={redirect}
+"""
+
 example_map = {
     "certificat.db.type.mysql": MYSQL_DB_YAML_EXAMPLE,
     "certificat.db.type.postgresql": POSTGRES_DB_YAML_EXAMPLE,
     "certificat.finalizer.type.local": LOCAL_FINALIZER_EXAMPLE,
     "certificat.authentication.type.saml": SAML_AUTH_EXAMPLE,
+    "certificat.authentication.type.remote": REMOTE_AUTH_EXAMPLE,
 }

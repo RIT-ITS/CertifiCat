@@ -1,6 +1,7 @@
-from typing import List, Literal, Mapping, Self, Optional, Tuple, Type, Union
+import re
+from typing import ClassVar, List, Literal, Mapping, Self, Optional, Tuple, Type, Union
 
-from pydantic import Field, ValidationError, BaseModel
+from pydantic import Field, HttpUrl, ValidationError, BaseModel, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -12,6 +13,8 @@ from acmev2.settings import ACMESettings
 import multiprocessing
 import inject
 from pydantic.json_schema import SkipJsonSchema
+
+BetaFeature = SkipJsonSchema
 
 
 class Settings(BaseSettings):
@@ -36,7 +39,7 @@ class MariaDBDatabaseSettings(BaseModel):
     host: str = Field(None, description="Host for the database connection")
     port: int = 3306
     options: dict = Field({}, description="Key-value options passed to the driver")
-    table_prefix: str = Field(
+    table_prefix: SkipJsonSchema[str] = Field(
         "", description="An optional table prefix for every table in the database."
     )
 
@@ -63,7 +66,7 @@ class PostgresDatabaseSettings(BaseModel):
     host: str = Field(None, description="Host for the database connection")
     port: int = 5432
     options: dict = Field({}, description="Key-value options passed to the driver")
-    table_prefix: str = Field(
+    table_prefix: SkipJsonSchema[str] = Field(
         "", description="An optional table prefix for every table in the database."
     )
 
@@ -232,20 +235,39 @@ class LocalAuthSettings(BaseModel):
 
 class RemoteAuthSettings(BaseModel):
     type: Literal["remote"] = "remote"
-    user_header: str = "HTTP_USER"
+    user_header: str = Field(
+        "HTTP_USER",
+        description="The header that will be used to populate user principal.",
+    )
+    groups_header: str | None = Field(
+        None,
+        description="The header that will be used to populate groups. This is delimited by the groups_header_delimiter setting.",
+    )
+    groups_header_delimiter: str = Field(
+        ";", description="The delimiter used when parsing the groups_header value."
+    )
+    group_sync_prefix: SkipJsonSchema[str] = Field(
+        "REMOTE/",
+        description="New groups synced from remote auth will be prefixed with this identifier.",
+    )
+
     administrators: List[str] = Field(
         [],
         description="A list of user principals who will automatically be given administrator privileges on login.",
     )
+    administrators_groups: List[str] = Field(
+        [],
+        description="A list of groups that will automatically give included users administrator privileges on login.",
+    )
     force_logout_if_no_header: bool = True
     log_http_headers: bool = False
-    attribute_mapping: Mapping[str, List[str]] = Field(
+    attribute_mapping: Mapping[str, List[str] | str] = Field(
         {
             "HTTP_USER_EMAIL": "email",
             "HTTP_USER_FIRSTNAME": "first_name",
             "HTTP_USER_LASTNAME": "last_name",
         },
-        description="A dictionary mapping of src:target where attributes are mapped from headers to Django attributes.",
+        description="A dictionary mapping of src:targets where attributes are mapped from headers to Django attributes.",
     )
     redirect_template: str = Field(
         description="Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource.",
@@ -270,15 +292,20 @@ class SAMLAuthSettings(BaseModel):
         False,
         description="The debug setting for the Django SAML plugin.",
     )
-    xmlsec_binary: str = SkipJsonSchema[
-        Field("/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary.")
-    ]
+    xmlsec_binary: SkipJsonSchema[str] = Field(
+        "/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary."
+    )
+
     session_cookie: str = Field(
         "snickerdoodle", description="The name of the session cookie."
     )
     administrators: List[str] = Field(
         [],
         description="A list of user principals who will automatically be given administrator privileges on login.",
+    )
+    administrators_groups: List[str] = Field(
+        [],
+        description="A list of groups that will automatically give administrator privileges to any included users on login.",
     )
 
     group_attribute: str = Field(
@@ -312,24 +339,51 @@ class FinalizerSettings(BaseModel):
     module: str
 
 
-class EMSignFinalizerSettings(FinalizerSettings):
-    model_config = SettingsConfigDict(
-        validate_default=False, env_prefix="EMSIGN__", env_nested_delimiter="__"
+class ACMEFinalizerSettings(FinalizerSettings):
+    type: Literal["acme"] = "acme"
+    module: SkipJsonSchema[str] = "certificat.modules.acme.backends.acme.ACMEFinalizer"
+
+    @classmethod
+    def get(cls) -> Self:
+        settings = inject.instance(ApplicationSettings)
+        if settings.finalizer.type == "acme":
+            return settings.finalizer
+
+    directory: HttpUrl = Field(
+        description="Path to the ACME API endpoint. This usually ends with /directory."
+    )
+    account_kid: str = Field(description="External account binding key identifier.")
+    account_hmac_key: str = Field(description="External account binding HMAC key.")
+    account_email: str = Field(
+        description="Email address used as a contact when binding an account."
+    )
+    skip_answering_challenges: bool = Field(
+        False,
+        description="Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.",
+    )
+    finalization_timeout: int = Field(
+        90,
+        description="How long to poll the upstream server before finalization is canceled.",
+    )
+    client_user_agent: SkipJsonSchema[str] = Field(
+        "certificat/acme-python", description="User agent of the ACME client."
     )
 
-    type: Literal["emsign"] = "emsign"
+
+class CertiNextFinalizerSettings(FinalizerSettings):
+    type: Literal["certinext"] = "certinext"
     module: SkipJsonSchema[str] = (
-        "certificat.modules.acme.backends.emsign.EMSignFinalizer"
+        "certificat.modules.acme.backends.certinext.CertiNextFinalizer"
     )
 
     @classmethod
     def get(cls) -> Self:
         settings = inject.instance(ApplicationSettings)
-        if settings.finalizer.type == "emsign":
+        if settings.finalizer.type == "certinext":
             return settings.finalizer
 
     api_base: str = Field(
-        "https://localhost/api/", description="Base URL of the emSign API"
+        "https://localhost/api/", description="Base URL of the CERTInext API"
     )
     account_number: str = Field(description="Account number (Org. ID)")
     auth_key: str = Field(description="Authorization key for API access")
@@ -349,7 +403,7 @@ class EMSignFinalizerSettings(FinalizerSettings):
 
     poll_deadline: int = Field(
         60 * 5,
-        description="The finalizer task will continue to poll the EMSign backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
+        description="The finalizer task will continue to poll the CertiNext backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
     )
     poll_interval: int = 1
 
@@ -432,6 +486,8 @@ class ApplicationSettings(Settings):
         env_nested_delimiter="__",
     )
 
+    DEFAULT_ACME_MOUNTPOINT: ClassVar[str] = "acme/"
+
     @classmethod
     def get(cls, force_reload=False) -> Self:
         return ConfigFile.load(force_reload=force_reload).certificat
@@ -473,13 +529,26 @@ class ApplicationSettings(Settings):
     secret_key: str = Field(
         description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
     )
+    session_cookie_age: int = Field(
+        60 * 8,
+        description="Django SESSION_COOKIE_AGE. This is the maximum age of the session cookie in seconds.",
+    )
     time_zone: str = Field(
         "America/New_York",
         description="Django time zone, used mostly for date localization.",
     )
     url_root: str = Field(
-        description="The url root is used to generate absolute urls to the application.",
-        examples=["https://acme.edu"],
+        description="The url root is used to generate absolute urls to the application. It should not contain path and parameters.",
+        examples=["https://acme.edu/"],
+    )
+    web_ui_mountpoint: BetaFeature[str] = Field(
+        "", description="The root of the web UI."
+    )
+    web_api_mountpoint: BetaFeature[str] = Field(
+        "api/", description="The root of the web API."
+    )
+    web_acme_mountpoint: BetaFeature[str] = Field(
+        DEFAULT_ACME_MOUNTPOINT, description="The root of the ACME server."
     )
     staticfiles_root: SkipJsonSchema[Optional[str]] = Field(
         None,
@@ -549,14 +618,17 @@ class ApplicationSettings(Settings):
     )
 
     finalizer: Union[
-        SectigoFinalizerSettings, EMSignFinalizerSettings, LocalFinalizerSettings
+        SectigoFinalizerSettings,
+        CertiNextFinalizerSettings,
+        LocalFinalizerSettings,
+        ACMEFinalizerSettings,
     ] = Field(
         discriminator="type",
         description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
         examples=[
             "local",
             "sectigo",
-            "emsign",
+            "certinext",
         ],
     )
     delete_invalid_orders: bool = Field(
@@ -573,6 +645,18 @@ class ApplicationSettings(Settings):
         ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
     )
     huey_health_file: SkipJsonSchema[str] = Field("/tmp/huey-ping")
+
+    @field_validator("web_ui_mountpoint", "web_api_mountpoint", "web_acme_mountpoint")
+    @classmethod
+    def validate_mountpoint(cls, value: str) -> str:
+        value = value.strip("/")
+        pattern = r"[a-zA-Z0-9/\-_]*"
+        if not re.fullmatch(pattern, value):
+            raise ValueError(
+                "mountpoint may only contain letters, numbers, forward slashes, hyphens, and underscores."
+            )
+
+        return value + "/"
 
 
 class LocalACMESettings(ACMESettings):
@@ -648,4 +732,5 @@ class ConfigFile(BaseSettings):
         Returns:
             A tuple containing the sources and their order for loading the settings values.
         """
+
         return (init_settings,)

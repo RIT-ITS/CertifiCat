@@ -11,6 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+os.environ.setdefault("DJANGO_WSGI", "true")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "certificat.settings")
 
 application = get_wsgi_application()

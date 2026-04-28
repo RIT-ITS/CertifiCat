@@ -1,0 +1,5 @@
+$ORIGIN certificat.dev.localhost
+@         IN  SOA dns.certificat.dev.localhost. admin.acme.edu. 2502011720 7200 3600 1209600 3600
+
+dns       IN  A   192.168.1.1
+dummy     IN  A   192.168.1.2

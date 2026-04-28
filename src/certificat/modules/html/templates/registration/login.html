@@ -7,7 +7,7 @@
     
     {% if next %}
         {% if user.is_authenticated %}
-            <div role="contentinfo" class="messages messages--warning">
+            <div role="contentinfo" class="message message--warning">
                 Your account doesn't have access to this page. To proceed,
                 please login with an account that has access.
             </div>
@@ -15,7 +15,7 @@
     {% endif %}
 
     {% if form.errors %}
-        <div role="contentinfo" class="messages messages--error mb-4">Your username and password didn't match. Please try again.</div>
+        <div role="contentinfo" class="message message--error mb-4">Your username and password didn't match. Please try again.</div>
     {% endif %}
 
     <form method="post" action="{% url 'login' %}">

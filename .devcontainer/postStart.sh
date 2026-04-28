@@ -6,6 +6,7 @@ ENV_FILE="${HERE}/.env"
 # shellcheck disable=SC1090
 test -f $ENV_FILE && source $ENV_FILE
 sudo ln -sf "${HERE}/../internal/omnidev" /usr/local/bin/omnidev
+export ACMEV2_DNS_CHALLENGE_NAMESERVERS="[\"$(getent hosts coredns. | cut -f1 -d' ')\"]"
 
 cat <<- EOF >/home/vscode/.bashrc
 cat << EOD

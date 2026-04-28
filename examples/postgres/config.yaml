@@ -70,7 +70,5 @@ certificat:
       0aRuPpTug5Kgc1VrD97fjbNVn5Q/v0d8eL+eB7jujTSSXg/iBTH9D/0MSTp0u2Mm
       qIQFqQ2WEBc=
       -----END CERTIFICATE-----  
-acme:
-  eab_required: True
 
   

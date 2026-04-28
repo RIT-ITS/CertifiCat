@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 import inject
 from .dynamic import ApplicationSettings
 
@@ -19,8 +21,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 if dynamic_settings.authentication.type == "saml":
-    LOGIN_URL = "/saml2/login/"
+    LOGIN_URL = urljoin(dynamic_settings.web_ui_mountpoint, "saml2/login/")
     AUTHENTICATION_BACKENDS = ["certificat.auth.Saml2Backend"]
 elif dynamic_settings.authentication.type == "remote":
-    LOGIN_URL = "/remote/login/"
+    LOGIN_URL = urljoin(dynamic_settings.web_ui_mountpoint, "remote/login/")
     AUTHENTICATION_BACKENDS = ["certificat.auth.RemoteUserBackend"]
+
+if not LOGIN_URL.startswith("/"):
+    LOGIN_URL = "/" + LOGIN_URL

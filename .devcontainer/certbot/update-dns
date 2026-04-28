@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# CERTBOT_DOMAIN = the domain we are validating
+# CERTBOT_VALIDATION = the TXT entry we are creating
+
+subdomain="$(echo $CERTBOT_DOMAIN | cut -f1 -d'.')"
+echo "Writing token: $CERTBOT_VALIDATION"
+etcdctl --endpoints="http://etcd.:2379" put /coredns/localhost/dev/certificat/$subdomain/_acme-challenge/x1 "{\"text\": \"$CERTBOT_VALIDATION\"}"
+echo "DNS updated..."

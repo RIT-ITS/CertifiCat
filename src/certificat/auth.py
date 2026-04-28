@@ -6,6 +6,7 @@ from certificat.settings.dynamic import (
     RemoteAuthSettings,
     SAMLAuthSettings,
 )
+from certificat.utils import coerce_to_list, split_delimited_string
 import djangosaml2.backends
 from django.contrib.auth.models import Group, User
 import logging
@@ -28,19 +29,31 @@ class RemoteUserBackend(BaseRemoteUserBackend):
             ApplicationSettings
         ).authentication
 
-        for header, attribute in remote_auth_settings.attribute_mapping.items():
+        for header, attributes in remote_auth_settings.attribute_mapping.items():
+            attributes = coerce_to_list(attributes)
             if header in request.META:
-                try:
-                    setattr(user, attribute, request.META[header])
-                except:  # noqa: E722
-                    logger.exception(
-                        "Error settings attribute %s on user object", attribute
-                    )
+                for attribute in attributes:
+                    try:
+                        setattr(user, attribute, request.META[header])
+                    except:  # noqa: E722
+                        logger.exception(
+                            "Error settings attribute %s on user object", attribute
+                        )
 
-        remote_auth_settings: RemoteAuthSettings = inject.instance(
-            ApplicationSettings
-        ).authentication
-        _reconcile_superuser(user, remote_auth_settings.administrators)
+        if remote_auth_settings.groups_header:
+            _reconcile_header_groups(
+                user,
+                split_delimited_string(
+                    request.META.get(remote_auth_settings.groups_header, ""),
+                    remote_auth_settings.groups_header_delimiter,
+                ),
+            )
+
+        _reconcile_superuser(
+            user,
+            remote_auth_settings.administrators,
+            remote_auth_settings.administrators_groups,
+        )
         user.save()
 
         return user
@@ -100,18 +113,29 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 
         from certificat.settings.saml import saml_settings
 
-        _reconcile_superuser(user, saml_settings.administrators)
+        logger.debug("adding groups for user %s", user.username)
+        _reconcile_idp_groups(user, attributes)
+        _reconcile_superuser(
+            user, saml_settings.administrators, saml_settings.administrators_groups
+        )
         user = super()._update_user(
             user, attributes, attribute_mapping, force_save=force_save
         )
-        logger.debug("adding groups for user %s", user.username)
-        _reconcile_idp_groups(user, attributes)
 
         return user
 
 
-def _reconcile_superuser(user: User, admins: List[str] = []):
-    if user.username in admins:
+def _reconcile_superuser(
+    user: User, admins: List[str] = [], admin_groups: List[str] = []
+):
+    normalized_user_group_names = [g.name.lower() for g in user.groups.all()]
+    user_in_admin_group = False
+    for name in admin_groups:
+        if name.lower() in normalized_user_group_names:
+            user_in_admin_group = True
+            break
+
+    if user.username in admins or user_in_admin_group:
         logger.debug(
             "user %s found in administrators config, granting superuser access",
             user.username,
@@ -123,6 +147,8 @@ def _reconcile_superuser(user: User, admins: List[str] = []):
         user.is_superuser = False
         user.save()
 
+    return user
+
 
 def _prefix_idp_groups(groups: List[str]):
     saml_settings: SAMLAuthSettings = inject.instance(
@@ -130,6 +156,42 @@ def _prefix_idp_groups(groups: List[str]):
     ).authentication
 
     return [f"{saml_settings.group_sync_prefix}{g}" for g in groups]
+
+
+def _reconcile_header_groups(user: User, groups: List[str]):
+    remote_settings: RemoteAuthSettings = inject.instance(
+        ApplicationSettings
+    ).authentication
+
+    current_user_remote_group_names = set(
+        user.groups.filter(
+            name__startswith=remote_settings.group_sync_prefix
+        ).values_list("name", flat=True)
+    )
+
+    new_remote_group_names = set(
+        [f"{remote_settings.group_sync_prefix}{g}" for g in groups]
+    )
+
+    # Remote groups existing in the Django database
+    existing_remote_groups_lookup = {
+        g.name: g for g in Group.objects.filter(name__in=new_remote_group_names)
+    }
+
+    # These groups need to be added to the database
+    group_names_to_add = new_remote_group_names - existing_remote_groups_lookup.keys()
+    # These groups need to be added to the user
+    user_groups_to_add = new_remote_group_names - current_user_remote_group_names
+    # These groups need to be removed from the user
+    user_groups_to_remove = current_user_remote_group_names - new_remote_group_names
+
+    for group_name in group_names_to_add:
+        Group.objects.get_or_create(name=group_name)
+
+    logger.debug("removing groups: %s", ",".join(user_groups_to_remove))
+    user.groups.remove(*Group.objects.filter(name__in=user_groups_to_remove))
+    logger.debug("adding groups: %s", ",".join(user_groups_to_add))
+    user.groups.add(*Group.objects.filter(name__in=user_groups_to_add))
 
 
 def _reconcile_idp_groups(user: User, attributes: Dict):

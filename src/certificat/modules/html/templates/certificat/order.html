@@ -104,7 +104,7 @@
                 {% with err=order.last_finalization_error %}
                     {% if err %}
                         <h4 class="mt-5">Finalization</h4>
-                        <div role="contentinfo" class="messages messages--error">
+                        <div role="contentinfo" class="message message--error">
                             {{ err.error }}
                         </div>
                     {% endif %}

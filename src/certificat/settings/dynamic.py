@@ -530,7 +530,7 @@ class ApplicationSettings(Settings):
         description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
     )
     session_cookie_age: int = Field(
-        60 * 8,
+        60 * 60 * 8,
         description="Django SESSION_COOKIE_AGE. This is the maximum age of the session cookie in seconds.",
     )
     time_zone: str = Field(

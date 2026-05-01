@@ -7,7 +7,7 @@ certificat:
   # secret_key: ""
   show_version: True
   url_root: "https://certificat.dev.localhost/"
-  web_ui_mountpoint: /web/
+  #web_ui_mountpoint: /web/
   #web_acme_mountpoint: /acmev2/
   finalizer:
     type: "local"
@@ -139,20 +139,20 @@ certificat:
   theming:
     global_css: |
       html:root {
-        --primary-color: #F76902;
-        --link-color: #C75300;
-        --logo-accent-color: #F76902;
-        --neutral-cool-color--100: #D0D3D4;
-        --neutral-cool-color--200: #A2AAAD;
-        --neutral-cool-color--300: #7C878E;
-        --neutral-warm-color--100: #D7D2CB;
-        --neutral-warm-color--200: #ACA39A;
-        --green-accent-color: #84BD00;
-        --lime-accent-color: #C4D600;
-        --blue-accent-color: #009CBD;
-        --purple-accent-color: #7D55C7;
-        --red-accent-color: #DA291C;
-        --orange-accent-color: #F6BE00;
+        --primary-color: #1a5276;
+        --link-color: #1f618d;
+        --logo-accent-color: #2e86c1;
+        --neutral-cool-color--100: #d6eaf8;
+        --neutral-cool-color--200: #a9cce3;
+        --neutral-cool-color--300: #154d70;
+        --neutral-warm-color--100: #d5d8dc;
+        --neutral-warm-color--200: #aab7b8;
+        --green-accent-color: #1e8449;
+        --lime-accent-color: #27ae60;
+        --blue-accent-color: #2e86c1;
+        --purple-accent-color: #6c3483;
+        --red-accent-color: #c0392b;
+        --orange-accent-color: #d68910;
         --gray-color--100: #f8f9fa;
         --gray-color--200: #e9ecef;
         --gray-color--300: #dee2e6;
@@ -163,18 +163,18 @@ certificat:
         --gray-color--800: #343a40;
         --gray-color--900: #212529;
         --body-text-color: #212529;
-        --font-stack: Helvetica Neue, Helvetica, Arial, sans‑serif;
-        
+        --font-stack: Helvetica Neue, Helvetica, Arial, sans-serif;
+
         --width--small-smartphone: 480px;
         --width--large-smartphone: 768px;
         --width--tiny-desktop: 1000px;
         --width--small-desktop: 1200px;
         --width--max: 1400px;
-        
+
         --font-size: 16px;
       }
 
       activity-graph {
-          --heat-calendar--start-color: #cff182 !important;
-          --heat-calendar--end-color: #fff8a4 !important;
+          --heat-calendar--start-color: #a9cce3 !important;
+          --heat-calendar--end-color: #d6eaf8 !important;
       }

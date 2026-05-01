@@ -26,7 +26,7 @@ Rochester Institute of Technology’s CertifiCat is an ACME (Automated Certifica
  - **Other features**:
    - RFC 1918 IP support
    - ACME toolkit to make EAB binding and key conversion easier
-   - certificat-ps PowerShell module to make automating Posh-ACME easier
+   - [certificat-ps PowerShell module](https://github.com/RIT-ITS/CertifiCat-PS) to make automating Posh-ACME easier
 
 ### Getting Help
 Use the GitHub issues feature if you encounter a bug or have questions. We’ll do our best to provide answers.

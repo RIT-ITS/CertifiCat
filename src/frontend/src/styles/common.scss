@@ -54,6 +54,13 @@ html {
     scrollbar-gutter: stable;
 }
 
+
+li {
+    list-style-type: none;
+}
+
+
+
 li {
      list-style-type: none;
 }
@@ -573,6 +580,18 @@ code {
     em,
     i {
         font-style: italic;
+    }
+
+    code {
+        font-family: monospace;
+        font-size: .8em;
+        background: #eee;
+        border-radius: 3px;
+        padding: .2em;
+    }
+
+    p {
+        margin-bottom: 2rem !important;
     }
 }
 

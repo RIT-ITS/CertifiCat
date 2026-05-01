@@ -7,21 +7,23 @@ from .dynamic import ApplicationSettings
 dynamic_settings = inject.instance(ApplicationSettings)
 
 __all__ = [
-    "BASE_DIR",
-    "SECRET_KEY",
-    "DEBUG",
     "ALLOWED_HOSTS",
     "APPEND_SLASH",
-    "STATIC_URL",
-    "STATIC_ROOT",
+    "BASE_DIR",
+    "CSRF_TRUSTED_ORIGINS",
+    "DEBUG",
+    "DEFAULT_AUTO_FIELD",
     "INSTALLED_APPS",
     "MIDDLEWARE",
     "ROOT_URLCONF",
+    "SECRET_KEY",
+    "SECURE_PROXY_SSL_HEADER",
+    "SESSION_COOKIE_AGE",
+    "SESSION_COOKIE_SECURE",
+    "STATIC_ROOT",
+    "STATIC_URL",
     "TEMPLATES",
     "WSGI_APPLICATION",
-    "DEFAULT_AUTO_FIELD",
-    "CSRF_TRUSTED_ORIGINS",
-    "SECURE_PROXY_SSL_HEADER",
 ]
 
 
@@ -48,7 +50,6 @@ STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(
 
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_AGE = dynamic_settings.session_cookie_age
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 INSTALLED_APPS = [

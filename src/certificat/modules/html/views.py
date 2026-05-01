@@ -460,7 +460,7 @@ def acs_failure(request, exception, status, **kwargs):
         {
             "attributes": attributes,
             "exception": exception,
-            "saml_settings": inject.attr(ApplicationSettings).authentication,
+            "saml_settings": inject.instance(ApplicationSettings).authentication,
         },
     )
 

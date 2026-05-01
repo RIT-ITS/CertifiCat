@@ -12,9 +12,9 @@ __all__ = [
     "AUTHENTICATION_BACKENDS",
 ]
 
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = urljoin(dynamic_settings.web_ui_mountpoint, "login/")
+LOGIN_REDIRECT_URL = dynamic_settings.web_ui_mountpoint
+LOGOUT_REDIRECT_URL = dynamic_settings.web_ui_mountpoint
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

@@ -12,7 +12,6 @@ from django.contrib.auth.models import Group, User
 
 class TestRemoteAuth:
     USER_HEADER = "USER"
-    LOGIN_URL = "/remote/login/"
 
     @pytest.fixture(autouse=True)
     def setup_class_members(self, settings):
@@ -22,7 +21,7 @@ class TestRemoteAuth:
         )
 
         settings.AUTHENTICATION_BACKENDS = ["certificat.auth.RemoteUserBackend"]
-        settings.LOGIN_URL = self.LOGIN_URL
+        settings.LOGIN_URL = reverse("remote-login-redirect")
         settings.MIDDLEWARE.append(
             "certificat.middleware.CustomHeaderRemoteUserMiddleware"
         )
@@ -31,7 +30,7 @@ class TestRemoteAuth:
         response = web_client.get(reverse(Sections.Accounts.value))
 
         assert response.status_code == 302
-        assert self.LOGIN_URL in response.url
+        assert reverse("remote-login-redirect") in response.url
 
     @pytest.mark.django_db
     def test_authenticated(self, web_client: Client):
@@ -115,10 +114,12 @@ class TestRemoteAuth:
 
         response = web_client.get(reverse(Sections.Accounts.value))
 
-        assert self.LOGIN_URL in response.url
+        assert reverse("remote-login-redirect") in response.url
         redirect = web_client.get(response.url)
 
-        assert redirect.url == "http://example.com/?rd=/accounts/"
+        assert redirect.url == "http://example.com/?rd=" + reverse(
+            Sections.Accounts.value
+        )
 
     @pytest.mark.django_db
     def test_unprotected_resources(self, web_client: Client):

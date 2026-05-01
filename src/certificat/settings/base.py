@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urljoin
 
 import inject
 from .dynamic import ApplicationSettings
@@ -40,7 +41,7 @@ else:
 
 APPEND_SLASH = True
 
-STATIC_URL = "/static/"
+STATIC_URL = urljoin(dynamic_settings.web_ui_mountpoint, "static/")
 STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(
     BASE_DIR, "server/static"
 )

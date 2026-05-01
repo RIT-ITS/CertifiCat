@@ -4,6 +4,7 @@ from django.urls import reverse
 from certificat.modules.html.nav import Sections
 import inject
 from josepy.jwk import JWK
+import josepy
 from acmev2.errors import ACMEError
 from acmev2.models import (
     AccountResource,
@@ -80,12 +81,12 @@ class NonceService(INonceService):
     nonce_prefix = "nonce:"
 
     def generate(self) -> str:
-        nonce = uuid.uuid4().hex
+        nonce = josepy.b64encode(uuid.uuid4().bytes).decode()
         # Some providers will hold onto nonces for a very long time. I'd love to
         # make this shorter, like 60 seconds, but it will fail and certs will
         # not be issued. Hopefully an hour is long enough.
         while not cache.add(f"{self.nonce_prefix}{nonce}", 0, timeout=ONE_HOUR):
-            nonce = uuid.uuid4().hex
+            nonce = josepy.b64encode(uuid.uuid4().bytes).decode()
 
         return nonce
 

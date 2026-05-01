@@ -7,7 +7,7 @@ certificat:
   # secret_key: ""
   show_version: True
   url_root: "https://certificat.dev.localhost/"
-  #web_ui_mountpoint: /web/
+  web_ui_mountpoint: /web/
   #web_acme_mountpoint: /acmev2/
   finalizer:
     type: "local"

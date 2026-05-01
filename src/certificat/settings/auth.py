@@ -13,8 +13,8 @@ __all__ = [
 ]
 
 LOGIN_URL = urljoin(dynamic_settings.web_ui_mountpoint, "login/")
-LOGIN_REDIRECT_URL = dynamic_settings.web_ui_mountpoint
-LOGOUT_REDIRECT_URL = dynamic_settings.web_ui_mountpoint
+LOGIN_REDIRECT_URL = dynamic_settings.web_ui_mountpoint.rstrip("/") + "/"
+LOGOUT_REDIRECT_URL = dynamic_settings.web_ui_mountpoint.rstrip("/") + "/"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

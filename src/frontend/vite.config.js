@@ -28,17 +28,7 @@ function moduleIdToChunks(id) {
     return null;
 }
 
-let base = 'https://certificat-dev.localhost';
-switch(process.env.NODE_ENV) {
-    case 'development':
-        base = 'https://certificat-dev.localhost';
-        break;
-    case 'production':
-        base = '/static/certificat.vite/';
-        break;  
-}
-
-
+let base = '';
 export default defineConfig({
     base: base,
     publicDir: false,

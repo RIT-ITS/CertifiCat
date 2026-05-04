@@ -9,7 +9,6 @@ from acmev2.services import ACMEEndpoint, IDirectoryService
 
 @pytest.mark.django_db
 def test_mountpoints_unaltered():
-
     web_prefix = "web-prefix/"
 
     # base expectations

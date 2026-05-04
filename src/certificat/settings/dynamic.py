@@ -649,14 +649,20 @@ class ApplicationSettings(Settings):
     @field_validator("web_ui_mountpoint", "web_api_mountpoint", "web_acme_mountpoint")
     @classmethod
     def validate_mountpoint(cls, value: str) -> str:
-        value = value.strip("/")
+        final_value = value.strip("/") + "/"
         pattern = r"[a-zA-Z0-9/\-_]*"
-        if not re.fullmatch(pattern, value):
+
+        if final_value == cls.DEFAULT_ACME_MOUNTPOINT:
+            raise ValueError(
+                f"'{value}' cannot be used as a custom mountpoint. If you're trying to configure acme, consider '/acmev2/'"
+            )
+
+        if not re.fullmatch(pattern, final_value):
             raise ValueError(
                 "mountpoint may only contain letters, numbers, forward slashes, hyphens, and underscores."
             )
 
-        return value + "/"
+        return final_value
 
 
 class LocalACMESettings(ACMESettings):

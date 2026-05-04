@@ -24,7 +24,7 @@ from acmev2.settings import ACMESettings
 from django.urls import clear_url_caches
 import inject
 import pytest
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from certificat.modules.acme import models as db
 from acmev2.services import (
     IDirectoryService,
@@ -245,7 +245,10 @@ def gen_acme_client():
     account_key = josepy.JWKRSA(key=rsa_key)
 
     net = acme.client.ClientNetwork(account_key, user_agent="certificat.tests")
-    net.session.mount(f"{ROOT_URL}/acme/", LocalACMEAdapter())
+    app_settings = ApplicationSettings.get()
+    net.session.mount(
+        urljoin(ROOT_URL, app_settings.web_acme_mountpoint), LocalACMEAdapter()
+    )
     directory_service = inject.instance(IDirectoryService)
 
     return acme.client.ClientV2(

@@ -76,7 +76,7 @@ class BreadCrumbs:
 
 def build_breadcrumbs(*crumbs: list[str | tuple]) -> BreadCrumbs:
     return BreadCrumbs(
-        [BreadCrumb("CertifiCat", "/")]
+        [BreadCrumb("CertifiCat", reverse(Sections.Dashboard.value))]
         + [
             BreadCrumb(args) if isinstance(args, str) else BreadCrumb(*args)
             for args in crumbs

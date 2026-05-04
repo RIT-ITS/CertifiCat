@@ -428,18 +428,27 @@ class CertificateView(ViewBase):
 
 
 class LocalLoginView(LoginView):
-    breadcrumbs = BreadCrumbs([BreadCrumb("CertifiCat", "/"), BreadCrumb("Login")])
-
     def get_context_data(self, **kwargs):
-        return super().get_context_data(breadcrumbs=self.breadcrumbs, **kwargs)
+        breadcrumbs = BreadCrumbs(
+            [
+                BreadCrumb("CertifiCat", reverse(Sections.Dashboard.value)),
+                BreadCrumb("Login"),
+            ]
+        )
+        return super().get_context_data(breadcrumbs=breadcrumbs, **kwargs)
 
 
 class LocalLogoutView(LogoutView):
     http_method_names = ["get", "post", "options"]
-    breadcrumbs = BreadCrumbs([BreadCrumb("CertifiCat", "/"), BreadCrumb("Logout")])
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(breadcrumbs=self.breadcrumbs, **kwargs)
+        breadcrumbs = BreadCrumbs(
+            [
+                BreadCrumb("CertifiCat", reverse(Sections.Dashboard.value)),
+                BreadCrumb("Logout"),
+            ]
+        )
+        return super().get_context_data(breadcrumbs=breadcrumbs, **kwargs)
 
     def get(self, request, *args, **kwargs):
         from django.contrib.auth import logout as auth_logout
@@ -471,7 +480,7 @@ def remote_login_redirect(request, *args, **kwargs):
     if app_settings.authentication.type != "remote":
         raise Exception("What are you doing?")
 
-    redirect_target = request.GET.get("next", "/")
+    redirect_target = request.GET.get("next", app_settings.web_ui_mountpoint)
     remote_auth_settings: RemoteAuthSettings = app_settings.authentication
 
     return redirect(

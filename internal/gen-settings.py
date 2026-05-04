@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import annotations
+import re
 from certificat.settings.dynamic import ConfigFile
 from certificat.settings.examples import example_map
 
@@ -50,13 +51,21 @@ class SchemaDocGenerator:
         for entry in summary_entries:
             if entry.schema.get("type") == "object":
                 continue
+
+            has_discriminator = self._has_discriminator(entry.schema)
+            if has_discriminator:
+                entry_text = f'<a href="#{self._anchor(entry.key_path)}" id="{self._anchor(entry.key_path)}-toplevel" name="{self._anchor(entry.key_path)}-toplevel">{entry.key_path}</a> ↗'
+            else:
+                entry_text = f'<a href="#{self._anchor(entry.key_path)}" id="{self._anchor(entry.key_path)}" name="{self._anchor(entry.key_path)}">{entry.key_path}</a>'
+
             lines.append(
                 "| "
-                f"[`{entry.key_path}`](#{self._anchor(entry.key_path)}) | "
+                f"{entry_text}"
+                "|"
                 f"{'✓' if entry.required == 'Yes' else ''} | "
-                f"{self._extract_default(entry.schema, suppress=self._has_discriminator(entry.schema))} | "
+                f"{self._extract_default(entry.schema, suppress=has_discriminator)} | "
                 f"{self._escape_pipes(self._extract_description(entry.schema) or '-')}"
-                " |"
+                " |",
             )
 
         for entry in detail_entries:
@@ -118,7 +127,7 @@ class SchemaDocGenerator:
 
         lines = [
             "",
-            f'<a id="{self._anchor(entry.key_path)}" name="{self._anchor(entry.key_path)}"></a>',
+            f'<a href="{self._anchor(entry.key_path)}" id="{self._anchor(entry.key_path)}" name="{self._anchor(entry.key_path)}"></a>',
             "",
             f"{'#' * level} `{entry.key_path}`",
             f"This is a polymorphic property controlled by the `{discriminator['propertyName']}` attribute. Use the following templates as an example of how to configure different `{entry.name}` types.",
@@ -192,12 +201,17 @@ class SchemaDocGenerator:
         for child in sorted(
             children, key=lambda child: "" if child.name == "type" else child.key_path
         ):
+            child_path_minus_parent = child.key_path.replace(parent_key, "").lstrip(".")
+            full_child_key = (
+                f"{parent_key}.{option.mapping_key}.{child_path_minus_parent}"
+            )
+
             default = self._extract_default(
                 child.schema, suppress=self._has_discriminator(child.schema)
             )
             lines.append(
                 "| "
-                f"[`{child.key_path}`](#{self._anchor(child.key_path)}) | "
+                f'<a href="#{self._anchor(full_child_key)}" id="{self._anchor(full_child_key)}" name="{self._anchor(full_child_key)}">{child.key_path}</a> |'
                 f"{'✓' if child.required == 'Yes' else ''} | "
                 f"{default} | "
                 f"{self._escape_pipes(self._extract_description(child.schema) or '-')}"
@@ -315,7 +329,7 @@ class SchemaDocGenerator:
 
     @staticmethod
     def _anchor(key: str) -> str:
-        return key.lower().replace(".", "-")
+        return "opt-" + re.sub(r"[\._]", "-", key)
 
     @staticmethod
     def _escape_pipes(value: str) -> str:

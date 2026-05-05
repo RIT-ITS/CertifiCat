@@ -19,14 +19,14 @@
     <c-tabs bordered>
         <c-tab group="clients" id="certbot" label="Certbot" default>
             <pre><code data-trim class='language-bash'>sudo certbot register \
-    --server="{{ request.scheme }}://{{ request.get_host }}{% url 'directory' %}" \
+    --server="{{ url_root.scheme }}://{{ url_root.netloc }}{% url 'directory' %}" \
     --eab-kid="{{ binding.hmac_id }}" \
     --eab-hmac-key="{{ binding.hmac_key }}" \
     --email="{{ request.user.email }}"</code></pre>
         </c-tab>
         <c-tab group="clients" id="posh" label="Posh-ACME">
             <div class="my-3"><a href="https://github.com/rmbolger/Posh-ACME">How to install the client</a></div>
-            <pre><code data-trim class='language-bash'>Set-PAServer "{{ request.scheme }}://{{ request.get_host }}{% url 'directory' %}"
+            <pre><code data-trim class='language-bash'>Set-PAServer "{{ url_root.scheme }}://{{ url_root.netloc }}{% url 'directory' %}"
 
 New-PAAccount -ExtAcctKID "{{ binding.hmac_id }}" `
               -ExtAcctHMACKey "{{ binding.hmac_key }}" `
@@ -36,7 +36,7 @@ New-PAAccount -ExtAcctKID "{{ binding.hmac_id }}" `
         <c-tab group="clients" id="ps" label="CertifiCat-PS">
             <div class="my-3"><a href="https://github.com/RIT-ITS/CertifiCat-PS">How to install the client</a></div>
             <pre><code data-trim class='language-bash'>Initialize-ACMEEnvironment `
-    -ACMEServer "{{ request.scheme }}://{{ request.get_host }}{% url 'directory' %}" `
+    -ACMEServer "{{ url_root.scheme }}://{{ url_root.netloc }}{% url 'directory' %}" `
     -PAUserID "{{ binding.hmac_id }}" `
     -PAUserKey "{{ binding.hmac_key }}"</code></pre>
         </c-tab>

@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 from django.views.decorators.http import require_http_methods
 from acmev2.services import IDirectoryService
 from acmev2.handlers import (
@@ -12,6 +14,7 @@ from acmev2.handlers import (
     CertRequestHandler,
 )
 from acmev2.handlers import handle as process_acme_request
+from certificat.settings.dynamic import ApplicationSettings
 import inject
 from django.http import HttpResponse, JsonResponse, HttpRequest
 import json
@@ -39,8 +42,13 @@ def handleACMERequest(
         except json.JSONDecodeError:
             body = None
 
+    expected_path = urljoin(ApplicationSettings.get().url_root, request.get_full_path())
+    # ACME has URL request integrity, which expects the server to verify that the request sent is
+    # meant for it. This can be hard to determine especially if an upstream proxy does SSL termination.
+    # Instead of reading headers and inferring the protocol, we use the configured url_root to determine
+    # what the client URL should be.
     req = ACMERequestType(
-        request.build_absolute_uri(),
+        expected_path,
         request.method,
         request.headers,
         body,

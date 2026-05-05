@@ -36,10 +36,6 @@ DEBUG = False
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [dynamic_settings.url_root]
 
-if dynamic_settings.trust_proxy_forwarded_proto:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-else:
-    SECURE_PROXY_SSL_HEADER = None
 
 APPEND_SLASH = True
 
@@ -50,7 +46,6 @@ STATIC_ROOT = dynamic_settings.staticfiles_root or os.path.join(
 
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_AGE = dynamic_settings.session_cookie_age
-
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -97,6 +92,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "certificat.modules.html.context_processors.nav",
                 "certificat.modules.html.context_processors.settings",
+                "certificat.modules.html.context_processors.url_root",
                 "certificat.modules.html.context_processors.version",
             ],
         },

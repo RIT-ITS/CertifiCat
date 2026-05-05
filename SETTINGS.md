@@ -37,7 +37,6 @@
 | <a href="#opt-certificat-task-queue-workers" id="opt-certificat-task-queue-workers" name="opt-certificat-task-queue-workers">certificat.task_queue.workers</a>| | `100` | Number of workers in the Huey task queue. |
 | <a href="#opt-certificat-theming-global-css" id="opt-certificat-theming-global-css" name="opt-certificat-theming-global-css">certificat.theming.global_css</a>| | `null` | Global CSS injected into a style tag rendered on every page. |
 | <a href="#opt-certificat-time-zone" id="opt-certificat-time-zone" name="opt-certificat-time-zone">certificat.time_zone</a>| | `America/New_York` | Django time zone, used mostly for date localization. |
-| <a href="#opt-certificat-trust-proxy-forwarded-proto" id="opt-certificat-trust-proxy-forwarded-proto" name="opt-certificat-trust-proxy-forwarded-proto">certificat.trust_proxy_forwarded_proto</a>| | `false` | Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True. |
 | <a href="#opt-certificat-url-root" id="opt-certificat-url-root" name="opt-certificat-url-root">certificat.url_root</a>|✓ | `-` | The url root is used to generate absolute urls to the application. It should not contain path and parameters. |
 
 <a href="opt-certificat-authentication" id="opt-certificat-authentication" name="opt-certificat-authentication"></a>

@@ -584,6 +584,7 @@ class ApplicationSettings(Settings):
     trust_proxy_forwarded_proto: Optional[bool] = Field(
         False,
         description="Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True.",
+        deprecated="This field is ignored and will be removed in the future. The url_root option is used to build and validate URLs.",
     )
     authentication: Union[
         SAMLAuthSettings, SkipJsonSchema[LocalAuthSettings], RemoteAuthSettings
@@ -661,6 +662,9 @@ class ApplicationSettings(Settings):
             raise ValueError(
                 "mountpoint may only contain letters, numbers, forward slashes, hyphens, and underscores."
             )
+
+        if final_value.strip() == "/":
+            final_value = ""
 
         return final_value
 

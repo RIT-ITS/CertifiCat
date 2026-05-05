@@ -6,8 +6,8 @@ certificat:
   # provided by env
   # secret_key: ""
   show_version: True
-  url_root: "https://certificat.dev.localhost/"
-  #web_ui_mountpoint: /web/
+  url_root: "https://certificat.dev.localhost"
+  #web_ui_mountpoint: "/web"
   #web_api_mountpoint: /web/api
   #web_acme_mountpoint: /acmev2/
   finalizer:
@@ -61,7 +61,6 @@ certificat:
       -----END CERTIFICATE-----  
 
   #finalizer_module: "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
-  trust_proxy_forwarded_proto: True
   
   # MySQL 
   db:

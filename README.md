@@ -70,8 +70,6 @@ certificat:
     host: 
     # Password for the Redis connection
     password: 
-  # Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True.
-  trust_proxy_forwarded_proto: False
   authentication:
     type: "saml"
     # A list of user principals who will automatically be given administrator privileges on login.

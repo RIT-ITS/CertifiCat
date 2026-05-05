@@ -8,12 +8,21 @@ from acmev2.services import ACMEEndpoint, IDirectoryService
 
 
 @pytest.mark.django_db
-def test_mountpoints_unaltered():
-    web_prefix = "web-prefix/"
+def test_mountpoints_unaltered(reload_urls):
+    app_settings = ApplicationSettings.get()
+    web_prefix = ""
+    acme_prefix = ""
+
+    # If you change the web_prefix, web URLs should load from there
+    app_settings.web_ui_mountpoint = web_prefix
+    # Likewise ACME URLs should change
+    app_settings.web_acme_mountpoint = acme_prefix
+
+    reload_urls()
 
     # base expectations
     url = reverse(Sections.Accounts.value)
-    assert web_prefix not in url
+    assert urlsplit(url).path == "/accounts/"
 
     url = reverse("directory")
     assert urlsplit(url).path == "/directory"
@@ -46,3 +55,19 @@ def test_mountpoints_altered(reload_urls):
 
     # Test that the urlbuilder in the directory service also uses the new mountpoint
     assert urlsplit(dir_svc_url).path == "/" + acme_prefix + "newAcct"
+
+
+@pytest.mark.django_db
+def test_mountpoints_equivalency(reload_urls):
+    app_settings = ApplicationSettings.get()
+
+    for prefix in ["web", "/web", "/web/"]:
+        app_settings.web_ui_mountpoint = ApplicationSettings.validate_mountpoint(prefix)
+
+        reload_urls()
+
+        url = reverse(Sections.Accounts.value)
+        url = reverse(Sections.Accounts.value)
+        assert urlsplit(url).path == "/web/accounts/", (
+            f"{prefix} produced incorrect url"
+        )

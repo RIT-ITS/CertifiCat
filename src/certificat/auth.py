@@ -108,18 +108,18 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
         Updates user attributes that aren't easily mappable.
         """
 
+        user = super()._update_user(
+            user, attributes, attribute_mapping, force_save=force_save
+        )
+
         # Gets a list of all the admins in the config file and gives them access
         # to the backend
-
         from certificat.settings.saml import saml_settings
 
         logger.debug("adding groups for user %s", user.username)
         _reconcile_idp_groups(user, attributes)
         _reconcile_superuser(
             user, saml_settings.administrators, saml_settings.administrators_groups
-        )
-        user = super()._update_user(
-            user, attributes, attribute_mapping, force_save=force_save
         )
 
         return user
@@ -207,9 +207,10 @@ def _reconcile_idp_groups(user: User, attributes: Dict):
         ApplicationSettings
     ).authentication
 
-    new_saml_group_names = set(
-        _prefix_idp_groups(attributes.get(saml_settings.group_attribute, []))
-    )
+    non_empty_saml_groups = [
+        g for g in attributes.get(saml_settings.group_attribute, []) if g
+    ]
+    new_saml_group_names = set(_prefix_idp_groups(non_empty_saml_groups))
 
     logger.debug(
         "prefixed saml groups from assertion: %s", ",".join(new_saml_group_names)
@@ -220,6 +221,7 @@ def _reconcile_idp_groups(user: User, attributes: Dict):
             name__startswith=saml_settings.group_sync_prefix
         ).values_list("name", flat=True)
     )
+
     # SAML groups existing in the Django database
     existing_saml_groups_lookup = {
         g.name: g for g in Group.objects.filter(name__in=new_saml_group_names)

@@ -301,6 +301,8 @@ class AuthorizationService(IAuthorizationService):
 
 
 class ChallengeService(IChallengeService):
+    authz_service = inject.attr(IAuthorizationService)
+
     def __init__(self):
         pass
 

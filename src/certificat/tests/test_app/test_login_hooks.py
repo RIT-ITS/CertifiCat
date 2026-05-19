@@ -15,6 +15,17 @@ from certificat.auth import (
     _reconcile_superuser,
 )
 from django.contrib.auth.models import Group, User
+from certificat.auth import Saml2Backend
+
+
+# @TODO: Test that SAML mappings work
+@pytest.mark.django_db
+def test_new_saml_user():
+    user = User(username="acmetest", email="acmetest@acme.edu")
+    backend = Saml2Backend()
+
+    user = backend._update_user(user, {}, {})
+    assert user.id is not None
 
 
 @pytest.mark.django_db

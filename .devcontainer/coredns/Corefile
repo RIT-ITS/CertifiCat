@@ -11,7 +11,6 @@ certificat.dev.localhost:53 {
     etcd {
         path /coredns
         endpoint http://etcd:2379
-        
     }
 
     tsig {

@@ -136,6 +136,7 @@ class SectigoBackend:
             "comments": "Submitted through acme-proxy",
             "externalRequester": external_requester,
             "csr": csr,
+            "dcvMode": "CNAME",
         }
 
         logger.debug("Enrolling certificate")

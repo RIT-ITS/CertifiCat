@@ -53,6 +53,23 @@ sectigo_finalizer:
   external_requester_override: {{ .Values.sectigo_finalizer.external_requester_override | default "" }}
 {{- end}}
 
+{{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.certinext.CertinextFinalizer" }}
+certinext_finalizer:
+  client_id: {{ .Values.certinext_finalizer.client_id | default "" | quote }}
+  client_secret: {{ .Values.certinext_finalizer.client_secret | default "" | quote }}
+  product: {{ .Values.certinext_finalizer.product | default "dv" | quote }}
+  organization_id: {{ .Values.certinext_finalizer.organization_id | default "" | quote }}
+  validity_years: {{ .Values.certinext_finalizer.validity_years | default 1 }}
+  sandbox: {{ .Values.certinext_finalizer.sandbox | default false }}
+  requestor_name: {{ .Values.certinext_finalizer.requestor_name | default "" | quote }}
+  requestor_email: {{ .Values.certinext_finalizer.requestor_email | default "" | quote }}
+  signer_name: {{ .Values.certinext_finalizer.signer_name | default "" | quote }}
+  signer_place: {{ .Values.certinext_finalizer.signer_place | default "" | quote }}
+  {{- if .Values.certinext_finalizer.prevetting_token }}
+  prevetting_token: {{ .Values.certinext_finalizer.prevetting_token | quote }}
+  {{- end }}
+{{- end }}
+
 {{- if eq .Values.certificat.finalizer_module "certificat.modules.acme.backends.local.LocalFinalizer" }}
   {{- if or .Values.certificat.local_finalizer.key .Values.certificat.local_finalizer.cert }}
 local_finalizer:

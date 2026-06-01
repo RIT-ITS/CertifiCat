@@ -48,6 +48,18 @@ saml:
         cert: "/workspaces/certificat/src/certificat_dev/saml/inc-md-cert-mdq.pem"
         freshness_period: "P0Y0M0DT2H0M0S"
         
+# CertiNext finalizer — uncomment and fill in to use CertinextFinalizer
+#certinext_finalizer:
+#  client_id: "YOUR_ACCOUNT_NUMBER"
+#  client_secret: "YOUR_OAUTH_CLIENT_SECRET"
+#  product: "dv"
+#  sandbox: true
+#  requestor_name: "Certificate Automation"
+#  requestor_email: "certs@acme.edu"
+#  signer_name: "Certificate Automation"
+#  signer_place: "Portland, ME"
+#  # prevetting_token: ""   # OV/EV: bypasses pending-approval when set
+
 sectigo_finalizer:
   org_id: 12345
   cert_profile_id: 1234

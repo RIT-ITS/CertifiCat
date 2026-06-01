@@ -19,7 +19,9 @@ certificat:
     certificat_level: DEBUG
     acmev2_level: DEBUG
   login_method: "local"
-  finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
+  # finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
+  # finalizer_module: "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
+  finalizer_module: "certificat.modules.acme.backends.certinext.CertinextFinalizer"
 local_finalizer:
   key: |
     -----BEGIN RSA PRIVATE KEY-----
@@ -67,4 +69,18 @@ local_finalizer:
     atZhtPs3UzZ4gYJY9wB+MeX5EpLPHQJpoLYQoJO+Q22JuFuPkTfIsQG/Fzvv+hzj
     0aRuPpTug5Kgc1VrD97fjbNVn5Q/v0d8eL+eB7jujTSSXg/iBTH9D/0MSTp0u2Mm
     qIQFqQ2WEBc=
-    -----END CERTIFICATE-----  
+    -----END CERTIFICATE-----
+
+# CertiNext finalizer — required when finalizer_module is CertinextFinalizer
+#certinext_finalizer:
+#  client_id: "YOUR_ACCOUNT_NUMBER"
+#  client_secret: "YOUR_OAUTH_CLIENT_SECRET"
+#  product: "dv"             # dv, ov, or ev
+#  # organization_id: ""    # required for ov / ev
+#  validity_years: 1
+#  sandbox: false
+#  requestor_name: "Certificate Automation"
+#  requestor_email: "certs@example.edu"
+#  signer_name: "Certificate Automation"
+#  signer_place: "Portland, ME"
+#  # prevetting_token: ""   # OV/EV: bypasses pending-approval when set  

@@ -22,6 +22,7 @@ dependencies = [
     "markdown>=3.7",
     "huey>=2.5.3",
     "django-import-export>=4.3.7",
+    "certinext>=0.2.0rc2",
 ]
 
 [tool.uv]

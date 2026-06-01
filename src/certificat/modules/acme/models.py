@@ -337,6 +337,34 @@ class ChallengeError(models.Model):
     error = models.TextField()
 
 
+class CertinextOrderRef(TimestampMixin):
+    """Persists the CertiNext order ID for a CertifiCat order.
+
+    Created on the first finalization attempt; re-used on every retry so the
+    finalizer never creates a duplicate CertiNext order. The live CertiNext
+    order status is re-fetched from the API on each attempt — no local state
+    machine is needed.
+    """
+
+    order = models.OneToOneField(
+        Order, on_delete=models.CASCADE, related_name="certinext_ref"
+    )
+    certinext_order_id = models.CharField(null=True, max_length=64)
+
+    @classmethod
+    def for_order(cls, order: "Order") -> "CertinextOrderRef":
+        """Return (or create) the CertinextOrderRef for the given order.
+
+        Args:
+            order: The CertifiCat order being finalized.
+
+        Returns:
+            The existing or newly-created :class:`CertinextOrderRef`.
+        """
+        ref, _ = cls.objects.get_or_create(order=order)
+        return ref
+
+
 class SectigoOrderProcessingState(TimestampMixin):
     class Choices(models.TextChoices):
         SUBMITTED = "SU", "Submitted"

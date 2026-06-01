@@ -12,6 +12,7 @@ Rochester Institute of Technology’s CertifiCat is an ACME (Automated Certifica
    - CNCF cert-manager
  - **Certificate Authorities**:
    - Sectigo Certificate Manager (REST API)
+   - CertiNext (REST API via the `certinext` library)
    - Local certificate authority
  - **ACME Challenges**:
    - HTTP-01
@@ -103,6 +104,7 @@ certificat:
   # all requests against one backend.
   # Valid values: "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
   #               "certificat.modules.acme.backends.local.LocalFinalizer"
+  #               "certificat.modules.acme.backends.certinext.CertinextFinalizer"
   finalizer_module: "certificat.modules.acme.backends.local.LocalFinalizer"
   # If set to True, invalid orders will be purged after some time.
   delete_invalid_orders: True
@@ -192,6 +194,30 @@ sectigo_finalizer:
   approval_api_password: "password-for-api-approver-user"
   # This email will be sent certificate lifecycle alerts
   external_requester_override: certs@acme.edu
+
+# Required for certificat.modules.acme.backends.certinext.CertinextFinalizer module
+certinext_finalizer:
+  # CertiNext account number (OAuth client ID)
+  client_id: "YOUR_ACCOUNT_NUMBER"
+  # OAuth client secret from the CertiNext portal (Integrations → APIs → OAuth mode)
+  client_secret: "YOUR_CLIENT_SECRET"
+  # Validation level: dv, ov, or ev
+  product: "dv"
+  # Required for ov and ev orders
+  # organization_id: "YOUR_ORG_ID"
+  # Certificate validity in years (1, 2, or 3)
+  validity_years: 1
+  # Set to true to use the CertiNext sandbox environment
+  sandbox: false
+  # Default requestor fields attached to every order
+  requestor_name: "Certificate Automation"
+  requestor_email: "certs@example.edu"
+  # Name and location of the person accepting the subscriber agreement
+  signer_name: "Certificate Automation"
+  signer_place: "Portland, ME"
+  # Organization Consent Token — OV/EV only; when set, bypasses the pending-approval stage.
+  # Retrieve from the CertiNext Enterprise Portal under Organization Management.
+  # prevetting_token: "YOUR_TOKEN"
   
 ```
 

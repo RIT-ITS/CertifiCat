@@ -1,6 +1,6 @@
 from typing import List, Literal, Mapping, Self, Optional
 
-from pydantic import Field, ValidationError, BaseModel
+from pydantic import Field, ValidationError, BaseModel, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -118,6 +118,7 @@ class ApplicationSettings(Settings):
         examples=[
             "certificat.modules.acme.backends.local.LocalFinalizer",
             "certificat.modules.acme.backends.sectigo.SectigoFinalizer",
+            "certificat.modules.acme.backends.certinext.CertinextFinalizer",
         ],
     )
     delete_invalid_orders: bool = Field(
@@ -179,6 +180,68 @@ class SectigoSettings(BaseModel):
         60 * 5,
         description="The finalizer task will continue to poll the Sectigo backend to check if the certificate is ready for approval or approved until hitting this deadline in seconds.",
     )
+
+
+class CertinextSettings(BaseModel):
+    model_config = SettingsConfigDict(
+        validate_default=False, env_prefix="CERTINEXT__", env_nested_delimiter="__"
+    )
+
+    @classmethod
+    def get(cls) -> Self:
+        return ConfigFile.load().certinext_finalizer
+
+    client_id: str = Field(description="CertiNext account number (OAuth client ID).")
+    client_secret: str = Field(description="OAuth client secret from the CertiNext portal.")
+    product: Literal["dv", "ov", "ev"] = Field(
+        "dv",
+        description="Certificate validation level: 'dv', 'ov', or 'ev'.",
+    )
+    organization_id: Optional[str] = Field(
+        None,
+        description="CertiNext organization ID. Required for 'ov' and 'ev' orders.",
+        required=False,
+    )
+    validity_years: int = Field(1, description="Certificate validity period in years.")
+    sandbox: bool = Field(
+        False,
+        description="Connect to the CertiNext sandbox environment instead of production.",
+    )
+    base_url: Optional[str] = Field(
+        None,
+        description="Override the CertiNext API base URL. Defaults to the production (or sandbox) endpoint.",
+        required=False,
+    )
+    token_url: Optional[str] = Field(
+        None,
+        description="Override the OAuth token endpoint URL.",
+        required=False,
+    )
+    scope: str = Field("", description="Optional OAuth scope string.")
+    requestor_name: str = Field("", description="Default requestor name for certificate orders.")
+    requestor_email: str = Field("", description="Default requestor email. Overrides the account binding email when set.")
+    requestor_phone: str = Field("", description="Default requestor phone number.")
+    requestor_designation: str = Field("", description="Default requestor job title or designation.")
+    signer_name: str = Field("", description="Name of the person accepting the subscriber agreement.")
+    signer_place: str = Field("", description="City and state of the agreement signer (e.g. 'Portland, ME').")
+    prevetting_token: Optional[str] = Field(
+        None,
+        description=(
+            "Organization Consent Token for OV/EV orders. When provided, the CA "
+            "auto-approves the order, bypassing the pending-approval stage. "
+            "Retrieve from the CertiNext Enterprise Portal under Organization Management."
+        ),
+        required=False,
+    )
+
+    @model_validator(mode="after")
+    def _require_org_for_ov_ev(self) -> "CertinextSettings":
+        """Require organization_id for OV and EV orders."""
+        if self.product in ("ov", "ev") and not self.organization_id:
+            raise ValueError(
+                f"organization_id is required when product is '{self.product}'"
+            )
+        return self
 
 
 class SAMLSPSettings(BaseModel):
@@ -307,6 +370,7 @@ class ConfigFile(BaseSettings):
     saml: Optional[SAMLSettings] = None
     sectigo_finalizer: Optional[SectigoSettings] = None
     local_finalizer: Optional[LocalCASettings] = None
+    certinext_finalizer: Optional[CertinextSettings] = None
 
     @classmethod
     def load(cls, force_reload=False):
@@ -349,6 +413,11 @@ class ConfigFile(BaseSettings):
                         if _config.sectigo_finalizer is None:
                             raise Exception(
                                 "Config file must contain 'sectigo_finalizer' section if 'SectigoFinalizer' backend is requested"
+                            )
+                    case "certificat.modules.acme.backends.certinext.CertinextFinalizer":
+                        if _config.certinext_finalizer is None:
+                            raise Exception(
+                                "Config file must contain 'certinext_finalizer' section if 'CertinextFinalizer' backend is requested"
                             )
 
                 setattr(cls, "_config", _config)

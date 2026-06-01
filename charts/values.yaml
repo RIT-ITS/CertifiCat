@@ -117,6 +117,19 @@ secretProviders:
         GENERATE YOUR OWN!
         -----END CERTIFICATE-----
 
+certinext_finalizer:
+  client_id: ""
+  client_secret: ""
+  product: "dv"
+  organization_id: ""
+  validity_years: 1
+  sandbox: false
+  requestor_name: "Certificate Automation"
+  requestor_email: ""
+  signer_name: "Certificate Automation"
+  signer_place: ""
+  prevetting_token: ""
+
 certificat_secrets:
   - from: *generatedSecrets
     mapping:

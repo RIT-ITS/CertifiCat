@@ -3,6 +3,8 @@ groups:
     label: "Certificat SAML Configuration"
   - name: "Sectigo Finalizer"
     label: "Sectigo Finalizer Configuration"
+  - name: "CertiNext Finalizer"
+    label: "CertiNext Finalizer Configuration"
 
 questions:
   - variable: persistentVolumeClaim.storageClassName
@@ -81,6 +83,7 @@ questions:
     options:
       - "certificat.modules.acme.backends.local.LocalFinalizer"
       - "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
+      - "certificat.modules.acme.backends.certinext.CertinextFinalizer"
 
   - variable: certificat.local_finalizer.key
     label: "Local Finalizer Private Key"
@@ -313,3 +316,106 @@ questions:
     show_if: "certificat.finalizer_module=certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     required: false
     group: "Sectigo Finalizer"
+
+##
+# CertiNext Finalizer
+##
+
+  - variable: certinext_finalizer.client_id
+    label: "Account Number (Client ID)"
+    type: string
+    description: "Your CertiNext account number (OAuth client ID)"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: true
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.client_secret
+    label: "Client Secret"
+    type: password
+    description: "OAuth client secret from the CertiNext portal (Integrations → APIs)"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: true
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.product
+    label: "Certificate Product"
+    type: enum
+    default: "dv"
+    description: "Validation level for issued certificates"
+    options:
+      - "dv"
+      - "ov"
+      - "ev"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: true
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.organization_id
+    label: "Organization ID"
+    type: string
+    description: "CertiNext organization ID — required for OV and EV orders"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.validity_years
+    label: "Validity Years"
+    type: int
+    default: 1
+    description: "Certificate validity period in years (1, 2, or 3)"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.sandbox
+    label: "Use Sandbox"
+    type: boolean
+    default: false
+    description: "Connect to the CertiNext sandbox environment instead of production"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.requestor_name
+    label: "Requestor Name"
+    type: string
+    default: "Certificate Automation"
+    description: "Default requestor name attached to certificate orders"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.requestor_email
+    label: "Requestor Email"
+    type: string
+    default: "certs@example.edu"
+    description: "Default requestor email. Overrides the ACME account binding email when set."
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.signer_name
+    label: "Signer Name"
+    type: string
+    default: "Certificate Automation"
+    description: "Name of the person accepting the subscriber agreement"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.signer_place
+    label: "Signer Location"
+    type: string
+    default: "Portland, ME"
+    description: "City and state of the agreement signer (e.g. Portland, ME)"
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"
+
+  - variable: certinext_finalizer.prevetting_token
+    label: "Organization Consent Token"
+    type: password
+    description: "OV/EV only: bypasses the pending-approval stage when set. Retrieve from the CertiNext Enterprise Portal under Organization Management."
+    show_if: "certificat.finalizer_module=certificat.modules.acme.backends.certinext.CertinextFinalizer"
+    required: false
+    group: "CertiNext Finalizer"

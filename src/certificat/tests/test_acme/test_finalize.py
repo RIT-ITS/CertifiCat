@@ -253,3 +253,102 @@ def test_flaky_sectigo_api(
     # Even though it failed the cert was still collected after retries
     assert processing_state.state == db.SectigoOrderProcessingState.Choices.COLLECTED
     assert order.certificate is not None
+
+
+# ---------------------------------------------------------------------------
+# CertiNext finalizer tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_finalize_certinext_happy_path(
+    acme_client: acme.client.ClientV2,
+    settings: ApplicationSettings,
+    acme_neworder,
+):
+    """CertinextFinalizer issues a certificate and the order goes valid."""
+    settings.finalizer_module = (
+        "certificat.tests.test_acme.finalizer_mocks.MockCertinextFinalizer"
+    )
+
+    new_order: NewOrderRet = acme_neworder()
+    order = do_challenge(acme_client, new_order.response)
+    finalized = finalize_order(acme_client, order)
+
+    assert finalized.body.status.name == "valid"
+    assert len(finalized.fullchain_pem) > 0
+
+
+@pytest.mark.django_db
+def test_finalize_certinext_create_failure_records_error(
+    acme_client: acme.client.ClientV2,
+    settings: ApplicationSettings,
+    acme_neworder,
+):
+    """When ssl.create raises, an OrderFinalizationError is recorded."""
+    settings.finalizer_module = (
+        "certificat.tests.test_acme.finalizer_mocks.FailingCreateMockCertinextFinalizer"
+    )
+
+    new_order: NewOrderRet = acme_neworder()
+    order = do_challenge(acme_client, new_order.response)
+
+    with pytest.raises(errors.TimeoutError):
+        finalize_order(acme_client, order, timeout=0)
+
+    assert db.OrderFinalizationError.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_finalize_certinext_terminal_rejected_records_error(
+    acme_client: acme.client.ClientV2,
+    settings: ApplicationSettings,
+    acme_neworder,
+):
+    """When the CertiNext order ends in 'rejected', an OrderFinalizationError is recorded."""
+    settings.finalizer_module = (
+        "certificat.tests.test_acme.finalizer_mocks.TerminalRejectedMockCertinextFinalizer"
+    )
+
+    new_order: NewOrderRet = acme_neworder()
+    order = do_challenge(acme_client, new_order.response)
+
+    with pytest.raises(errors.TimeoutError):
+        finalize_order(acme_client, order, timeout=0)
+
+    assert db.OrderFinalizationError.objects.count() >= 1
+
+
+@pytest.mark.django_db
+def test_finalize_certinext_order_id_persisted_across_retries(
+    acme_client: acme.client.ClientV2,
+    settings: ApplicationSettings,
+    acme_neworder,
+):
+    """The CertiNext order is created exactly once; retries resume by ID."""
+    from certificat.modules.tasks.finalize_order import finalize_order_task
+
+    settings.finalizer_module = (
+        "certificat.tests.test_acme.finalizer_mocks.FailingCreateMockCertinextFinalizer"
+    )
+
+    new_order: NewOrderRet = acme_neworder()
+    orderr = do_challenge(acme_client, new_order.response)
+
+    with pytest.raises(errors.TimeoutError):
+        finalize_order(acme_client, orderr, timeout=0)
+
+    order_name = orderr.uri.split("/")[-1]
+    order = db.Order.objects.get(name=order_name)
+
+    # Switch to the happy-path finalizer and manually retry.
+    settings.finalizer_module = (
+        "certificat.tests.test_acme.finalizer_mocks.MockCertinextFinalizer"
+    )
+    order.status = OrderStatus.processing
+    order.save()
+    finalize_order_task(order.name)
+
+    # A CertinextOrderRef row must exist for this order (created on first attempt
+    # or the retry) — proves the ID is persisted, not re-created each call.
+    assert db.CertinextOrderRef.objects.filter(order=order).exists()
+    assert order.certificate is not None

@@ -243,3 +243,103 @@ class SlowCollectMockSectigoFinalizer(SectigoFinalizer):
 class FlakyMockSectigoFinalizer(SectigoFinalizer):
     def __init__(self):
         self.backend = FlakySectigoBackend()
+
+
+# ---------------------------------------------------------------------------
+# CertiNext mocks
+# ---------------------------------------------------------------------------
+
+from unittest.mock import MagicMock
+from certificat.modules.acme.backends.certinext import CertinextFinalizer
+from certificat.settings.dynamic import CertinextSettings
+
+_CERTINEXT_SETTINGS = CertinextSettings(
+    client_id="test-account",
+    client_secret="test-secret",
+    product="dv",
+    validity_years=1,
+    sandbox=True,
+    requestor_name="Test User",
+    requestor_email="test@acme.edu",
+    signer_name="Test User",
+    signer_place="Orono, Maine",
+)
+
+
+def _make_mock_order(order_id="CN-ORDER-001", status="issued"):
+    """Return a MagicMock that looks like a certinext SslOrder."""
+    order = MagicMock()
+    order.order_id = order_id
+    order.status = status
+    cert_dl = MagicMock()
+    cert_dl.as_pem_chain.return_value = bundle + "\n"
+    order.download_certificate.return_value = cert_dl
+    return order
+
+
+class _BaseMockCertinextFinalizer(CertinextFinalizer):
+    """Base for CertiNext finalizer test doubles.
+
+    Subclasses set ``_session`` to a fake certinext session. Settings are
+    always returned from ``_CERTINEXT_SETTINGS`` without hitting the config
+    file.
+    """
+
+    _session: MagicMock
+
+    def _build_session(self, s):
+        return self._session
+
+    def finalize(self, order, pem_csr):
+        from certificat.settings import dynamic as dyn
+        original = dyn.CertinextSettings.get
+        dyn.CertinextSettings.get = staticmethod(lambda: _CERTINEXT_SETTINGS)
+        try:
+            return super().finalize(order, pem_csr)
+        finally:
+            dyn.CertinextSettings.get = original
+
+
+class MockCertinextFinalizer(_BaseMockCertinextFinalizer):
+    """Happy-path: order issued on the first call."""
+
+    def __init__(self):
+        sess = MagicMock()
+        sess.ssl.create.return_value = _make_mock_order(status="issued")
+        sess.ssl.get.return_value = _make_mock_order(status="issued")
+        self._session = sess
+
+
+class PendingThenIssuedMockCertinextFinalizer(_BaseMockCertinextFinalizer):
+    """First resume call returns pending-approval; second returns issued."""
+
+    def __init__(self):
+        sess = MagicMock()
+        # create is never called (order_id already persisted on second call)
+        sess.ssl.create.return_value = _make_mock_order(status="pending-approval")
+        # get alternates: first call → pending, subsequent → issued
+        sess.ssl.get.side_effect = [
+            _make_mock_order(status="pending-approval"),
+            _make_mock_order(status="issued"),
+        ]
+        self._session = sess
+
+
+class FailingCreateMockCertinextFinalizer(_BaseMockCertinextFinalizer):
+    """ssl.create raises CertiNextAPIError — should record an OrderFinalizationError."""
+
+    def __init__(self):
+        from certinext.exceptions import CertiNextAPIError
+        sess = MagicMock()
+        sess.ssl.create.side_effect = CertiNextAPIError(500, {"detail": "internal error"})
+        self._session = sess
+
+
+class TerminalRejectedMockCertinextFinalizer(_BaseMockCertinextFinalizer):
+    """Order ends in 'rejected' — should record an OrderFinalizationError."""
+
+    def __init__(self):
+        sess = MagicMock()
+        sess.ssl.create.return_value = _make_mock_order(status="rejected")
+        sess.ssl.get.return_value = _make_mock_order(status="rejected")
+        self._session = sess

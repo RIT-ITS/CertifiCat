@@ -124,7 +124,7 @@ dev = [
 requires-dist = [
     { name = "acmev2", specifier = "==0.1.1" },
     { name = "asn1", specifier = "==3.1.0" },
-    { name = "certinext", specifier = ">=0.2.0rc2" },
+    { name = "certinext", specifier = ">=0.2.0" },
     { name = "django", specifier = "==5.2.3" },
     { name = "django-cotton", specifier = ">=1.3.0" },
     { name = "django-import-export", specifier = ">=4.3.7" },
@@ -155,16 +155,16 @@ dev = [
 
 [[package]]
 name = "certinext"
-version = "0.2.0rc2"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dotenv" },
     { name = "requests" },
     { name = "tabulate" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/46/fdc8233195a50182415976060ec69b3f9b3c8b5c4c731d33a0ca58f74c4c/certinext-0.2.0rc2.tar.gz", hash = "sha256:761e05054ee5b27c585b485f2fa4b6d035ff5953929780be4bd34c34bd10c028", size = 122203, upload-time = "2026-06-01T16:20:59.984Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/9b/e7cec4ba445fd3a5d219d1615cef558cf026290c944cfe790bf925c488fc/certinext-0.2.0.tar.gz", hash = "sha256:50f0705217f7d876b3a4c38b73a85e9019e4a0c4eba5a96254fa94ebae9a94c0", size = 124934, upload-time = "2026-06-02T12:11:49.13Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/ec/1162c712c80f66ab084a9a53172b6ff608389e2dd153bd1b224b6c542298/certinext-0.2.0rc2-py3-none-any.whl", hash = "sha256:3542b90e2298a7d74345fcc7b29473356e8a6347c71a191167f8e78ba60cd42c", size = 83888, upload-time = "2026-06-01T16:20:58.561Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/fc/3e139c559ba9c68396f1690ca2ee6b27958ae92afdc6c1516debd17941cd/certinext-0.2.0-py3-none-any.whl", hash = "sha256:041cfe528b501832364250b421ead2041be48ffae18362965bc68a442455db40", size = 84812, upload-time = "2026-06-02T12:11:47.706Z" },
 ]
 
 [[package]]

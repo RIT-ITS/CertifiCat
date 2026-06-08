@@ -96,7 +96,6 @@ class CertinextFinalizer(Finalizer):
             requestor_email = ""
 
         if ref.certinext_order_id is None:
-            logger.info(f"{log_prefix}: creating CertiNext order for {primary_domain!r}")
             ssl_order = sess.ssl.create(
                 s.product,
                 primary_domain,
@@ -116,7 +115,7 @@ class CertinextFinalizer(Finalizer):
             # re-creates the order even if the task is killed immediately after.
             ref.certinext_order_id = ssl_order.order_id
             ref.save()
-            logger.info(f"{log_prefix}: CertiNext order {ssl_order.order_id!r} created")
+            logger.info(f"{log_prefix}: created CertiNext order {ssl_order.order_id!r} for {primary_domain!r}")
             wf = OrderWorkflow(
                 ssl_order,
                 signer_name=s.signer_name,
@@ -124,7 +123,7 @@ class CertinextFinalizer(Finalizer):
                 auto_verify_dcv=False,
             )
         else:
-            logger.info(
+            logger.debug(
                 f"{log_prefix}: resuming CertiNext order {ref.certinext_order_id!r}"
             )
             wf = OrderWorkflow.from_order_id(
@@ -139,8 +138,20 @@ class CertinextFinalizer(Finalizer):
         status = wf.status
 
         if wf.is_complete:
-            logger.info(f"{log_prefix}: CertiNext order {ref.certinext_order_id!r} issued")
-            chain = wf.download_chain()
+            logger.info(f"{log_prefix}: CertiNext order {ref.certinext_order_id!r} issued; downloading chain")
+            try:
+                chain = wf.download_chain()
+            except cn.CertiNextAPIError as exc:
+                # The CA may return 422 briefly after issuance while the
+                # certificate is being generated. Retry silently rather than
+                # recording an OrderFinalizationError.
+                if exc.status_code == 422:
+                    logger.info(
+                        f"{log_prefix}: certificate not yet ready for download "
+                        f"(HTTP 422 {exc.ems_code}), will retry"
+                    )
+                    raise NotReadyException()
+                raise
             db.Certificate.objects.create(order=order, chain=chain)
             return FinalizeResponse(bundle=chain)
 
@@ -160,7 +171,7 @@ class CertinextFinalizer(Finalizer):
 
         # Order is still in a pending state (pending-approval, pending-csr,
         # pending-agreement, etc.) — signal the task runner to retry.
-        logger.info(
+        logger.debug(
             f"{log_prefix}: CertiNext order {ref.certinext_order_id!r} status={status!r}, "
             "will retry"
         )

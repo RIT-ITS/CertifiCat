@@ -21,11 +21,11 @@ dependencies = [
     "django-import-export>=4.3.7",
     "psycopg[binary]>=3.3.3",
     "acmev2>=0.2.0",
+    "acme>=2.11.0",
 ]
 
 [tool.uv]
 dev-dependencies = [
-    "acme>=2.11.0",
     "django-debug-toolbar>=4.4.6",
     "dnsmock>=21.2b2",
     "pytest-django>=4.9.0",

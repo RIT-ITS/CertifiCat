@@ -18,18 +18,10 @@ logger = logging.getLogger(__name__)
 
 class CertiNextFinalizer(Finalizer):
     # These states fail the order straight away
-    invalid_order_states = [
-        4,  # Rejected
-        5,  # Canceled
-        7,  # On hold
-        8,  # Pending approval
-        9,  # Pending account admin
-    ]
+    invalid_order_states = ["cancelled", "revoked", "expired"]
 
     # This means the order is ready to be moved to the next stage
-    finished_order_states = [
-        6,  # Fulfilled
-    ]
+    finished_order_states = ["issued"]
 
     # These states fail the certificate right away
     invalid_certificate_states = [
@@ -78,15 +70,23 @@ class CertiNextFinalizer(Finalizer):
             logger.info(f"{log_prefix}: generating upstream order")
 
             gen_order_response = self.backend.generate_order(order, pem_csr)
-            gen_order_response.raise_if_not_ok()
+            if gen_order_response.is_error():
+                raise StopFinalization(
+                    "Error submitting order: " + gen_order_response.error.description
+                )
 
-            processing_state.order_number = gen_order_response.order_number
+            if gen_order_response.wrapped.status in self.invalid_order_states:
+                raise StopFinalization(
+                    "Order in invalid state: " + gen_order_response.wrapped.status
+                )
+
+            processing_state.order_number = gen_order_response.wrapped.order_number
             logger.info(f"{log_prefix}: order successfully generated")
             processing_state.transition_to(
                 db.CertiNextOrderProcessingState.Choices.ORDERED
             )
 
-        # CertifiCat has submitted the order to CertiNext
+        # CertifiCat has submitted the order to CERTINext
         if processing_state.state == db.CertiNextOrderProcessingState.Choices.ORDERED:
             start = datetime.now()
             while (
@@ -97,22 +97,18 @@ class CertiNextFinalizer(Finalizer):
                 track_order_response = self.backend.track_order(
                     processing_state.order_number
                 )
-                track_order_response.raise_if_not_ok()
-
-                if (
-                    track_order_response.order_status in self.invalid_order_states
-                    or track_order_response.certificate_status
-                    in self.invalid_certificate_states
-                ):
+                if track_order_response.is_error():
                     raise StopFinalization(
-                        f"Invalid state in upstream - order: {track_order_response.order_status_detail}, certificate: {track_order_response.certificate_status_detail}"
+                        "Error tracking order: "
+                        + track_order_response.error.description
                     )
 
-                if (
-                    track_order_response.order_status in self.finished_order_states
-                    and track_order_response.certificate_status
-                    in self.finished_certificate_states
-                ):
+                if track_order_response.wrapped.status in self.invalid_order_states:
+                    raise StopFinalization(
+                        "Order in invalid state: " + track_order_response.wrapped.status
+                    )
+
+                if track_order_response.wrapped.status in self.finished_order_states:
                     logger.info(f"{log_prefix}: order fulfilled")
                     processing_state.transition_to(
                         db.CertiNextOrderProcessingState.Choices.FULFILLED
@@ -123,23 +119,22 @@ class CertiNextFinalizer(Finalizer):
                     != db.CertiNextOrderProcessingState.Choices.FULFILLED
                 ):
                     if (datetime.now() - start).seconds >= ca_settings.poll_deadline:
-                        raise Exception(f"{log_prefix}: polling deadline exceeded")
+                        raise StopFinalization(
+                            f"{log_prefix}: polling deadline exceeded"
+                        )
                     time.sleep(ca_settings.poll_interval)
 
         if processing_state.state == db.CertiNextOrderProcessingState.Choices.FULFILLED:
             logger.info(f"{log_prefix}: downloading certificate")
             cert_response = self.backend.get_certificate(processing_state.order_number)
-            cert_response.raise_if_not_ok()
+            if cert_response.is_error():
+                raise StopFinalization(
+                    "Error downloading certificate: " + cert_response.error.description
+                )
 
             logger.info(f"{log_prefix}: certificate downloaded")
             # Certs are stored in client -> intermediate(s) -> root order
-            chain = (
-                self._normalize_cert(cert_response.endEntityCertificate)
-                + "\n"
-                + self._normalize_cert(cert_response.caCertificate)
-                + "\n"
-                + self._normalize_cert(cert_response.rootCertificate)
-            )
+            chain = cert_response.wrapped.cert
 
             # Some clients (like certbot) expect the bundle to end with a newline and will
             # fail if it doesn't.
@@ -155,18 +150,3 @@ class CertiNextFinalizer(Finalizer):
             return FinalizeResponse(
                 bundle=db.Certificate.objects.get(order=order).chain
             )
-
-    def _normalize_cert(self, pem_cert: str) -> str:
-        if "BEGIN CERTIFICATE" in pem_cert:
-            return pem_cert
-
-        clean_base64 = "".join(pem_cert.split())
-        wrapped_cert = "\n".join(
-            [clean_base64[i : i + 64] for i in range(0, len(clean_base64), 64)]
-        )
-
-        formatted_cert = (
-            f"-----BEGIN CERTIFICATE-----\n{wrapped_cert}\n-----END CERTIFICATE-----"
-        )
-
-        return formatted_cert

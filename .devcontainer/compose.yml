@@ -113,13 +113,14 @@ services:
   redis:
     networks:
       - backend
-    image: redis:8.6.1
+    image: redis:8.2.6
     restart: unless-stopped
     command: redis-server --save 60 1 --requirepass ${_DJ_REDIS_PWD}
 
   idp:
     networks: 
       - proxy
+      - backend
     image: ghcr.io/rit-its/pyidp:v0.0.12
     command: start_server
     ports: 

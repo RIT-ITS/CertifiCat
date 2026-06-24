@@ -10,7 +10,6 @@ HUEY = {
     "name": "huey",  # Use db name for huey.
     "immediate": False,
     "utc": False,
-    "blocking": True,  # Perform blocking pop rather than poll Redis.
     "connection": {
         "host": dynamic_settings.redis.host,
         "password": dynamic_settings.redis.password,

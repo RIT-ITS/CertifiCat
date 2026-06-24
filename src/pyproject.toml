@@ -6,12 +6,12 @@ readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.13"
 dependencies = [
-    "asn1==3.2.0",
+    "asn1>=3.2.0",
     "django-cotton>=2.6.1",
-    "django==6.0.3",
-    "djangosaml2==1.12.0",
-    "mysqlclient==2.2.8",
-    "pydantic-settings==2.13.1",
+    "django>=6.0.3",
+    "djangosaml2>=1.12.0",
+    "mysqlclient>=2.2.8",
+    "pydantic-settings>=2.13.1",
     "pyopenssl>=26.0.0",
     "pysaml2>=7.5.0",
     "pyyaml>=6.0.2",

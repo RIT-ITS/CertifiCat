@@ -1,5 +1,7 @@
 import json
+import re
 from typing import Callable
+from urllib.parse import urljoin
 
 from certificat.settings.dynamic import (
     ApplicationSettings,
@@ -15,8 +17,7 @@ import pytest_responses  # noqa: F401
 import responses
 
 
-DUMMY_ROOT_CERT = """
-MIIFYjCCBEqgAwIBAgIQd70NbNs2+RrqIQ/E8FjTDTANBgkqhkiG9w0BAQsFADBX
+DUMMY_ROOT_CERT = """MIIFYjCCBEqgAwIBAgIQd70NbNs2+RrqIQ/E8FjTDTANBgkqhkiG9w0BAQsFADBX
 MQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEQMA4GA1UE
 CxMHUm9vdCBDQTEbMBkGA1UEAxMSR2xvYmFsU2lnbiBSb290IENBMB4XDTIwMDYx
 OTAwMDA0MloXDTI4MDEyODAwMDA0MlowRzELMAkGA1UEBhMCVVMxIjAgBgNVBAoT
@@ -44,10 +45,9 @@ NR3t5P+T4Vxfq7vqfM/b5A3Ri1fyJm9bvhdGaJQ3b2t6yMAYN/olUazsaL+yyEn9
 WprKASOshIArAoyZl+tJaox118fessmXn1hIVw41oeQa1v1vg4Fv74zPl6/AhSrw
 9U5pCZEt4Wi4wStz6dTZ/CLANx8LZh1J7QJVj2fhMtfTJr9w4z30Z209fOU0iOMy
 +qduBmpvvYuR7hZL6Dupszfnw0Skfths18dG9ZKb59UhvmaSGZRVbNQpsg3BZlvi
-d0lIKO2d1xozclOzgjXPYovJJIultzkMu34qQb9Sz/yilrbCgj8=
-"""
-DUMMY_CA_CERT = """
-MIIFCzCCAvOgAwIBAgIQf/AFoHxM3tEArZ1mpRB7mDANBgkqhkiG9w0BAQsFADBH
+d0lIKO2d1xozclOzgjXPYovJJIultzkMu34qQb9Sz/yilrbCgj8="""
+
+DUMMY_CA_CERT = """MIIFCzCCAvOgAwIBAgIQf/AFoHxM3tEArZ1mpRB7mDANBgkqhkiG9w0BAQsFADBH
 MQswCQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZpY2VzIExM
 QzEUMBIGA1UEAxMLR1RTIFJvb3QgUjEwHhcNMjMxMjEzMDkwMDAwWhcNMjkwMjIw
 MTQwMDAwWjA7MQswCQYDVQQGEwJVUzEeMBwGA1UEChMVR29vZ2xlIFRydXN0IFNl
@@ -73,10 +73,9 @@ Xdaqev3htytmOPvoKWa676ATL/hzfvDaQBEcXd2Ppvy+275W+DKcH0FBbX62xevG
 iza3F4ydzxl6NJ8hk8R+dDXSqv1MbRT1ybB5W0k8878XSOjvmiYTDIfyc9acxVJr
 Y/cykHipa+te1pOhv7wYPYtZ9orGBV5SGOJm4NrB3K1aJar0RfzxC3ikr7Dyc6Qw
 qDTBU39CluVIQeuQRgwG3MuSxl7zRERDRilGoKb8uY45JzmxWuKxrfwT/478JuHU
-/oTxUFqOl2stKnn7QGTq8z29W+GgBLCXSBxC9epaHM0myFH/FJlniXJfHeytWt0=
-"""
-DUMMY_END_ENTITY_CERT = """
-MIIEWTCCA0GgAwIBAgIRAKrzz49yS/O3CbHIza9eLYswDQYJKoZIhvcNAQELBQAw
+/oTxUFqOl2stKnn7QGTq8z29W+GgBLCXSBxC9epaHM0myFH/FJlniXJfHeytWt0="""
+
+DUMMY_END_ENTITY_CERT = """MIIEWTCCA0GgAwIBAgIRAKrzz49yS/O3CbHIza9eLYswDQYJKoZIhvcNAQELBQAw
 OzELMAkGA1UEBhMCVVMxHjAcBgNVBAoTFUdvb2dsZSBUcnVzdCBTZXJ2aWNlczEM
 MAoGA1UEAxMDV1IyMB4XDTI2MDExOTA4MzkwNVoXDTI2MDQxMzA4MzkwNFowGTEX
 MBUGA1UEAxMOd3d3Lmdvb2dsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNC
@@ -99,8 +98,7 @@ vfGjY6AX89DgpXV1ahL8zY2ZRPIuWDdcf0WH9cH+HADi6aymAcKhdB+Bv39tHVyI
 ADZfXj1sC60EO9Ry9xA3/GqGuefHANOl1fc3qXTjWpBpxuJ6kVT0WC7PVnUOWE9I
 29EkOonv+Qu5E36mPDuxEvfI9uePI0x6Bw62UPB9524CtP7Xba3Z7Jol5yh4RneF
 9fP2+Xpes2WaUSfgU6Cp9KMtqQmdKAte1W0GLObl/lsW9uuWRRk+EJuloJT993ED
-v6TLFuf4DS1B+8c0Yg==
-"""
+v6TLFuf4DS1B+8c0Yg=="""
 
 
 class TestCertiNextFinalizer:
@@ -111,16 +109,18 @@ class TestCertiNextFinalizer:
     @pytest.fixture(autouse=True)
     def setup_class_members(self, responses: responses, acme_neworder, acme_client):
         ApplicationSettings.get().finalizer = CertiNextFinalizerSettings(
-            api_base="http://certinext.localhost/api/",
-            account_number="1234",
-            auth_key="123456789",
-            product_code="prod1",
-            prevetted_org_number="819",
-            prevetting_token="tok-12345",
-            requestor_mobile_number="123-432-0481",
-            requestor_email="email@localhost",
-            poll_interval=0,
-            poll_deadline=0,
+            api_base="http://certinext.localhost/",
+            agreement_signer="Signer",
+            agreement_signer_place="Place",
+            oauth_client_id="client id",
+            oauth_client_secret="client secret",
+            order_remarks="Remarks",
+            org_number="12345",
+            product_code="834",
+            requestor_designation="Designation",
+            requestor_email="user@acme.edu",
+            requestor_name="First Last",
+            requestor_phone="1234567890",
         )
 
         self._mock_track_order_calls = 0
@@ -129,6 +129,29 @@ class TestCertiNextFinalizer:
         self.acme_neworder = acme_neworder
         self.acme_client = acme_client
 
+    def _mock_generate_oauth_token(
+        self, status_code=200, response_values={}, response_override: dict = None
+    ):
+        response = (
+            json.dumps(response_override)
+            if response_override
+            else """{{
+                "access_token": "{accessToken}"
+            }}""".format(**({"accessToken": "some-access-token"} | response_values))
+        )
+
+        def generate_callback(request):
+            return (status_code, {}, response)
+
+        self.responses.add_callback(
+            responses.POST,
+            urljoin(
+                CertiNextFinalizerSettings.get().api_base,
+                "oauth/token",
+            ),
+            callback=generate_callback,
+        )
+
     def _mock_generate_order_ssl(
         self, status_code=200, response_values={}, response_override: dict = None
     ):
@@ -136,29 +159,21 @@ class TestCertiNextFinalizer:
             json.dumps(response_override)
             if response_override
             else """{{
-            "orderDetails": {{
-                "requestNumber": "{requestNumber}",
-                "orderNumber": "{orderNumber}",
-                "trackingURL": "https://certinext.localhost/tracking"
-            }},
-            "meta": {{
-                "ver": "1.0",
-                "errorMessage": "{errorMessage}",
-                "errorCode": "{errorCode}",
-                "txn": "{txn}",
-                "ts": "{ts}",
-                "status": "{status}"
-            }}
-        }}""".format(
+                "orderId": "{orderNumber}",
+                "status": "{status}",
+                "productVariant": "{productVariant}",
+                "domain": "{domain}",
+                "createdAt": "{createdAt}",
+                "resolvedProductCode": "{resolvedProductCode}"
+            }}""".format(
                 **(
                     {
-                        "requestNumber": "12345",
                         "orderNumber": "54321",
-                        "errorMessage": "",
-                        "errorCode": "",
-                        "txn": "1234-5678",
-                        "ts": "2024-04-04T11:36:55+05:30",
-                        "status": "1",
+                        "status": "pending-dcv",
+                        "productVariant": "ov",
+                        "domain": "acme.edu",
+                        "createdAt": "2024-04-04T11:36:55+05:30",
+                        "resolvedProductCode": "123",
                     }
                     | response_values
                 )
@@ -170,7 +185,10 @@ class TestCertiNextFinalizer:
 
         self.responses.add_callback(
             responses.POST,
-            CertiNextFinalizerSettings.get().api_base + "GenerateOrderSSL",
+            urljoin(
+                CertiNextFinalizerSettings.get().api_base,
+                "api/certinext/v2/ssl-certificates",
+            ),
             callback=generate_callback,
         )
 
@@ -185,34 +203,31 @@ class TestCertiNextFinalizer:
             json.dumps(response_override)
             if response_override
             else """{{
-            "orderDetails": {{
-                "orderStatusId": "{orderStatusId}",
-                "orderStatus": "{orderStatus}",
-                "certificateStatusId": "{certificateStatusId}",
-                "certificateStatus": "{certificateStatus}"
-            }},
-            "meta": {{
-                "ver": "1.0",
-                "errorMessage": "{errorMessage}",
-                "errorCode": "{errorCode}",
-                "txn": "{txn}",
-                "ts": "{ts}",
-                "status": "{status}"
-            }}
-        }}""".format(
+                "orderId": "{orderId}",
+                "requestId": "{requestId}",
+                "status": "{status}",
+                "orderState": "{orderState}",
+                "certificateState": "{certificateState}",
+                "productVariant": "{productVariant}",
+                "domain": "{domain}",
+                "interimDvIssued": {interimDvIssued},
+                "createdAt": "{createdAt}",
+                "issuedAt": "{issuedAt}",
+                "expiresAt": "{expiresAt}"
+            }}""".format(
                 **(
                     {
-                        "requestNumber": "12345",
-                        "orderNumber": "54321",
-                        "errorMessage": "",
-                        "errorCode": "",
-                        "txn": "1234-5678",
-                        "ts": "2024-04-04T11:36:55+05:30",
-                        "orderStatusId": "6",
-                        "orderStatus": "Order fulfilled",
-                        "certificateStatusId": "20",
-                        "certificateStatus": "Certificate Generated",
-                        "status": "1",
+                        "requestId": "12345",
+                        "orderId": "54321",
+                        "status": "issued",
+                        "orderState": "Issued",
+                        "certificateState": "Not generated",
+                        "productVariant": "123",
+                        "domain": "acme.edu",
+                        "interimDvIssued": "false",
+                        "createdAt": "2024-04-04T11:36:55+05:30",
+                        "issuedAt": "2024-04-04T11:36:55+05:30",
+                        "expiresAt": "2024-04-04T11:36:55+05:30",
                     }
                     | response_values
                 )
@@ -227,50 +242,31 @@ class TestCertiNextFinalizer:
             return (status_code, {}, response)
 
         self.responses.add_callback(
-            responses.POST,
-            CertiNextFinalizerSettings.get().api_base + "TrackOrder",
+            responses.GET,
+            re.compile(
+                urljoin(
+                    CertiNextFinalizerSettings.get().api_base,
+                    "api/certinext/v2/ssl-certificates/[0-9]*",
+                )
+            ),
             callback=generate_callback,
         )
 
     def _mock_get_certificate(
         self,
         status_code=200,
-        response_values={},
-        response_override: dict = None,
+        response_override: str = None,
         on_called: Callable = None,
     ):
         response = (
-            json.dumps(response_override)
+            response_override
             if response_override
-            else """{{
-            "certificateDetails": {{
-                "rootCertificate": "{rootCertificate}",
-                "caCertificate": "{caCertificate}",
-                "endEntityCertificate": "{endEntityCertificate}"
-            }},
-            "meta": {{
-                "ver": "1.0",
-                "errorMessage": "{errorMessage}",
-                "errorCode": "{errorCode}",
-                "txn": "{txn}",
-                "ts": "{ts}",
-                "status": "{status}"
-            }}
-        }}""".format(
-                **(
-                    {
-                        "rootCertificate": DUMMY_ROOT_CERT.replace("\n", ""),
-                        "caCertificate": DUMMY_CA_CERT.replace("\n", ""),
-                        "endEntityCertificate": DUMMY_END_ENTITY_CERT.replace("\n", ""),
-                        "errorMessage": "",
-                        "errorCode": "",
-                        "txn": "1234-5678",
-                        "ts": "2024-04-04T11:36:55+05:30",
-                        "status": "1",
-                    }
-                    | response_values
-                )
-            )
+            else f"""-----BEGIN CERTIFICATE-----
+            {DUMMY_END_ENTITY_CERT}
+            -----END CERTIFICATE-----
+            -----BEGIN CERTIFICATE-----
+            {DUMMY_ROOT_CERT}
+            -----END CERTIFICATE-----"""
         )
 
         def generate_callback(request):
@@ -280,8 +276,13 @@ class TestCertiNextFinalizer:
             return (status_code, {}, response)
 
         self.responses.add_callback(
-            responses.POST,
-            CertiNextFinalizerSettings.get().api_base + "GetCertificate",
+            responses.GET,
+            re.compile(
+                urljoin(
+                    CertiNextFinalizerSettings.get().api_base,
+                    "api/certinext/v2/ssl-certificates/.*?/certificate",
+                )
+            ),
             callback=generate_callback,
         )
 
@@ -303,9 +304,14 @@ class TestCertiNextFinalizer:
     def test_fail_generate_unauth(
         self,
     ):
+        self._mock_generate_oauth_token()
         # 401s should record an error
         self._mock_generate_order_ssl(
-            401, response_values={"errorMessage": "Unauthorized", "errorCode": "401"}
+            401,
+            response_override={
+                "title": "Unauthorized",
+                "detail": "You're not authorized!",
+            },
         )
         order = self._get_processed_order(expect_failure=True)
 
@@ -314,12 +320,14 @@ class TestCertiNextFinalizer:
         assert (
             processing_state.state == db.CertiNextOrderProcessingState.Choices.SUBMITTED
         )
+
         assert db.OrderFinalizationError.objects.count() == 1
 
     @pytest.mark.django_db
     def test_fail_generate_malformed(
         self,
     ):
+        self._mock_generate_oauth_token()
         # Responses that don't validate against the schema should record an error
         self._mock_generate_order_ssl(
             status_code=200, response_override={"invalid": "yes"}
@@ -337,11 +345,31 @@ class TestCertiNextFinalizer:
     def test_fail_canceled_order(
         self,
     ):
+        self._mock_generate_oauth_token()
+        # Responses that return a 4 should fail
+        self._mock_generate_order_ssl(response_values={"status": "cancelled"})
+        # self._mock_track_order(response_values={"status": "cancelled"})
+        order = self._get_processed_order(expect_failure=True)
+
+        processing_state = db.CertiNextOrderProcessingState.for_order(order)
+
+        assert (
+            processing_state.state == db.CertiNextOrderProcessingState.Choices.SUBMITTED
+        )
+        assert db.OrderFinalizationError.objects.count() == 1
+        assert (
+            "Order in invalid state" in db.OrderFinalizationError.objects.first().error
+        )
+
+    @pytest.mark.django_db
+    def test_fail_revoked_order(
+        self,
+    ):
+        self._mock_generate_oauth_token()
         # Responses that return a 4 should fail
         self._mock_generate_order_ssl()
-        self._mock_track_order(
-            response_values={"orderStatusId": "4", "orderStatus": "Order rejected"}
-        )
+        self._mock_track_order(response_values={"status": "cancelled"})
+        # self._mock_track_order(response_values={"status": "cancelled"})
         order = self._get_processed_order(expect_failure=True)
 
         processing_state = db.CertiNextOrderProcessingState.for_order(order)
@@ -350,16 +378,18 @@ class TestCertiNextFinalizer:
             processing_state.state == db.CertiNextOrderProcessingState.Choices.ORDERED
         )
         assert db.OrderFinalizationError.objects.count() == 1
-        assert "Invalid state" in db.OrderFinalizationError.objects.first().error
+        assert (
+            "Order in invalid state" in db.OrderFinalizationError.objects.first().error
+        )
 
     @pytest.mark.django_db
     def test_fail_deadline_exceeded(
         self,
     ):
-        self._mock_generate_order_ssl()
-        self._mock_track_order(
-            response_values={"orderStatusId": "3", "orderStatus": "In progress"}
-        )
+        ApplicationSettings.get().finalizer.poll_deadline = 0
+        self._mock_generate_oauth_token()
+        self._mock_generate_order_ssl(response_values={"status": "pending-dcv"})
+        self._mock_track_order(response_values={"status": "pending-dcv"})
         order = self._get_processed_order(expect_failure=True)
 
         processing_state = db.CertiNextOrderProcessingState.for_order(order)
@@ -371,8 +401,8 @@ class TestCertiNextFinalizer:
         assert "deadline exceeded" in db.OrderFinalizationError.objects.first().error
 
     @pytest.mark.django_db
-    @pytest.mark.skip
     def test_fail_collection(self):
+        self._mock_generate_oauth_token()
         self._mock_generate_order_ssl()
         self._mock_track_order()
         self._mock_get_certificate(status_code=500)
@@ -390,12 +420,13 @@ class TestCertiNextFinalizer:
     @pytest.mark.django_db
     def test_retry_collection(self):
         CertiNextFinalizerSettings.get().poll_deadline = 1
+        self._mock_generate_oauth_token()
         self._mock_generate_order_ssl()
         # The first call returns a pending status and the next call returns
         # a passing status. This simulates polling and forces the polling
         # loop to run.
         self._mock_track_order(
-            response_values={"orderStatusId": "1"},
+            response_values={"status": "pending-dcv"},
             on_called=lambda: self._mock_track_order(),
         )
         self._mock_get_certificate()

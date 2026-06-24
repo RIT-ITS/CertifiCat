@@ -1,79 +1,153 @@
 import datetime
 import hashlib
+import logging
 import uuid
+from typing import Optional
+from urllib.parse import urljoin
 
-from . import schema
-from certificat.settings.dynamic import ApplicationSettings, CertiNextFinalizerSettings
-from certificat.utils import LazyLoggedMethod
 import inject
 import requests
-from . import track_order_schema
 
+from certificat.settings.dynamic import ApplicationSettings, CertiNextFinalizerSettings
+from certificat.utils import LazyLoggedMethod
 
-import logging
+from . import schema
 
 logger = logging.getLogger(__name__)
 
 
+class CertiNextAPIError(Exception):
+    pass
+
+
 class CertiNextAPIClient:
     settings: CertiNextFinalizerSettings
+    access_token: Optional[str] = None
 
     def __init__(self):
         self.settings = inject.instance(ApplicationSettings).finalizer
 
-    def generate_meta(self) -> schema.base.RequestMeta:
-        txn = str(uuid.uuid4()).replace("-", "")
-        ts = datetime.datetime.now(datetime.timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%S%:z"
-        )
-        hashed_auth_key = hashlib.sha256(
-            f"{self.settings.auth_key}{ts}{txn}".encode("utf-8")
-        ).hexdigest()
+    def ensure_access_token(self) -> str:
+        if self.access_token:
+            return self.access_token
 
-        return schema.base.RequestMeta(
-            ts=ts,
-            txn=txn,
-            accountNumber=self.settings.account_number,
-            authKey=hashed_auth_key,
+        params = {
+            "grant_type": "client_credentials",
+            "client_id": self.settings.oauth_client_id,
+            "client_secret": self.settings.oauth_client_secret,
+        }
+
+        endpoint = urljoin(self.settings.api_base, "oauth/token")
+        logger.debug(
+            "CertiNext request: %s client_id=%s",
+            endpoint,
+            self.settings.oauth_client_id,
         )
+        resp: requests.Response = requests.post(
+            endpoint,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data=params,
+            timeout=5,
+        )
+        # Access token errors have different shape from other endpoints
+        if resp.status_code != 200:
+            try:
+                body = resp.json()
+                exception_message = f"{body['error']}: {body['error_description']}"
+            except:  # noqa: E722
+                exception_message = "Generic error getting OAuth access token"
+
+            raise CertiNextAPIError(exception_message)
+
+        self.access_token = resp.json()["access_token"]
+        return self.access_token
 
     def generate_order(
         self,
-        body: schema.generate_order.Request,
-    ) -> requests.Response:
-        endpoint = self.settings.api_base + "GenerateOrderSSL"
+        body: schema.GenerateOrderRequest,
+    ) -> schema.GenerateOrderResponse:
+        endpoint = urljoin(self.settings.api_base, "api/certinext/v2/ssl-certificates")
         logger.debug(
-            "CertiNext %s orderDetails=%s",
+            "CertiNext request: %s orderRequest=%s",
             endpoint,
             LazyLoggedMethod(
-                lambda: body.orderDetails.model_dump_json(indent=4, exclude_unset=True)
+                lambda: body.model_dump_json(indent=4, exclude_unset=True)
             ),
         )
 
-        return requests.post(endpoint, json=body.model_dump(exclude_none=True))
+        headers = {
+            "Authorization": f"Bearer {self.ensure_access_token()}",
+            "X-Product-Code": self.settings.product_code,
+            "Idempotency-Key": uuid.uuid4().hex,
+        }
 
-    def track_order(self, body: track_order_schema.Request) -> requests.Response:
-        endpoint = self.settings.api_base + "TrackOrder"
-        logger.debug(
-            "CertiNext %s orderDetails=%s",
+        resp: requests.Response = requests.post(
             endpoint,
-            LazyLoggedMethod(
-                lambda: body.orderDetails.model_dump_json(indent=4, exclude_unset=True)
-            ),
+            headers=headers,
+            json=body.model_dump(exclude_none=True),
+            timeout=10,
         )
+        logger.debug("CertiNext response: %s", resp.text)
 
-        return requests.post(endpoint, json=body.model_dump(exclude_none=True))
+        if resp.status_code != 200:
+            try:
+                body = resp.json()
+                exception_message = f"{body['title']}: {body['detail']} ({body.get('errors', 'No extra detail included')})"
+            except:  # noqa: E722
+                exception_message = (
+                    f"HTTP_{resp.status_code} error generating the order"
+                )
 
-    def get_certificate(
-        self, body: schema.get_certificate.Request
-    ) -> requests.Response:
-        endpoint = self.settings.api_base + "GetCertificate"
-        logger.debug(
-            "CertiNext %s orderDetails=%s",
-            endpoint,
-            LazyLoggedMethod(
-                lambda: body.orderDetails.model_dump_json(indent=4, exclude_unset=True)
-            ),
+            raise CertiNextAPIError(exception_message)
+
+        return schema.GenerateOrderResponse.model_validate(resp.json())
+
+    def track_order(self, order_id: str) -> schema.TrackOrderResponse:
+        endpoint = urljoin(
+            self.settings.api_base, f"api/certinext/v2/ssl-certificates/{order_id}"
         )
+        logger.debug("CertiNext request: %s orderId=%s", endpoint, order_id)
+        headers = {
+            "Authorization": f"Bearer {self.ensure_access_token()}",
+        }
+        resp: requests.Response = requests.get(endpoint, headers=headers)
+        logger.debug("CertiNext response: %s", resp.text)
 
-        return requests.post(endpoint, json=body.model_dump(exclude_none=True))
+        if resp.status_code != 200:
+            try:
+                body = resp.json()
+                exception_message = f"{body['title']}: {body['detail']}"
+            except:  # noqa: E722
+                exception_message = f"HTTP_{resp.status_code} error tracking the order"
+
+            raise CertiNextAPIError(exception_message)
+
+        return schema.TrackOrderResponse.model_validate(resp.json())
+
+    def download_certificate(self, order_id: str) -> schema.DownloadCertificateResponse:
+        endpoint = urljoin(
+            self.settings.api_base,
+            f"api/certinext/v2/ssl-certificates/{order_id}/certificate",
+        )
+        logger.debug("CertiNext request: %s orderId=%s", endpoint, order_id)
+        headers = {
+            "Authorization": f"Bearer {self.ensure_access_token()}",
+            "Accept": "application/x-pem-file",
+        }
+        resp: requests.Response = requests.get(endpoint, headers=headers)
+        logger.debug("CertiNext response: %s", resp.text)
+
+        if resp.status_code != 200:
+            try:
+                body = resp.json()
+                exception_message = f"{body['title']}: {body['detail']}"
+            except:  # noqa: E722
+                exception_message = (
+                    f"HTTP_{resp.status_code} error downloading the certificate"
+                )
+
+            raise CertiNextAPIError(exception_message)
+
+        return schema.DownloadCertificateResponse(
+            orderId=order_id, certificatePem=resp.text
+        )

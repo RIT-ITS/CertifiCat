@@ -114,7 +114,7 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 
         # Gets a list of all the admins in the config file and gives them access
         # to the backend
-        from certificat.settings.saml import saml_settings
+        saml_settings = SAMLAuthSettings.get()
 
         logger.debug("adding groups for user %s", user.username)
         _reconcile_idp_groups(user, attributes)

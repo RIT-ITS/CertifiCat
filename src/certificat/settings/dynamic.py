@@ -98,7 +98,7 @@ class SQLiteDatabaseSettings(BaseModel):
 
 class TaskQueueSettings(BaseModel):
     workers: int = Field(
-        max(25, min(multiprocessing.cpu_count() * 25, 100)),
+        max(5, min(multiprocessing.cpu_count() * 5, 20)),
         description="Number of workers in the Huey task queue.",
     )
 
@@ -285,8 +285,10 @@ class SAMLAuthSettings(BaseModel):
     )
 
     @classmethod
-    def get(cls, force_reload=False) -> Self:
-        return ConfigFile.load(force_reload=force_reload).saml
+    def get(cls) -> Self:
+        settings = inject.instance(ApplicationSettings)
+        if settings.authentication.type == "saml":
+            return settings.authentication
 
     debug: bool = Field(
         False,
@@ -383,27 +385,42 @@ class CertiNextFinalizerSettings(FinalizerSettings):
             return settings.finalizer
 
     api_base: str = Field(
-        "https://localhost/api/", description="Base URL of the CERTInext API"
+        "https://us-api.certinext.io/", description="Base URL of the CERTInext API."
     )
-    account_number: str = Field(description="Account number (Org. ID)")
-    auth_key: str = Field(description="Authorization key for API access")
+    org_number: str = Field(
+        description="Organization ID that will be requesting the certificate"
+    )
+    product_variant: str = Field(
+        "ov", description="Product variant, defaults to organization validated."
+    )
     product_code: str = Field(description="Unique product code for the order")
-
-    prevetted_org_number: str = Field(
-        description="Pre-vetted organization id to pair with the pre-vetting token"
+    oauth_client_id: str = Field(
+        "Client ID for the OAuth client credentials grant request"
     )
-    prevetting_token: str = Field(
-        description="Pre-vetting token for automatically submitting an order"
+    oauth_client_secret: str = Field(
+        "Client secret for the OAuth client credentials grant request"
     )
 
     requestor_name: str = Field("CertifiCat", description="Name of the requestor")
-    requestor_isd_code: str = Field("+1", description="ISD code of the requestor")
-    requestor_mobile_number: str = Field(description="Mobile number of the requestor")
     requestor_email: str = Field(description="Email of the requestor")
+    requestor_phone: str = Field(description="Phone number of the requestor")
+    requestor_designation: str = Field("+1", description="Designation of the requestor")
+
+    agreement_signer: str = Field(
+        description="Name of the agreement signer for certificate issuance"
+    )
+    agreement_signer_place: str = Field(
+        description="Place of the agreement signer for certificate issuance"
+    )
+
+    order_remarks: str = Field(
+        "Submitted by CertifiCat",
+        description="Optional order remarks to include with each certificate order",
+    )
 
     poll_deadline: int = Field(
         60 * 5,
-        description="The finalizer task will continue to poll the CertiNext backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
+        description="The finalizer task will continue to poll the CERTINext backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
     )
     poll_interval: int = 1
 

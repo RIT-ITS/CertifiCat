@@ -21,6 +21,15 @@ from certificat.auth import Saml2Backend
 # @TODO: Test that SAML mappings work
 @pytest.mark.django_db
 def test_new_saml_user():
+    saml_auth_settings = SAMLAuthSettings(
+        group_attribute="memberOf",
+        sp=SAMLSPSettings(
+            entity_id="test.entityid", key_file="/tmp/key.pem", cert_file="/tmp/crt.pem"
+        ),
+        idp=SAMLIdPSettings(),
+    )
+    ApplicationSettings.get().authentication = saml_auth_settings
+
     user = User(username="acmetest", email="acmetest@acme.edu")
     backend = Saml2Backend()
 

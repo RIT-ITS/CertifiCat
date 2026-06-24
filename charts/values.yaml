@@ -21,7 +21,7 @@ certificat_image:
   #tag: 0.0.2.alpha.7
 
 redis:
-  image: "redis:7.2.4"
+  image: "redis:8.2.6"
 
 embedded_mariadb:
   enabled: True

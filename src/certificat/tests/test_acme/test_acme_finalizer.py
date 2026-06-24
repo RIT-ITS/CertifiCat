@@ -176,7 +176,6 @@ class TestACMEFinalizer:
     @pytest.mark.django_db
     def test_binding_failure(self, pebble_process):
         # This tests binding with incorrect credentials
-        # With pebble, that works fine. Other ACME servers may not allow rebind.
         settings = ACMEFinalizerSettings.get()
         settings.account_kid = "invalid-kid"
 
@@ -185,4 +184,24 @@ class TestACMEFinalizer:
 
         assert len(binding) == 0
         assert order.status == OrderStatus.invalid
-        assert order.last_finalization_error is not None
+        assert order.last_finalization_error() is not None
+
+    @pytest.mark.slow
+    @pytest.mark.withoutresponses
+    @pytest.mark.django_db
+    def test_server_error(self, pebble_process):
+        # Tests an order that fails after challenges
+        new_order: NewOrderRet = self.acme_neworder(self.acme_client, self.acme_acct)
+        order = do_challenge(self.acme_client, new_order.response)
+        pebble_process.terminate()
+        pebble_process.wait()
+
+        try:
+            finalize_order(self.acme_client, order, timeout=1)
+        except:  # noqa: E722
+            pass
+
+        order_name = order.uri.split("/")[-1]
+        order = db.Order.objects.get(name=order_name)
+        assert order.status == OrderStatus.invalid
+        assert order.last_finalization_error() is not None

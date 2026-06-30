@@ -240,9 +240,12 @@ html .breadcrumbs {
     }
 }
 
+#pre-footer-spacer {
+    margin-top:$spacer*2;
+}
+
 #footer {
     flex: 1;
-    margin-top:$spacer*2;
     padding-bottom:$spacer;
     padding-top:$spacer;
     height:40px;

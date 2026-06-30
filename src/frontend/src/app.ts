@@ -13,6 +13,7 @@ import "./components/fadeOnLoad";
 import "./components/activityGraph";
 import "./components/orderHistory";
 import "./components/modal";
+import "./components/preAuthorizedIdentifiersManager";
 
 import "./vendor";
 

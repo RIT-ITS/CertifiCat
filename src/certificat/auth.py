@@ -241,3 +241,8 @@ def _reconcile_idp_groups(user: User, attributes: Dict):
     user.groups.remove(*Group.objects.filter(name__in=user_groups_to_remove))
     logger.debug("adding groups: %s", ",".join(user_groups_to_add))
     user.groups.add(*Group.objects.filter(name__in=user_groups_to_add))
+
+
+# Simple permission gates
+def user_can_edit_pre_authorizations(user: User):
+    return user.is_superuser

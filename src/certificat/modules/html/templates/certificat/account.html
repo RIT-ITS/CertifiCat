@@ -4,140 +4,164 @@
 
 {% block body %}
 
-<c-layouts.base>
+<c-layouts.base fullwidth>
     <fade-on-load>
         {% if account_invalid %}
-            <div class="mb-4">
+            <div class="mb-4 container">
                 <c-message type="error">
                     This account is invalid. You will no longer be able to issue certificates with any clients using this KID.
                 </c-message>
             </div>
         {% endif %}
 
-        <div class="container">
-            <dl class="field-list">
-                <dt>Created</dt>
-                <dd>
-                    {{ binding.created_at }}
-                </dd>
+        <c-tabs navstyle bordered_bottom>
+            <c-tab group="main" id="details" label="General Details" :default="{% if tab == "main" %}True{% endif %}" default {% endif %}>
+                <div class="container wrap">
+                    <div class="container px-2">
+                        <dl class="field-list">
+                            <dt>Created</dt>
+                            <dd>
+                                {{ binding.created_at }}
+                            </dd>
 
-                <dt>Creator</dt>
-                <dd>
-                    <c-user :user="binding.creator" />
-                </dd>
+                            <dt>Creator</dt>
+                            <dd>
+                                <c-user :user="binding.creator" />
+                            </dd>
 
-                {% if binding_event %}
-                <dt>Registered</dt>
-                <dd>
-                    <div>{{ binding_event.created_at }}</div>
-                    <div>
-                        {{ binding_event.user_agent }}
+                            {% if binding_event %}
+                            <dt>Registered</dt>
+                            <dd>
+                                <div>{{ binding_event.created_at }}</div>
+                                <div>
+                                    {{ binding_event.user_agent }}
+                                </div>
+                                <div class="subtext mt-2">Recorded when the ACME client registers the account with the generated key/id pair.</div>
+                            </dd>
+                            {% endif %}
+
+                            <dt>Account KID</dt>
+                            <dd>{{ binding.bound_to.fully_qualified_name }}</dd>
+
+                            <dt>Name</dt>
+                            <dd>
+                                <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                                    <span id="binding-name" data-editable-id="name">{{ binding.name }}</span>
+                                </editable-text>
+                            </dd>
+
+                            <dt>Note</dt>
+                            <dd>
+                                <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                                    <span id="binding-note" data-editable-id="note">{{ binding.note }}</span>
+                                </editable-text>
+                            </dd>
+                        </dl>
                     </div>
-                    <div class="subtext mt-2">Recorded when the ACME client registers the account with the generated key/id pair.</div>
-                </dd>
-                {% endif %}
 
-                <dt>Account KID</dt>
-                <dd>{{ binding.bound_to.fully_qualified_name }}</dd>
+                    <div class="container mt-4 px-2">
+                        <h5 class="icon"><i class="fa-solid fa-lock"></i>Permissions</h5>
+                        <div class="divider mb-1"></div>
+                        <dl class="field-list">
+                            <dt>Owner</dt>
+                            <dd>
+                                <c-user :user="binding.owner" />
+                            </dd>
 
-                <dt>Name</dt>
-                <dd>
-                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
-                        <span id="binding-name" data-editable-id="name">{{ binding.name }}</span>
-                    </editable-text>
-                </dd>
+                            <dt>Access</dt>
+                            <dd>
+                                <account-access-manager 
+                                    groupFetchUrl="{% url 'api:fetch_user_groups' %}" 
+                                    groupUpdateUrl="{% url 'api:edit_binding' binding.id %}" 
+                                    accessibleBy="{{ access_group_json }}"
+                                    {% if request.user.is_superuser or request.user.id == binding.owner.id %}clientIsOwner{% endif %}>
+                                </account-access-manager>
+                            </dd>
 
-                <dt>Note</dt>
-                <dd>
-                    <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
-                        <span id="binding-note" data-editable-id="note">{{ binding.note }}</span>
-                    </editable-text>
-                </dd>
-            </dl>
-        </div>
-
-        <div class="container mt-5">
-            <h4 class="mt-5 icon"><i class="fa-solid fa-lock"></i>Permissions</h4>
-            <div class="divider mb-3"></div>
-            <dl class="field-list">
-                <dt>Owner</dt>
-                <dd>
-                    <c-user :user="binding.owner" />
-                </dd>
-                <dt>Access</dt>
-                <dd>
-                    <account-access-manager 
-                        groupFetchUrl="{% url 'api:fetch_user_groups' %}" 
-                        groupUpdateUrl="{% url 'api:edit_binding' binding.id %}" 
-                        accessibleBy="{{ access_group_json }}"
-                        {% if request.user.is_superuser or request.user.id == binding.owner.id %}clientIsOwner{% endif %}>
-                    </account-access-manager>
-                </dd>
-            </dl>
-        </div>
-        
-        <div class="container mt-5">
-
-            <h4 class="mt-5 icon" id="order-history"><i class="fa-solid fa-cart-shopping"></i>Order History</h4>
-            <form action=".#order-history" id="search_form" method="get">
-                <div class="search mb-3">
-                    <div class="input--icon">
-                        <i class="fa fa-magnifying-glass icon"></i>
-                        <input type="text" autocomplete="off" value="{{ request.GET.filter }}" name="filter" placeholder="Search by identifier, separated by ','. Surround each identifier in '/' to use regular expressions." class="search--box" />
+                            {% if show_pre_authorized_identifiers %}
+                                <dt>Pre-Authorized Identifiers</dt>
+                                <dd>
+                                    <pre-authorized-identifiers-manager
+                                        updateUrl="{% url 'api:edit_preauthorizations' binding.bound_to.name %}"
+                                        identifiers="{{ pre_authorized_identifiers_json }}"
+                                        canEdit="{{ can_edit_preauthorizations }}"
+                                    >
+                                    </pre-authorized-identifiers-manager>
+                                    <div class="subtext mt-2">Clients will not be required to answer challenges for the configured domains. Pre-authorizations are exact matches.</div>
+                                </dd>
+                            {% endif %}
+                        </dl>
                     </div>
-                    <button class="btn btn--secondary search--button">Search</button>
-                    {% if request.GET.filter %}
-                        <a href="{% url 'account' binding.id %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
-                    {% endif %}
                 </div>
-            </form>
-            <c-link-table name="orders">
-                <c-slot name="head">
-                    <div class="tr">
-                        <div class="th">Created</div>
-                        <div class="th">Status</div>                        
-                        <div class="th">Identifiers</div>
-                        <div class="th"><!-- edit --></div>
-                    </div>
-                </c-slot>
-                <c-slot name="body">
-                    {% for order in orders.page %}
-                        <a class="link-row" href="{% url 'order' order.id %}">
-                            <div class="td shrink-cell">
-                                {{ order.created_at|date:"Y/m/d" }}
+            </c-tab>
+            
+            <c-tab group="main" id="history" label="Order History" :default="{% if tab == "history" %}True{% endif %}">
+                <div class="container wrap">
+                    <div class="container mt-1">
+                        <form action="{% url 'account-tab' binding.id 'history' %}" id="search_form" method="get">
+                            <div class="search mb-3">
+                                <div class="input--icon">
+                                    <i class="fa fa-magnifying-glass icon"></i>
+                                    <input type="text" autocomplete="off" value="{{ request.GET.filter }}" name="filter" placeholder="Search by identifier, separated by ','. Surround each identifier in '/' to use regular expressions." class="search--box" />
+                                </div>
+                                <button class="btn btn--secondary search--button">Search</button>
+                                {% if request.GET.filter %}
+                                    <a href="{% url 'account-tab' binding.id 'history' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
+                                {% endif %}
                             </div>
-                            <div class="td shrink-cell">
-                                <c-status :status="order.status" />
-                            </div>
-                            <div class="td identifiers">
-                                {% for identifier in order.identifiers.all %}
-                                    {{ identifier.value }}{% if not forloop.last %},{% endif %}
+                        </form>
+                        <c-link-table name="orders">
+                            <c-slot name="head">
+                                <div class="tr">
+                                    <div class="th">Created</div>
+                                    <div class="th">Status</div>                        
+                                    <div class="th">Identifiers</div>
+                                    <div class="th"><!-- edit --></div>
+                                </div>
+                            </c-slot>
+                            <c-slot name="body">
+                                {% for order in orders.page %}
+                                    <a class="link-row" href="{% url 'order' order.id %}">
+                                        <div class="td shrink-cell">
+                                            {{ order.created_at|date:"Y/m/d" }}
+                                        </div>
+                                        <div class="td shrink-cell">
+                                            <c-status :status="order.status" />
+                                        </div>
+                                        <div class="td identifiers">
+                                            {% for identifier in order.identifiers.all %}
+                                                {{ identifier.value }}{% if not forloop.last %},{% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <div class="td edit table--row-button shrink-cell">
+                                            <span class="fa-solid fa-chevron-right"></span>
+                                        </div>
+                                    </a>
+                                {% empty %}
+                                    <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No orders found.</div></div>
                                 {% endfor %}
-                            </div>
-                            <div class="td edit table--row-button shrink-cell">
-                                <span class="fa-solid fa-chevron-right"></span>
-                            </div>
-                        </a>
-                    {% empty %}
-                        <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No orders found.</div></div>
-                    {% endfor %}
-                </c-slot>
-            </c-link-table>
-            <div class="row mt-2 center-xs">
-                <c-pagination :page="orders.page" qs_extra="#order-history" />
-            </div>
-        </div>
-
-        {% if not account_invalid %}
-            <div class="container mt-5">
-                <h4 class="mt-5 icon"><i class="fa-solid fa-user"></i>Account Management</h4>
-                <div class="divider mb-3"></div>
-                <form action="{% url 'account' binding.id %}" method="POST">
-                    {% csrf_token %}
-                    <confirm-button buttonType="submit" value="Disable Account" name="revoke-account" warningtext="Are you sure you want to disable this binding? Any bound accounts will lose access to the ACME service." />
-                </form>
-            </div>
-        {% endif %}
+                            </c-slot>
+                        </c-link-table>
+                        <div class="row mt-2 center-xs">
+                            <c-pagination :page="orders.page" qs_extra="#order-history" />
+                        </div>
+                    </div>
+                </div>
+            </c-tab>
+            {% if not account_invalid %}
+                <c-tab group="main" id="management" label="Revocation" :default="{% if tab == "management" %}True{% endif %}">
+                    <div class="container wrap">
+                        <div class="container mt-4">
+                            <form action="{% url 'account' binding.id %}" method="POST">
+                                {% csrf_token %}
+                                <confirm-button buttonType="submit" value="Disable Account" name="revoke-account" warningtext="Are you sure you want to disable this binding? Any bound accounts will lose access to the ACME service and will not be able to issue certificates." />
+                            </form>
+                        </div>
+                        <div id="pre-footer-spacer"></div>
+                    </div>
+                </c-tab>
+            {% endif %}
+        </c-tabs>    
     </fade-on-load>
 </c-layouts.base>
 

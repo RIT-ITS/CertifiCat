@@ -208,10 +208,11 @@ class OrderService(IOrderService):
             return order
 
         db.Order.objects.filter(name=order.id).update(status=new_state)
+
         db.TaggedEvent.record_by_type(
             db.OrderEventType.STATUS_UPDATED,
             db.Order,
-            order.model_id,
+            db.Order.objects.values("id").get(name=order.id).get("id"),
             payload={"from": order.status, "to": new_state},
         )
         order.status = new_state
@@ -247,10 +248,19 @@ class AuthorizationService(IAuthorizationService):
         self.authorizations = {}
 
     def create(self, resource: AuthorizationResource) -> AuthorizationResource:
+        # Don't need to do these selects in a transaction
+        preauthorized = db.PreAuthorizedAccountIdentifier.objects.filter(
+            account__orders__name=resource.order_id,
+            identifier_value=resource.identifier.value,
+        ).exists()
+
         with transaction.atomic():
             authz_name = gen_id()
             while db.Authorization.objects.filter(name=authz_name).exists():
                 authz_name = gen_id()
+
+            if preauthorized:
+                resource.status = AuthorizationStatus.valid
 
             authz = db.Authorization.objects.create(
                 order_id=Subquery(
@@ -261,7 +271,10 @@ class AuthorizationService(IAuthorizationService):
                 status=resource.status,
                 expires=make_aware(resource.expires),
             )
+
             db.TaggedEvent.record(db.AuthorizationEventType.CREATED, authz)
+            if preauthorized:
+                db.TaggedEvent.record(db.AuthorizationEventType.PREAUTHORIZED, authz)
 
             resource.id = authz.name
 
@@ -278,7 +291,11 @@ class AuthorizationService(IAuthorizationService):
             db.TaggedEvent.record_by_type(
                 db.AuthorizationEventType.STATUS_UPDATED,
                 db.Authorization,
-                authz.model_id,
+                # Get the ID of the Django authorization object from the resource.
+                # Could probably make this a helper function
+                Subquery(
+                    db.Authorization.objects.filter(name=authz.id).values("id")[:1]
+                ),
                 payload={"from": authz.status, "to": new_state},
             )
             authz.status = new_state
@@ -301,7 +318,7 @@ class AuthorizationService(IAuthorizationService):
 
 
 class ChallengeService(IChallengeService):
-    authz_service = inject.attr(IAuthorizationService)
+    authz_service: IAuthorizationService = inject.attr(IAuthorizationService)
 
     def __init__(self):
         pass

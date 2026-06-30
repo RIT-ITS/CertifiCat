@@ -98,6 +98,79 @@ class TestApi:
         assert [i.group.id for i in binding.group_scopes.all()] == [grp2.id]
 
     @pytest.mark.django_db
+    def test_edit_preauthorizations(self, web_client: Client):
+        account_owner = gen_user()
+        superuser = gen_user(is_superuser=True)
+        unprivileged_user = gen_user()
+
+        acct = db.Account.objects.create(
+            name="test-account",
+            jwk="invalid-jwk",
+            jwk_thumbprint="invalid-thumbprint",
+        )
+
+        response = web_client.get(
+            reverse("api:edit_preauthorizations", args=[acct.name])
+        )
+        assert response.status_code != 200
+
+        # unprivileged users may not edit
+        web_client.force_login(unprivileged_user)
+        response = web_client.post(
+            reverse("api:edit_preauthorizations", args=[acct.name])
+        )
+        assert response.status_code == 403
+
+        # account owners may not edit
+        web_client.force_login(account_owner)
+        response = web_client.post(
+            reverse("api:edit_preauthorizations", args=[acct.name])
+        )
+        assert response.status_code == 403
+
+        # only superusers can edit as of right now
+        web_client.force_login(superuser)
+
+        def _post(mods):
+            return web_client.post(
+                reverse("api:edit_preauthorizations", args=[acct.name]),
+                mods,
+                content_type="application/json",
+            )
+
+        # No TLD
+        resp = _post({"add": ["invalid"]})
+        assert resp.status_code == 400
+
+        # TLD too short
+        resp = _post({"add": ["invalid.x"]})
+        assert resp.status_code == 400
+
+        # Good addition
+        resp = _post({"add": ["valid.tld"]})
+        assert acct.preauthorized_identifiers.count() == 1
+
+        # Should create two identifiers
+        resp = _post({"add": ["another.valid.tld"]})
+        assert acct.preauthorized_identifiers.count() == 2
+
+        # Already added, ignore
+        resp = _post({"add": ["valid.tld"]})
+        assert acct.preauthorized_identifiers.count() == 2
+
+        # Identifier doesn't exist, not an error
+        resp = _post({"del": ["nonexistent.tld"]})
+        assert acct.preauthorized_identifiers.count() == 2
+
+        # Good deletion
+        resp = _post({"del": ["valid.tld"]})
+        assert acct.preauthorized_identifiers.count() == 1
+
+        # Another good deletion, back to 0
+        resp = _post({"del": ["another.valid.tld"]})
+        assert acct.preauthorized_identifiers.count() == 0
+
+    @pytest.mark.django_db
     def test_get_order_events(self, web_client: Client):
         order = self.create_order()
 

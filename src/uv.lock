@@ -20,7 +20,7 @@ wheels = [
 
 [[package]]
 name = "acmev2"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dnspython" },
@@ -31,9 +31,9 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/da/1b5c4a7237d507422f63c33bd8822d084b9a65461604585c40b291279ea4/acmev2-0.2.0.tar.gz", hash = "sha256:e198a5cf15f7f0ce7947daac288941d9238daa66b6adea6d90c91658214abe76", size = 45002, upload-time = "2026-04-27T12:27:10.65Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/09/073fd220c7509b70fd9011e41988ac804d390a8779b39711f4445439cb24/acmev2-0.2.1.tar.gz", hash = "sha256:742c883716e8086f81dad18b11417241c878fb93432f8dbbce62e4eccfea1ed4", size = 45664, upload-time = "2026-06-29T20:10:37.304Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1b/81/7d2757c9df4a1ee25c27f08d0451e62f51c0f6256aeb931af8849f731c6c/acmev2-0.2.0-py3-none-any.whl", hash = "sha256:f7a77568976dd1de19a00264fc1810740a99657b888c61becf975da0c9ffb9d2", size = 69701, upload-time = "2026-04-27T12:27:09.644Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/74/090986fc2dc928475cb53409d1b9605fea576d35179938c073bb273c1ba3/acmev2-0.2.1-py3-none-any.whl", hash = "sha256:ec2b02a45a6c52c611c8acc4ed254f0dedc05c48188d9d0ebcfe955e5c78f132", size = 70461, upload-time = "2026-06-29T20:10:35.94Z" },
 ]
 
 [[package]]
@@ -113,7 +113,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "acme", specifier = ">=2.11.0" },
-    { name = "acmev2", specifier = ">=0.2.0" },
+    { name = "acmev2", specifier = ">=0.2.1" },
     { name = "asn1", specifier = ">=3.2.0" },
     { name = "django", specifier = ">=6.0.3" },
     { name = "django-cotton", specifier = ">=2.6.1" },
@@ -519,11 +519,11 @@ wheels = [
 
 [[package]]
 name = "inject"
-version = "5.4.0"
+version = "5.4.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/22/8a/c820cc7101efa075e0880cc2a9043c73911126f031334a00eb98dd1a241d/inject-5.4.0.tar.gz", hash = "sha256:e10a69318cea1515b1aeb64de1a0e89c769bd5600ea1b77467ae971d9a5d1f10", size = 30314, upload-time = "2026-06-15T08:03:55.39Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8f/6d/f82cec616a10cb73711b3e0e5fc4ffad7e58955c2228b3d93fcc55fee205/inject-5.4.1.tar.gz", hash = "sha256:9972b9298dda924f3d609a4a8a7916b56aa1af72b707b620ef3b39fd2f7ff9e4", size = 30621, upload-time = "2026-06-27T08:59:45.316Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/4e/15db9b7652356177578967dedc92ecee0e40740534fbeb62c73bd26987ce/inject-5.4.0-py3-none-any.whl", hash = "sha256:def2ee5c67d2f7ef250aab17f4e91e464a023d71fc54a3f314969528793e3cf9", size = 15476, upload-time = "2026-06-15T08:03:54.173Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/28/ac5438418802ae01aea819dfa12f78a3ab0ebd8f3fd3682cff4ee5d912f6/inject-5.4.1-py3-none-any.whl", hash = "sha256:7ecaebc99cae6f3ce4cf2a248cb1d944d69344c5e178c51e1316a4e92a5fdf4f", size = 15474, upload-time = "2026-06-27T08:59:44.068Z" },
 ]
 
 [[package]]

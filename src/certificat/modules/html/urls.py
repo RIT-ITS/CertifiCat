@@ -12,6 +12,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.IndexView.as_view(), name=Sections.Dashboard.value),
     path("account/<binding_id>/", views.AccountView.as_view(), name="account"),
+    path(
+        "account/<binding_id>/<tab>/", views.AccountView.as_view(), name="account-tab"
+    ),
     path("accounts/", views.AccountsView.as_view(), name=Sections.Accounts.value),
     path("order/<order_id>/", views.OrderView.as_view(), name="order"),
     path("usage/", views.UsageView.as_view(), name=Sections.Usage.value),

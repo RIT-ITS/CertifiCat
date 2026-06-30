@@ -318,6 +318,50 @@ editable-text {
     }
 }
 
+pre-authorized-identifiers-manager {
+    display: block;
+    max-width: 500px;
+
+    .identifiermanager--edit,
+    .identifiermanager--cancel {
+        margin-left: $spacer;
+    }
+
+    .identifiermanager--add {
+        margin-top: $spacer*.5;
+        padding-top: $spacer*.5;
+        display: flex;
+
+        input {
+            display: flex;
+            flex: 1;
+            
+            margin-bottom: 0px;
+            box-sizing: border-box;
+        }
+
+        a {
+            margin-left: $spacer*.5;
+            white-space: nowrap;
+        }
+    }
+
+    ul {
+        list-style-type: none;
+
+        li+li {
+            display: flex;
+            margin-top: $spacer*.5;
+
+            .identifiermanager--name {
+                flex-shrink: 100;
+                white-space:nowrap;
+            }
+
+        }
+    }
+}
+
 account-access-manager {
     display: block;
     max-width: 500px;
@@ -479,8 +523,6 @@ dl {
     &.indented-list {
         dt {
             font-weight: bold;
-
-
         }
 
         dd {
@@ -498,15 +540,15 @@ dl {
         >dt {
             font-weight: bold;
             white-space: nowrap;
-            padding: $spacer*.5 $spacer*1.5 $spacer*.5 0;
+            padding: $spacer $spacer*1.5 $spacer 0;
             min-width:130px;
-            //border-bottom: 1px solid theme.$lightGrayColor;
+            border-bottom: 1px solid var(--gray-color--200);
         }
 
         >dd {
             overflow-wrap: anywhere;
-            padding: $spacer*.5 0 $spacer*.5 $spacer*.5;
-            //border-bottom: 1px solid theme.$lightGrayColor;
+            padding: $spacer 0 $spacer $spacer*.5;
+            border-bottom: 1px solid var(--gray-color--200);
         }
 
         &.no-borders {

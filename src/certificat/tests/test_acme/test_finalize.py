@@ -7,6 +7,7 @@ from ..conftest import NewOrderRet
 from certificat.modules.acme import models as db
 from acme import errors
 from acmev2.models import OrderStatus
+from django.contrib.contenttypes.models import ContentType
 
 
 @pytest.mark.django_db
@@ -29,11 +30,62 @@ def test_finalize_local(
 
 
 @pytest.mark.django_db
+def test_finalize_preauthorized(acme_client, acme_newacct, acme_neworder):
+    acme_acct = acme_newacct()
+    account = db.Account.objects.get(name=acme_acct.response.uri.split("/")[-1])
+    preauth_domain = "preauth.acme.edu"
+
+    db.PreAuthorizedAccountIdentifier.objects.create(
+        account=account,
+        identifier_type=db.IdentifierType.dns,
+        identifier_value=preauth_domain,
+    )
+
+    new_order: NewOrderRet = acme_neworder(
+        new_acct=acme_acct, cn=preauth_domain, sans=[preauth_domain]
+    )
+    order = do_challenge(acme_client, new_order.response)
+    finalized_order = finalize_order(acme_client, order)
+
+    assert finalized_order.body.status.name == "valid"
+    assert len(finalized_order.fullchain_pem) > 0
+    assert "auth.Preauth" in db.TaggedEvent.objects.values_list(
+        "event_type", flat=True
+    ).filter(content_type=ContentType.objects.get_for_model(db.Authorization))
+
+
+@pytest.mark.django_db
+def test_finalize_preauthorized_and_http01(acme_client, acme_newacct, acme_neworder):
+    acme_acct = acme_newacct()
+    account = db.Account.objects.get(name=acme_acct.response.uri.split("/")[-1])
+    preauth_domain = "preauth.acme.edu"
+
+    db.PreAuthorizedAccountIdentifier.objects.create(
+        account=account,
+        identifier_type=db.IdentifierType.dns,
+        identifier_value=preauth_domain,
+    )
+
+    new_order: NewOrderRet = acme_neworder(
+        new_acct=acme_acct, cn=preauth_domain, sans=[preauth_domain, "acme.localhost"]
+    )
+    order = do_challenge(acme_client, new_order.response)
+    finalized_order = finalize_order(acme_client, order)
+
+    assert finalized_order.body.status.name == "valid"
+    assert len(finalized_order.fullchain_pem) > 0
+    assert "auth.Preauth" in db.TaggedEvent.objects.values_list(
+        "event_type", flat=True
+    ).filter(content_type=ContentType.objects.get_for_model(db.Authorization))
+    assert len(finalized_order.body.identifiers) == 2
+
+
+@pytest.mark.django_db
 def test_finalize_fail_dispatch_task(
     acme_client: acme.client.ClientV2,
     acme_neworder,
     mocker,
-):  
+):
     new_order: NewOrderRet = acme_neworder()
 
     order = do_challenge(acme_client, new_order.response)

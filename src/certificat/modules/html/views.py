@@ -7,6 +7,7 @@ from django.views.generic.base import ContextMixin
 from django.views import View
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator, EmptyPage
+from certificat.auth import user_can_edit_pre_authorizations
 from certificat.modules.acme.models import (
     Certificate,
     Order,
@@ -238,8 +239,10 @@ class AccountView(ViewBase):
         )
 
     def get_orders(self):
-        orders = Order.objects.filter(account=self.binding.bound_to).order_by(
-            "-created_at"
+        orders = (
+            Order.objects.filter(account=self.binding.bound_to)
+            .prefetch_related("identifiers")
+            .order_by("-created_at")
         )
 
         filter = self.request.GET.get("filter")
@@ -265,9 +268,11 @@ class AccountView(ViewBase):
             "page": orders_page,
         }
 
-    def dispatch(self, request, binding_id, *args, **kwargs):
+    def dispatch(self, request, binding_id, tab="details", *args, **kwargs):
         self.binding = get_object_or_404(
-            AccountBinding.objects.prefetch_related("group_scopes").select_related(
+            AccountBinding.objects.prefetch_related(
+                "group_scopes", "group_scopes__group"
+            ).select_related(
                 "creator",
             ),
             id=binding_id,
@@ -276,9 +281,9 @@ class AccountView(ViewBase):
         if not self.binding.accessible_by(request.user):
             return self.handle_no_permission()
 
-        return super().dispatch(request, binding=self.binding, *args, **kwargs)
+        return super().dispatch(request, binding=self.binding, tab=tab, *args, **kwargs)
 
-    def post(self, request, binding: AccountBinding):
+    def post(self, request, binding: AccountBinding, tab: str):
         if "revoke-account" in request.POST:
             binding.bound_to.revoke()
             messages.info(request, "The account was successfully revoked.")
@@ -293,19 +298,23 @@ class AccountView(ViewBase):
 
         return HttpResponseRedirect(reverse("account", args=[binding.id]))
 
-    def get(self, request, binding: AccountBinding, *args, **kwargs):
+    def get(self, request, binding: AccountBinding, tab: str, *args, **kwargs):
         binding_event = (
             binding.bound_to.events.filter(event_type=AccountEventType.BOUND).first()
             if binding.bound_to
             else None
         )
+
         context = self.get_context_data(
             binding=binding,
             binding_event=binding_event,
+            tab=tab,
             access_group_json=json.dumps(
                 [
                     {"id": g.group.id, "name": unprefix_group(g.group.name)}
-                    for g in binding.group_scopes.all().order_by("group__name")
+                    for g in sorted(
+                        binding.group_scopes.all(), key=lambda gs: gs.group.name
+                    )
                 ]
             ),
             account_invalid=binding.bound_to
@@ -313,7 +322,24 @@ class AccountView(ViewBase):
         )
 
         template = "certificat/account.html"
-        if not binding.bound_to:
+        if binding.bound_to:
+            # Show the pre-authorizations if one already exists or if the user has permissions to add/edit them
+            # This is a semi-hidden feature from normal users
+            # This also gets all the pre-authorizations as a query
+            can_edit_preauthorizations = user_can_edit_pre_authorizations(request.user)
+            show_pre_authorized_identifiers = (
+                len(binding.bound_to.preauthorized_identifiers.all()) > 0
+                or can_edit_preauthorizations
+            )
+            context["can_edit_preauthorizations"] = can_edit_preauthorizations
+            context["show_pre_authorized_identifiers"] = show_pre_authorized_identifiers
+            context["pre_authorized_identifiers_json"] = json.dumps(
+                [
+                    {"name": r.identifier_value}
+                    for r in binding.bound_to.preauthorized_identifiers.all()
+                ]
+            )
+        else:
             template = "certificat/account.activate.html"
         return render(request, template, context)
 

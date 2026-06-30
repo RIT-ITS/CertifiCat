@@ -13,6 +13,11 @@ urlpatterns = [
         name="edit_binding",
     ),
     path(
+        "account/<account_name>/pre-authorizations",
+        views.edit_preauthorizations,
+        name="edit_preauthorizations",
+    ),
+    path(
         "my/groups",
         views.my_groups,
         name="fetch_user_groups",

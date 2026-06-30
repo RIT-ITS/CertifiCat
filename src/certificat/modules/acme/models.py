@@ -311,6 +311,21 @@ class Identifier(TimestampMixin):
         return f"{self.type}: {self.value}"
 
 
+class PreAuthorizedAccountIdentifier(TimestampMixin):
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="preauthorized_identifiers"
+    )
+
+    identifier_type = models.CharField(max_length=15, choices=choices(IdentifierType))
+    identifier_value = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.identifier_type}: {self.identifier_value}"
+
+    class Meta:
+        unique_together = ("account", "identifier_value")
+
+
 class Authorization(TimestampMixin, Dictable):
     dict_fields = ["id", "name", "repr"]
     order = models.ForeignKey(
@@ -493,6 +508,7 @@ class AccountEventType(models.TextChoices):
 
 
 class AuthorizationEventType(models.TextChoices):
+    PREAUTHORIZED = "auth.Preauth", "Preauthorized identifier"
     CREATED = "auth.Created", "Authorization created"
     STATUS_UPDATED = "auth.StatUpdate", "Authorization status update"
 

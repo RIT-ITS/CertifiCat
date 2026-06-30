@@ -1,10 +1,12 @@
 import datetime
 import json
+from typing import List
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
+from certificat.auth import user_can_edit_pre_authorizations
 from certificat.utils import unprefix_group
 from certificat.modules.acme import models as db
 from django.db.models import Count, DateField
@@ -72,6 +74,53 @@ def my_groups(request: HttpRequest):
         group["name"] = unprefix_group(group["name"])
 
     return JsonResponse(list(groups), safe=False)
+
+
+@login_required
+@require_http_methods(["POST"])
+def edit_preauthorizations(request: HttpRequest, account_name):
+    if not user_can_edit_pre_authorizations(request.user):
+        return HttpResponse(status=403)
+
+    account = get_object_or_404(db.Account, name=account_name)
+    request_json = json.loads(request.body)
+
+    def normalize_identifiers(identifiers: List[str]):
+        return [i.strip().lower() for i in identifiers]
+
+    removals: List[str] = normalize_identifiers(request_json.get("del", []))
+    additions: List[str] = normalize_identifiers(request_json.get("add", []))
+
+    for domain in additions:
+        domain_parts = domain.split(".")
+
+        if "*" in domain:
+            return JsonResponse(
+                {
+                    "error": f"'{domain}' is not a valid domain: wildcards are not permitted."
+                },
+                status=400,
+            )
+
+        if len(domain_parts) < 2 or len(domain_parts[-1]) < 2:
+            return JsonResponse(
+                {"error": f"'{domain}' is not a valid domain"}, status=400
+            )
+
+    account.preauthorized_identifiers.filter(identifier_value__in=removals).delete()
+    db.PreAuthorizedAccountIdentifier.objects.bulk_create(
+        [
+            db.PreAuthorizedAccountIdentifier(
+                account=account,
+                identifier_value=name,
+                identifier_type=db.IdentifierType.dns,
+            )
+            for name in additions
+        ],
+        ignore_conflicts=True,
+    )
+
+    return HttpResponse(status=200)
 
 
 @login_required

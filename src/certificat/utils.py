@@ -1,6 +1,7 @@
 import re
 from typing import Callable
 
+
 PREFIXED_GROUP_REGEX = re.compile(r"(?:\w+\/)?(?P<group>.+)")
 
 

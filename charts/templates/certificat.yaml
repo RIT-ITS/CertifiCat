@@ -68,10 +68,12 @@ spec:
               path: /health/healthz
               port: 80
           startupProbe:
-            timeoutSeconds: 10
             httpGet:
               path: /health/healthz
               port: 80
+            failureThreshold: 12
+            periodSeconds: 10
+            timeoutSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -108,7 +110,14 @@ spec:
               # Check to see if marker file has been touched in the last X seconds. This ensures huey received 
               # a PING message from some consumer at some point. This doesn't work very well in multi-tenant situations, 
               # like when a redeploy is happening but it's the best we can do.
-                - if [[ $(("$(date +%s)" - "$(stat -c %Y /tmp/huey-ping)")) -gt 60 ]]; then exit 1; else exit 0; fi
+              - /bin/bash
+              - -c
+              - |
+                if [[ $(( $(date +%s) - $(stat -c %Y /tmp/huey-ping) )) -gt 60 ]]; then
+                  exit 1
+                else
+                  exit 0
+                fi
             initialDelaySeconds: 30
             periodSeconds: 90
             timeoutSeconds: 10

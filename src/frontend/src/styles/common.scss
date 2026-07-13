@@ -349,15 +349,17 @@ pre-authorized-identifiers-manager {
     ul {
         list-style-type: none;
 
-        li+li {
+        li {
             display: flex;
-            margin-top: $spacer*.5;
 
             .identifiermanager--name {
                 flex-shrink: 100;
                 white-space:nowrap;
             }
+        }
 
+        li+li {
+            margin-top: $spacer*.5;
         }
     }
 }

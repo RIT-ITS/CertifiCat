@@ -341,6 +341,39 @@ class FinalizerSettings(BaseModel):
     module: str
 
 
+class WebhookSettings(BaseModel):
+    secret: str = Field(
+        description="Shared secret used to generate webhook signatures. This should be between 24 and 64 bytes."
+    )
+    endpoint: HttpUrl = Field(description="URL to send the webhook request.")
+    timeout: int = Field(5, description="Request timeout for the endpoint URL.")
+
+
+class ACMEFinalizerDNS01ChallengeSettings(BaseModel):
+    perform_verification: bool = Field(
+        False,
+        description="Verify DNS TXT records for challenges before submitting the order.",
+    )
+    verification_nameservers: List[str] = Field(
+        ["1.1.1.1"],
+        description="A list of servers in the format ip or ip:port. The resolver will use these nameservers when verifying challenges. If left blank the system nameservers will be used.",
+    )
+    verification_timeout: int = Field(
+        60,
+        description="Timeout for challenge verification in seconds, after which the order will be marked invalid.",
+    )
+
+
+class ACMEFinalizerChallengeSettings(BaseModel):
+    dns_01: ACMEFinalizerDNS01ChallengeSettings = Field(
+        ACMEFinalizerDNS01ChallengeSettings()
+    )
+    challenge_webhook: WebhookSettings = Field(
+        None,
+        description="Triggered after challenges are received from the upstream server but before they are answered. Requires a 20X status code returned or else the order will fail.",
+    )
+
+
 class ACMEFinalizerSettings(FinalizerSettings):
     type: Literal["acme"] = "acme"
     module: SkipJsonSchema[str] = "certificat.modules.acme.backends.acme.ACMEFinalizer"
@@ -354,8 +387,12 @@ class ACMEFinalizerSettings(FinalizerSettings):
     directory: HttpUrl = Field(
         description="Path to the ACME API endpoint. This usually ends with /directory."
     )
-    account_kid: str = Field(description="External account binding key identifier.")
-    account_hmac_key: str = Field(description="External account binding HMAC key.")
+    account_kid: str = Field(
+        None, description="External account binding key identifier."
+    )
+    account_hmac_key: str = Field(
+        None, description="External account binding HMAC key."
+    )
     account_email: str = Field(
         description="Email address used as a contact when binding an account."
     )
@@ -363,6 +400,7 @@ class ACMEFinalizerSettings(FinalizerSettings):
         False,
         description="Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.",
     )
+
     finalization_timeout: int = Field(
         90,
         description="How long to poll the upstream server before finalization is canceled.",
@@ -370,6 +408,8 @@ class ACMEFinalizerSettings(FinalizerSettings):
     client_user_agent: SkipJsonSchema[str] = Field(
         "certificat/acme-python", description="User agent of the ACME client."
     )
+
+    challenges: ACMEFinalizerChallengeSettings = Field(ACMEFinalizerChallengeSettings())
 
 
 class CertiNextFinalizerSettings(FinalizerSettings):

@@ -36,6 +36,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.timezone import make_naive
 from josepy import JWK
+import josepy
 from pydantic import BaseModel
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -84,6 +85,9 @@ class Account(TimestampMixin):
 
     def __str__(self):
         return self.name
+
+    def josepy_jwk(self) -> josepy.JWK:
+        return josepy.JWK.from_json(json.loads(self.jwk))
 
     def revoke(self):
         self.status = AccountStatus.revoked
@@ -600,12 +604,12 @@ class TaggedEvent(models.Model):
 class ACMEFinalizerBinding(TimestampMixin):
     directory = models.URLField()
     account_id = models.URLField()
-    key_id = models.CharField(max_length=255)
+    key_id = models.CharField(max_length=255, null=True)
     private_key = models.TextField()
 
-    def get(key_id: str) -> Self | None:
+    def get(**kwargs) -> Self | None:
         try:
-            return ACMEFinalizerBinding.objects.get(key_id=key_id)
+            return ACMEFinalizerBinding.objects.get(**kwargs)
         except ACMEFinalizerBinding.DoesNotExist:
             return None
 

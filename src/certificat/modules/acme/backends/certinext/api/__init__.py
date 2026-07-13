@@ -89,7 +89,7 @@ class CertiNextAPIClient:
         )
         logger.debug("CertiNext response: %s", resp.text)
 
-        if resp.status_code != 200:
+        if resp.status_code != 201:
             try:
                 body = resp.json()
                 exception_message = f"{body['title']}: {body['detail']} ({body.get('errors', 'No extra detail included')})"

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import json
 import time
-import inject
 import requests
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
@@ -93,21 +92,22 @@ class SectigoBackend:
     """How long the backend should be polled for state transitions."""
     poll_deadline: int
 
-    def __init__(self):
-        ca_settings: dynamic.SectigoFinalizerSettings = inject.instance(
-            dynamic.ApplicationSettings
-        ).finalizer
-        self.api_base = ca_settings.api_base
-        self.api_password = ca_settings.api_password
-        self.api_user = ca_settings.api_user
-        self.approval_api_password = ca_settings.approval_api_password
-        self.approval_api_user = ca_settings.approval_api_user
-        self.cert_profile_id = ca_settings.cert_profile_id
-        self.cert_validity_period = ca_settings.cert_validity_period
-        self.customer_uri = ca_settings.customer_uri
-        self.external_requester_override = ca_settings.external_requester_override
-        self.org_id = ca_settings.org_id
-        self.poll_deadline = ca_settings.poll_deadline
+    settings: dynamic.SectigoFinalizerSettings = None
+
+    def __init__(self, settings: dynamic.SectigoFinalizerSettings):
+        self.settings = settings
+
+        self.api_base = settings.api_base
+        self.api_password = settings.api_password
+        self.api_user = settings.api_user
+        self.approval_api_password = settings.approval_api_password
+        self.approval_api_user = settings.approval_api_user
+        self.cert_profile_id = settings.cert_profile_id
+        self.cert_validity_period = settings.cert_validity_period
+        self.customer_uri = settings.customer_uri
+        self.external_requester_override = settings.external_requester_override
+        self.org_id = settings.org_id
+        self.poll_deadline = settings.poll_deadline
         self.session = requests.session()
 
     def enroll(self, order: db.Order, csr: str) -> EnrollResponse:
@@ -270,8 +270,9 @@ class SectigoBackend:
 class SectigoFinalizer(Finalizer):
     backend: SectigoBackend = None
 
-    def __init__(self):
-        self.backend = SectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = SectigoBackend(self.settings)
 
     def finalize(self, order: db.Order, pem_csr):
         log_prefix = "order " + order.name

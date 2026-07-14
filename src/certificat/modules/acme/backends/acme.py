@@ -29,29 +29,21 @@ logger = logging.getLogger(__name__)
 
 
 class ACMEFinalizer(Finalizer):
-    ca_settings_type = ACMEFinalizerSettings
-    ca_settings: ACMEFinalizerSettings
+    settings: ACMEFinalizerSettings
     _client: acme.client.ClientV2 | None
-
-    def __init__(self):
-        super().__init__()
-        self.ca_settings = self.ca_settings_type.get()
-        self._client = None
 
     @property
     def client(self):
         if not self._client:
             try:
-                directory = requests.get(self.ca_settings.directory, timeout=5).json()
+                directory = requests.get(self.settings.directory, timeout=5).json()
             except Exception as exc:
                 # hide ugly timeout/retry error since these messages are presented to the user
                 raise Exception(
-                    f"Error reading ACME directory at '{self.ca_settings.directory}'"
+                    f"Error reading ACME directory at '{self.settings.directory}'"
                 ) from exc
 
-            net = acme.client.ClientNetwork(
-                user_agent=self.ca_settings.client_user_agent
-            )
+            net = acme.client.ClientNetwork(user_agent=self.settings.client_user_agent)
             self._client = acme.client.ClientV2(
                 acme.client.messages.Directory.from_json(directory), net=net
             )
@@ -60,9 +52,9 @@ class ACMEFinalizer(Finalizer):
 
     def _ensure_account_registered(self):
         # TODO: Should this also join on directory?
-        lookup_args = {"directory": str(self.ca_settings.directory)}
-        if self.ca_settings.account_kid:
-            lookup_args["key_id"] = self.ca_settings.account_kid
+        lookup_args = {"directory": str(self.settings.directory)}
+        if self.settings.account_kid:
+            lookup_args["key_id"] = self.settings.account_kid
         binding = db.ACMEFinalizerBinding.get(**lookup_args)
 
         if binding:
@@ -72,7 +64,7 @@ class ACMEFinalizer(Finalizer):
             account = acme.messages.RegistrationResource.from_json(
                 {
                     "body": {
-                        "contact": (self.ca_settings.account_email,),
+                        "contact": (self.settings.account_email,),
                         "status": "valid",
                         "termsOfServiceAgreed": True,
                     },
@@ -80,7 +72,7 @@ class ACMEFinalizer(Finalizer):
                 }
             )
             self.client.net = acme.client.ClientNetwork(
-                account_key, account, user_agent=self.ca_settings.client_user_agent
+                account_key, account, user_agent=self.settings.client_user_agent
             )
         else:
             logger.info(
@@ -95,14 +87,14 @@ class ACMEFinalizer(Finalizer):
             )
 
             self.client.net.key = josepy.JWKRSA.load(pem_private_key)
-            if self.ca_settings.account_kid and self.ca_settings.account_hmac_key:
+            if self.settings.account_kid and self.settings.account_hmac_key:
                 logger.debug(
                     "EAB settings configured, credentials will be sent with account registration."
                 )
                 eab = acme.client.messages.ExternalAccountBinding.from_data(
                     account_public_key=self.client.net.key.public_key(),
-                    kid=self.ca_settings.account_kid,
-                    hmac_key=self.ca_settings.account_hmac_key,
+                    kid=self.settings.account_kid,
+                    hmac_key=self.settings.account_hmac_key,
                     directory=self.client.directory,
                 )
             else:
@@ -110,7 +102,7 @@ class ACMEFinalizer(Finalizer):
                 eab = None
 
             new_registration = acme.client.messages.NewRegistration.from_data(
-                email=self.ca_settings.account_email,
+                email=self.settings.account_email,
                 terms_of_service_agreed=True,
                 external_account_binding=eab,
             )
@@ -131,16 +123,16 @@ class ACMEFinalizer(Finalizer):
                 )
 
             db.ACMEFinalizerBinding.objects.create(
-                directory=str(self.ca_settings.directory),
+                directory=str(self.settings.directory),
                 account_id=account_id,
-                key_id=self.ca_settings.account_kid,
+                key_id=self.settings.account_kid,
                 private_key=pem_private_key.decode(),
             )
 
     def execute_challenge_webhook(
         self, account: db.Account, upstream_order: acme.messages.OrderResource
     ) -> None:
-        webhook_settings = self.ca_settings.challenges.challenge_webhook
+        webhook_settings = self.settings.challenges.challenge_webhook
         if not webhook_settings:
             return
 
@@ -171,11 +163,11 @@ class ACMEFinalizer(Finalizer):
                     ] = challenge_body.chall.validation(account.josepy_jwk())
 
         timeout = datetime.datetime.now() + datetime.timedelta(
-            seconds=self.ca_settings.challenges.dns_01.verification_timeout
+            seconds=self.settings.challenges.dns_01.verification_timeout
         )
 
         nameservers = []
-        for nameserver in self.ca_settings.challenges.dns_01.verification_nameservers:
+        for nameserver in self.settings.challenges.dns_01.verification_nameservers:
             ip, _, port = nameserver.partition(":")
             nameservers.append(Do53Nameserver(ip, int(port) if port else 53))
 
@@ -220,7 +212,7 @@ class ACMEFinalizer(Finalizer):
         raise StopFinalization("Timeout reached verifying DNS challenges.")
 
     def preferred_challenge(self):
-        if self.ca_settings.challenges.dns_01.perform_verification:
+        if self.settings.challenges.dns_01.perform_verification:
             return acme.challenges.DNS01
 
         return acme.challenges.HTTP01
@@ -237,7 +229,7 @@ class ACMEFinalizer(Finalizer):
 
             # This may all be unnecessary. The test server requires answering challenges,
             # other servers may pre-validate the authorizations and skip this step.
-            if not self.ca_settings.skip_answering_challenges:
+            if not self.settings.skip_answering_challenges:
                 authz_list = new_order.authorizations
                 preferred_challenges = []
                 for authz in authz_list:
@@ -249,7 +241,7 @@ class ACMEFinalizer(Finalizer):
                             preferred_challenges.append(i)
 
                 self.execute_challenge_webhook(order.account, new_order)
-                if self.ca_settings.challenges.dns_01.perform_verification:
+                if self.settings.challenges.dns_01.perform_verification:
                     if not self.check_dns_propagation(order.account, new_order):
                         raise StopFinalization("Unable to verify DNS challenges")
 
@@ -264,7 +256,7 @@ class ACMEFinalizer(Finalizer):
             new_order = self.client.poll_and_finalize(
                 new_order,
                 datetime.datetime.now()
-                + datetime.timedelta(seconds=self.ca_settings.finalization_timeout),
+                + datetime.timedelta(seconds=self.settings.finalization_timeout),
             )
             db.Certificate.objects.create(order=order, chain=new_order.fullchain_pem)
 

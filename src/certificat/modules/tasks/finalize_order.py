@@ -10,7 +10,10 @@ from huey.contrib.djhuey import HUEY
 from huey import RetryTask
 from certificat.modules.acme import models as db
 from acmev2.models import OrderStatus
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import (
+    ApplicationSettings,
+    PolymorphicFinalizerSettings,
+)
 import inject
 from django.utils.module_loading import import_string
 from acmev2.services import IOrderService
@@ -24,15 +27,15 @@ def get_finalizer(account: db.Account) -> Finalizer:
 
     logger.info(f"creating finalizer for account {account.id}:{account.name}")
 
-    finalizer_module: str = app_settings.finalizer.module
+    finalizer_settings: PolymorphicFinalizerSettings = app_settings.finalizer
     if account.finalizer:
         for alt_finalizer in app_settings.alternative_finalizers:
             if alt_finalizer.id == account.finalizer:
-                finalizer_module = alt_finalizer.finalizer.module
+                finalizer_settings = alt_finalizer.finalizer
                 break
 
-    finalizer_klass = import_string(finalizer_module)
-    finalizer: Finalizer = finalizer_klass()
+    finalizer_klass: type[Finalizer] = import_string(finalizer_settings.module)
+    finalizer: Finalizer = finalizer_klass(finalizer_settings)
 
     return finalizer
 

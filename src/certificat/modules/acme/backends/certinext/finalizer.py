@@ -8,8 +8,6 @@ from certificat.modules.acme.backends import (
     Finalizer,
     StopFinalization,
 )
-from certificat.settings.dynamic import ApplicationSettings, CertiNextFinalizerSettings
-import inject
 from .backend import CertiNextBackend
 import logging
 
@@ -53,9 +51,10 @@ class CertiNextFinalizer(Finalizer):
         self.backend = CertiNextBackend()
 
     def finalize(self, order: db.Order, pem_csr: str):
-        ca_settings: CertiNextFinalizerSettings = inject.instance(
-            ApplicationSettings
-        ).finalizer
+        raise Exception("Finalizer not complete")
+        # ca_settings: CertiNextFinalizerSettings = inject.instance(
+        #    ApplicationSettings
+        # ).finalizer
         log_prefix = "order " + order.name
 
         # The latest state of the order. Orders go from

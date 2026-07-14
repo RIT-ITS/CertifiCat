@@ -1,6 +1,7 @@
 import abc
 from dataclasses import dataclass
 from certificat.modules.acme import models as db
+from certificat.settings.dynamic import PolymorphicFinalizerSettings
 
 
 @dataclass
@@ -23,6 +24,11 @@ class StopFinalization(Exception):
 
 
 class Finalizer(abc.ABC):
+    settings: PolymorphicFinalizerSettings = None
+
+    def __init__(self, settings: PolymorphicFinalizerSettings):
+        self.settings = settings
+
     @abc.abstractmethod
     def finalize(self, order: db.Order, pem_csr: str) -> FinalizeResponse:
         pass

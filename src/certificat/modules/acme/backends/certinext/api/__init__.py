@@ -25,7 +25,8 @@ class CertiNextAPIClient:
     access_token: Optional[str] = None
 
     def __init__(self):
-        self.settings = inject.instance(ApplicationSettings).finalizer
+        raise Exception("Finalizer not complete")
+        # self.settings = inject.instance(ApplicationSettings).finalizer
 
     def ensure_access_token(self) -> str:
         if self.access_token:

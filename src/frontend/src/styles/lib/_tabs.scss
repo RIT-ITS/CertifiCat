@@ -38,9 +38,9 @@
         &.tabs-borderedbottom {
             &:before {
                 border-bottom: 3px solid var(--gray-color--300);
-                
+                background: #fff;
                 top: 1px;
-                z-index:calc(var(--nav-layer) - 2);
+                z-index:calc(var(--nav-layer) - 5);
                 pointer-events: none;
             }
         }
@@ -62,6 +62,7 @@
     >label {
         padding: $spacer;
         position: relative;
+        z-index:calc(var(--nav-layer) - 4);
         cursor: pointer;
         color: color-mix(in srgb, #000 60%, #fff);
         font-weight: bold;

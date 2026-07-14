@@ -80,6 +80,7 @@ class Account(TimestampMixin):
     status = models.CharField(max_length=15, choices=choices(AccountStatus))
     jwk = models.TextField()
     jwk_thumbprint = models.CharField(max_length=100, unique=True)
+    finalizer = models.CharField(null=True, blank=True, max_length=255)
 
     events = GenericRelation("TaggedEvent")
 

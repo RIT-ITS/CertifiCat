@@ -536,6 +536,35 @@ class LocalFinalizerSettings(FinalizerSettings):
     cert: str = Field(description="PEM-formatted public key for the CA")
 
 
+type PolymorphicFinalizerSettings = Union[
+    SectigoFinalizerSettings,
+    CertiNextFinalizerSettings,
+    LocalFinalizerSettings,
+    ACMEFinalizerSettings,
+]
+
+
+class AlternativeFinalizerSettings(BaseModel):
+    id: str = Field(
+        description="Unique ID for this finalizer. This will be stored in the account and used to select the correct finalizer at certificate creation."
+    )
+    name: str = Field(
+        description="A short descriptive name for the finalizer. This is preseted in user interfaces when making selections."
+    )
+    description: str = Field(
+        description="A short description of the finalizer. This is presented in user interfaces when making selections."
+    )
+    finalizer: PolymorphicFinalizerSettings = Field(
+        discriminator="type",
+        description="Which order finalizer module to use.",
+        examples=[
+            "local",
+            "sectigo",
+            "certinext",
+        ],
+    )
+
+
 class ApplicationSettings(Settings):
     model_config = SettingsConfigDict(
         validate_default=False,
@@ -675,20 +704,21 @@ class ApplicationSettings(Settings):
         description="How many order finalization retries to perform before marking the order invalid.",
     )
 
-    finalizer: Union[
-        SectigoFinalizerSettings,
-        CertiNextFinalizerSettings,
-        LocalFinalizerSettings,
-        ACMEFinalizerSettings,
-    ] = Field(
+    finalizer: PolymorphicFinalizerSettings = Field(
         discriminator="type",
-        description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
+        description="Which order finalizer module to use. The server is designed to finalize all requests against one default backend.",
         examples=[
             "local",
             "sectigo",
             "certinext",
         ],
     )
+
+    alternative_finalizers: list[AlternativeFinalizerSettings] = Field(
+        [],
+        description="A list of alternative finalizers that can be selected depending on order criteria.",
+    )
+
     delete_invalid_orders: bool = Field(
         True,
         description="If set to True, invalid orders will be purged after some time.",

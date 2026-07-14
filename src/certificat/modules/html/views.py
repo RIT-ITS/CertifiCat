@@ -1,6 +1,6 @@
 import json
 from typing import Any
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse
 from django.views.generic.base import ContextMixin
@@ -11,6 +11,7 @@ from certificat.auth import user_can_edit_pre_authorizations
 from certificat.modules.acme.models import (
     Certificate,
     Order,
+    Account,
     AccountBinding,
     AccountEventType,
     OrderEventType,
@@ -226,6 +227,42 @@ class AccountsView(ViewBase):
         return render(request, "certificat/accounts.html", context)
 
 
+class AccountFinalizerController:
+    DEFAULT_FINALIZER = "https://github.com/RIT-ITS/CertifiCat/finalizer/default"
+    DEFAULT_FINALIZER_VALUES = {
+        "name": "Default",
+        "description": "This is the default finalizer configured for the CertifiCat instance.",
+    }
+    settings = inject.attr(ApplicationSettings)
+
+    def __init__(self, request: HttpRequest, account: Account):
+        self.request = request
+        self.account = account
+
+    def should_display_finalizer(self):
+        user_has_access = self.request.user.is_superuser
+        multiple_finalizers = len(self.settings.alternative_finalizers) > 0
+        non_default_finalizer_selected = self.account.finalizer is not None
+
+        return (
+            user_has_access and multiple_finalizers
+        ) or non_default_finalizer_selected
+
+    def editable(self):
+        return self.request.user.is_superuser
+
+    def selected_finalizer(self) -> str:
+        return self.account.finalizer or ""
+
+    def finalizers_json(self) -> str:
+        fin = {self.DEFAULT_FINALIZER: self.DEFAULT_FINALIZER_VALUES}
+
+        for alt in self.settings.alternative_finalizers:
+            fin[alt.id] = {"name": alt.name, "description": alt.description}
+
+        return json.dumps(fin)
+
+
 class AccountView(ViewBase):
     section = Sections.Accounts
     binding: AccountBinding = None
@@ -330,6 +367,9 @@ class AccountView(ViewBase):
             show_pre_authorized_identifiers = (
                 len(binding.bound_to.preauthorized_identifiers.all()) > 0
                 or can_edit_preauthorizations
+            )
+            context["finalizer_controller"] = AccountFinalizerController(
+                request, binding.bound_to
             )
             context["can_edit_preauthorizations"] = can_edit_preauthorizations
             context["show_pre_authorized_identifiers"] = show_pre_authorized_identifiers

@@ -318,6 +318,88 @@ editable-text {
     }
 }
 
+finalizer-manager {
+    display: block;
+    max-width: 500px;
+
+    .finalizermanager--edit,
+    .finalizermanager--cancel {
+        margin-left: $spacer;
+    }
+
+    .finalizermanager--header {
+        h4 {
+            font-size:1em;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+
+    }
+
+    .finalizermanager--description {
+        width: 100%;
+    }
+
+    .finalizermanager--option {
+        h4 {
+            font-size:1em;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+    }
+
+    li {
+        display: flex;
+        border: 1px solid var(--gray-color--300);
+
+        a {
+            display: flex;
+            flex: 1;
+            color: var(--body-text-color);
+            outline-offset: -1px;
+            transition: background-color 100ms ease-in-out 0s;
+            padding: $spacer*.25;
+
+            > div {
+                flex: 1;
+            }
+
+            > span {
+                display: flex;
+                flex-shrink: 1;
+                align-items: center;
+                color: var(--primary-color);
+                transition: all 100ms ease-in-out 0s;
+                position: relative;
+                padding: 0 .5rem;
+                
+                &::before {
+                    content: "";
+                    position: absolute;
+                    top: .45rem;
+                    bottom: .45rem;
+                    left: 0;
+                    padding-right: .5rem;
+                    border-left: 1px solid var(--gray-color--400);
+                }
+            }
+
+            &:hover {
+                cursor: pointer;
+                background-color: var(--gray-color--100);
+                outline: 1px solid var(--primary-color) !important;
+            }
+        }
+
+        
+    }
+
+    li+li {
+        border-top: none;
+    }
+    
+}
+
 pre-authorized-identifiers-manager {
     display: block;
     max-width: 500px;

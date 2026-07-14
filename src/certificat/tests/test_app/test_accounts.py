@@ -1,3 +1,10 @@
+from certificat.modules.tasks.finalize_order import get_finalizer
+from certificat.settings.dynamic import (
+    ACMEFinalizerSettings,
+    AlternativeFinalizerSettings,
+    ApplicationSettings,
+)
+import inject
 import pytest
 from certificat.modules.html.nav import Sections
 from django.urls import reverse
@@ -130,3 +137,49 @@ def test_account_sharing(authenticated_web_client: Client, acme_newacct):
 
     response = authenticated_web_client.get(reverse("account", args=[binding.id]))
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_finalizer_selection(authenticated_web_client: Client, acme_newacct):
+    binding = db.AccountBinding.generate(
+        authenticated_web_client.test_user, "name", "note"
+    )
+    acme_newacct(with_eab=True, binding=binding, user=binding.creator)
+
+    binding.refresh_from_db()
+    assert binding.bound_to
+    account = binding.bound_to
+
+    settings = inject.instance(ApplicationSettings)
+
+    def assert_path_is(obj: any, path: str):
+        assert f"{obj.__module__}.{obj.__class__.__name__}" == path
+
+    # Test that default finalizer is used
+    assert_path_is(get_finalizer(account), settings.finalizer.module)
+
+    account.finalizer = "my-finalizer"
+    account.save()
+    # Test alternative finalizer is used
+    settings.alternative_finalizers = [
+        AlternativeFinalizerSettings(
+            id=account.finalizer,
+            name="alt finalizer",
+            description="My description!",
+            finalizer=ACMEFinalizerSettings(
+                directory="https://acme.edu/directory",
+                account_kid="some-kid",
+                account_hmac_key="some-key",
+                account_email="noreply@acme.edu",
+            ),
+        )
+    ]
+
+    # Test that alternative finalizer is used
+    assert_path_is(
+        get_finalizer(account), settings.alternative_finalizers[0].finalizer.module
+    )
+
+    settings.alternative_finalizers = []
+    # Test that default finalizer is used when no alt is found
+    assert_path_is(get_finalizer(account), settings.finalizer.module)

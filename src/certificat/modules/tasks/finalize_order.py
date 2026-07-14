@@ -19,8 +19,25 @@ from django.db import transaction
 logger = logging.getLogger(__name__)
 
 
-def _run_task(order_name: str):
+def get_finalizer(account: db.Account) -> Finalizer:
     app_settings = inject.instance(ApplicationSettings)
+
+    logger.info(f"creating finalizer for account {account.id}:{account.name}")
+
+    finalizer_module: str = app_settings.finalizer.module
+    if account.finalizer:
+        for alt_finalizer in app_settings.alternative_finalizers:
+            if alt_finalizer.id == account.finalizer:
+                finalizer_module = alt_finalizer.finalizer.module
+                break
+
+    finalizer_klass = import_string(finalizer_module)
+    finalizer: Finalizer = finalizer_klass()
+
+    return finalizer
+
+
+def _run_task(order_name: str):
     log_prefix = "order " + order_name
 
     with transaction.atomic():
@@ -33,9 +50,7 @@ def _run_task(order_name: str):
 
     csr = db.CertificateRequest.objects.get(order=order).csr
 
-    logger.info(f"{log_prefix}: creating finalizer")
-    finalizer_klass = import_string(app_settings.finalizer.module)
-    finalizer: Finalizer = finalizer_klass()
+    finalizer = get_finalizer(order.account)
 
     try:
         finalize_response: FinalizeResponse = finalizer.finalize(order, csr)

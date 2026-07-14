@@ -1,5 +1,4 @@
 import { LitElement, html } from "lit";
-import { ref, createRef, Ref } from 'lit/directives/ref.js';
 import { customElement, property, state } from "lit/decorators.js";
 import { getCsrfToken } from "../util";
 import { Task } from "@lit/task";

@@ -72,6 +72,8 @@ runserver() {
 }
 
 collectstatic() {
+    # This doesn't happen in the Dockerfile because config is required.
+    # It should happen during container build, this greatly slows down container startup.
     [ -f "${CONFIG}" ] || {
         log_err "File ${CONFIG} not found and is required."
         exit 1;

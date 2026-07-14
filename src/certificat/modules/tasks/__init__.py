@@ -1,7 +1,10 @@
+from datetime import timedelta
 import logging
+import time
 
 from certificat.settings.dynamic import ApplicationSettings
-from huey.contrib.djhuey import task, db_task
+from huey.contrib.djhuey import task, db_task, periodic_task
+from huey import crontab
 import inject
 from . import finalize_order
 from . import validate_challenge
@@ -21,6 +24,20 @@ def ping(pong_text: str) -> str:
     health_file.touch()
 
     return pong_text
+
+
+# Adds a ping task to the queue, make sure communication is happening
+# between Huey and Redis
+@periodic_task(crontab(minute="*"))
+def pinger(task=None):
+    cutoff = time.time() + 60
+    while time.time() < cutoff:
+        start = time.time()
+        send_ping = ping("pong")
+        send_ping(blocking=True)
+        logger.debug(f"ping executed in {time.time() - start} seconds")
+
+        time.sleep(10)
 
 
 def deferred_task_setup():

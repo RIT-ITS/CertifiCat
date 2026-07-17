@@ -49,12 +49,6 @@ build:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
   script:
       - internal/build-image "${CS_IMAGE},${IMAGE_TAG},${CI_REGISTRY_IMAGE}:latest"
-  cache:
-    # no key for now, we'll see how it goes
-    # key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - src/frontend/node_modules/
-      - src/.venv/
   rules:
     # Build when a new tag is committed
     - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^\d+\.\d+\..+/

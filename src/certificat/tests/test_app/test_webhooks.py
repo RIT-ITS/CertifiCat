@@ -3,6 +3,7 @@ import inject
 import pytest
 from django.test import Client
 from acmev2.settings import ACMESettings, Challenges
+import acme.client
 import responses
 from certificat.modules.acme import models as db
 
@@ -18,7 +19,11 @@ class TestWebhooks:
 
     @pytest.mark.django_db
     def test_pre_neworder_webhook(
-        self, web_client: Client, responses: responses, acme_client, acme_neworder
+        self,
+        web_client: Client,
+        responses: responses,
+        acme_client: acme.client.ClientV2,
+        acme_neworder,
     ):
         local_acme_settings = inject.instance(ACMESettings)
         local_acme_settings.challenges_available = [
@@ -51,7 +56,9 @@ class TestWebhooks:
             callback=webhook_callback,
         )
 
-        resp = webhook.publish(webhook_endpoint, order.account, new_order.response)
+        resp = webhook.publish(
+            webhook_endpoint, acme_client.net.key, new_order.response
+        )
         challenges = resp.json()["data"]["authorizations"][0]["challenges"]
 
         assert verified

@@ -5,6 +5,7 @@ import time
 import acme.messages
 from certificat.webhooks import PreUpstreamChallengeWebhook
 import dns.resolver
+import dns.exception
 import josepy
 import requests
 
@@ -30,7 +31,11 @@ logger = logging.getLogger(__name__)
 
 class ACMEFinalizer(Finalizer):
     settings: ACMEFinalizerSettings
-    _client: acme.client.ClientV2 | None
+    _client: acme.client.ClientV2
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._client = None
 
     @property
     def client(self):
@@ -58,7 +63,7 @@ class ACMEFinalizer(Finalizer):
         binding = db.ACMEFinalizerBinding.get(**lookup_args)
 
         if binding:
-            logger.info("External account binding found, reusing from database.")
+            logger.info("Existing account found, reusing from database.")
             account_key = josepy.JWKRSA.load(binding.private_key.encode())
 
             account = acme.messages.RegistrationResource.from_json(
@@ -76,7 +81,7 @@ class ACMEFinalizer(Finalizer):
             )
         else:
             logger.info(
-                "External account binding not found, registering with CA from settings."
+                "Existing account not found, registering with CA from settings."
             )
             # TODO: Make these options configurable
             private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -130,18 +135,18 @@ class ACMEFinalizer(Finalizer):
             )
 
     def execute_challenge_webhook(
-        self, account: db.Account, upstream_order: acme.messages.OrderResource
+        self, upstream_order: acme.messages.OrderResource
     ) -> None:
         webhook_settings = self.settings.challenges.challenge_webhook
         if not webhook_settings:
             return
 
-        logger.debug("Executing PreNewOrderWebhook webhook")
+        logger.info("Executing PreNewOrderWebhook webhook")
         webhook = PreUpstreamChallengeWebhook(webhook_settings.secret)
-        webhook.publish(webhook_settings.endpoint, account, upstream_order)
+        webhook.publish(webhook_settings.endpoint, self.client.net.key, upstream_order)
 
     def check_dns_propagation(
-        self, account: db.Account, upstream_order: acme.messages.OrderResource
+        self, upstream_order: acme.messages.OrderResource
     ) -> bool:
         """Verifies DNS records set for the challenge domains. This never returns False, it raises
         a StopFinalization error on failure.
@@ -160,7 +165,7 @@ class ACMEFinalizer(Finalizer):
                         challenge_body.chall.validation_domain_name(
                             authz.body.identifier.value
                         )
-                    ] = challenge_body.chall.validation(account.josepy_jwk())
+                    ] = challenge_body.chall.validation(self.client.net.key)
 
         timeout = datetime.datetime.now() + datetime.timedelta(
             seconds=self.settings.challenges.dns_01.verification_timeout
@@ -194,7 +199,7 @@ class ACMEFinalizer(Finalizer):
                         verified_domains.append(domain)
                     else:
                         logger.debug(f"Verification token not found for {domain}")
-                except dns.resolver.NoAnswer:
+                except dns.exception.DNSException:
                     logger.debug(f"No answer returned for {domain}")
                     # This is fine, try again
                     pass
@@ -240,9 +245,9 @@ class ACMEFinalizer(Finalizer):
                         if isinstance(i.chall, self.preferred_challenge()):
                             preferred_challenges.append(i)
 
-                self.execute_challenge_webhook(order.account, new_order)
+                self.execute_challenge_webhook(new_order)
                 if self.settings.challenges.dns_01.perform_verification:
-                    if not self.check_dns_propagation(order.account, new_order):
+                    if not self.check_dns_propagation(new_order):
                         raise StopFinalization("Unable to verify DNS challenges")
 
                 # This may not be necessary for acme upstreams we integrate with

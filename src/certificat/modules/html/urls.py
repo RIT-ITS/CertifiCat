@@ -1,4 +1,4 @@
-from django.contrib import admin
+from .admin import admin_site
 from django.urls import include, path
 
 from certificat.settings.dynamic import ApplicationSettings
@@ -9,7 +9,7 @@ from .nav import Sections
 app_settings = inject.instance(ApplicationSettings)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/", admin_site.urls),
     path("", views.IndexView.as_view(), name=Sections.Dashboard.value),
     path("account/<binding_id>/", views.AccountView.as_view(), name="account"),
     path(
@@ -41,7 +41,7 @@ urlpatterns = [
     ),
     path("login/", views.LocalLoginView.as_view(), name="login"),
     path("logout/", views.LocalLogoutView.as_view(), name="logout"),
-    path("admin/", views.IndexView.as_view(), name=Sections.Admin.value),
+    path("admin/", admin_site.urls, name=Sections.Admin.value),
     path("saml2/", include("djangosaml2.urls")),
     path("remote/login/", views.remote_login_redirect, name="remote-login-redirect"),
     # These are for testing and a convenience endpoint for monitoring

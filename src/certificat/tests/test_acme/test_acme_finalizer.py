@@ -18,15 +18,14 @@ from certificat.settings.dynamic import (
     WebhookSettings,
 )
 from certificat.tests.conftest import NewOrderRet
-from certificat.tests.helpers import do_challenge, finalize_order, select_first
+from certificat.tests.helpers import do_challenge, finalize_order
 import pytest
 import acme
 from certificat.modules.acme import models as db
 import pytest_responses  # noqa: F401
-from acme import challenges as acme_challenges
 import responses
 from acme import errors
-from acmev2.models import ChallengeType, OrderStatus
+from acmev2.models import OrderStatus
 
 
 class TestACMEFinalizer:
@@ -357,35 +356,50 @@ class TestACMEFinalizer:
     @pytest.mark.django_db
     def test_check_dns_propagation(self, pebble_starter, dns_server: DNSServer):
         pebble_starter()
+        webhook_endpoint = "https://webhook.localhost/pre-neworder"
+        shared_secret = "s3cret"
         settings = ACMEFinalizerSettings.get()
         settings.challenges = ACMEFinalizerChallengeSettings(
+            challenge_webhook=WebhookSettings(
+                secret=shared_secret, endpoint=webhook_endpoint
+            ),
             dns_01=ACMEFinalizerDNS01ChallengeSettings(
                 verification_nameservers=[f"127.0.0.1:{self.dns_server_port}"],
                 verification_timeout=5,
                 perform_verification=True,
-            )
+            ),
         )
 
         domain = "acme.localhost"
         new_order: NewOrderRet = self.acme_neworder(
             self.acme_client, self.acme_acct, cn=domain, sans=[domain]
         )
-        acct_id = self.acme_acct.uri.split("/")[-1]
-        account = db.Account.objects.get(name=acct_id)
-        authz_resource = new_order.response.authorizations[0]
-        dns_chall = select_first(
-            authz_resource.body.challenges,
-            lambda chall: chall.typ == ChallengeType.dns_01,
-        )
 
-        chall_validator = acme_challenges.DNS01(token=dns_chall.token)
+        def webhook_callback(arg):
+            webhook = Webhook(shared_secret)
+            webhook.verify(arg.body.encode(), arg.headers)
+            body = json.loads(arg.body)
 
-        dns_server.add_record(
-            Zone(
-                f"_acme-challenge.{domain}",
-                "TXT",
-                chall_validator.validation(account.josepy_jwk()),
+            domain = body["data"]["authorizations"][0]["identifier"][4:]
+            validation = [
+                c["validation"]
+                for c in body["data"]["authorizations"][0]["challenges"]
+                if c["type"] == "dns-01"
+            ][0]
+
+            dns_server.add_record(
+                Zone(
+                    f"_acme-challenge.{domain}",
+                    "TXT",
+                    validation,
+                )
             )
+            return (200, {}, "")
+
+        self.responses.add_callback(
+            responses.POST,
+            webhook_endpoint,
+            callback=webhook_callback,
         )
 
         order = self._get_processed_order(new_order=new_order)

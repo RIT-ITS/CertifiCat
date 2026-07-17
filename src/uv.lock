@@ -77,8 +77,8 @@ wheels = [
 
 [[package]]
 name = "certificat"
-version = "2.0.0.dev1"
-source = { virtual = "." }
+version = "0.0.0"
+source = { editable = "." }
 dependencies = [
     { name = "acme" },
     { name = "acmev2" },

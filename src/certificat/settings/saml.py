@@ -123,12 +123,4 @@ if dynamic_settings.authentication.type == "saml":
         "discovery_response": saml_settings.discovery.response
         if saml_settings.discovery
         else None,
-        # own metadata settings
-        "contact_person": [],
-        # you can set multilanguage information here
-        "organization": {
-            "name": [("Rochester Institute of Technology", "en")],
-            "display_name": [("RIT", "en")],
-            "url": [("https://rit.edu/", "en")],
-        },
     }

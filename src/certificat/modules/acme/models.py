@@ -614,6 +614,9 @@ class ACMEFinalizerBinding(TimestampMixin):
         except ACMEFinalizerBinding.DoesNotExist:
             return None
 
+    def __str__(self):
+        return f"{self.account_id}"
+
 
 class Config(models.Model):
     """

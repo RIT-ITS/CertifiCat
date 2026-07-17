@@ -5,9 +5,9 @@ import json
 import typing as t
 from datetime import datetime, timedelta
 from math import floor
-from certificat.modules.acme import models as db
 import uuid
 from django.utils import timezone
+import josepy
 import requests
 import acme.messages
 
@@ -107,7 +107,7 @@ class PreUpstreamChallengeWebhook(Webhook):
     def publish(
         self,
         endpoint: str,
-        account: db.Account,
+        account_jwk: josepy.JWK,
         upstream_order: acme.messages.OrderResource,
     ) -> requests.Response:
         authorizations = []
@@ -124,7 +124,7 @@ class PreUpstreamChallengeWebhook(Webhook):
                     challenge = {}
                     challenge["type"] = challenge_body.chall.typ
                     challenge["validation"] = challenge_body.chall.validation(
-                        account.josepy_jwk()
+                        account_jwk
                     )
                     # TODO: Add http-01, but the webhook probably wouldn't do this anyway.
                     # So by not adding it, we're protecting consumers from themself

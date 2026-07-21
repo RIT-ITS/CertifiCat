@@ -762,6 +762,60 @@ code {
     }
 }
 
+ul.orderstatus {
+    li {
+        padding-left: $spacer*1.5;
+        position: relative;
+
+        .orderstatus--title {
+            font-weight: bold;
+        }
+
+        &.orderstatus--completed {
+            i {
+                color: var(--green-accent-color);
+            }    
+        }  
+
+        &.orderstatus--upcoming {
+            color: var(--gray-color--600);
+            .orderstatus--title {
+                font-weight: normal;
+            }
+        }
+
+        i {
+            position: absolute;
+            left: 0;
+            top: .2em;
+
+            &.fa-minus {
+                top: .9em;
+                left: .2em;
+            }
+
+            &.fa-xmark {
+                color: var(--red-accent-color);
+            }
+        }
+
+        .orderstatus--wrap {
+            display: flex;
+            flex-direction: column;
+
+            .orderstatus--description {
+                margin-bottom: $spacer*.5;
+            }
+        }
+    }
+
+    .orderstatus--description {
+
+    }
+}
+
+
+
 #footer > div {
     .version {
         opacity: .75;

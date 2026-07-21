@@ -12,6 +12,7 @@ from django.utils import dateparse
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
+from huey.contrib.djhuey.stats import admin as huey_admin
 
 
 class CertifiCatAdmin(admin.AdminSite):
@@ -25,6 +26,9 @@ class CertifiCatAdmin(admin.AdminSite):
 
 
 admin_site = CertifiCatAdmin()
+
+admin_site.register(huey_admin.HueyEvent, huey_admin.HueyEventAdmin)
+admin_site.register(huey_admin.HueyDashboard, huey_admin.HueyDashboardAdmin)
 
 
 class AuthorizationInline(admin.TabularInline):

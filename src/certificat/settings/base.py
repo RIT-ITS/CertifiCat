@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "djangosaml2",
     "huey.contrib.djhuey",
+    "huey.contrib.djhuey.stats",
     "django_cotton",
     "import_export",
     "certificat.app.CertificatConfig",

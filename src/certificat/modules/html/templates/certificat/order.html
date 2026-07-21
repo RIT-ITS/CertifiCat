@@ -36,8 +36,37 @@
         
         <dt>Status</dt>
         <dd>
-            <c-status :status="order.status" />
+            <ul class="orderstatus">
+            {% for stage in status_controller.stages %}
+                <li class="{% if stage.completed %}orderstatus--completed{% endif %}{% if stage.upcoming %}orderstatus--upcoming{% endif %}">
+                    {% if stage.completed %}
+                        <i class="fa-solid fa-check fa-fw"></i>
+                    {% elif stage.current %}
+                        {% if status_controller.order_invalid %}
+                            <i class="fa-solid fa-xmark fa-fw"></i>
+                        {% else %}
+                            <i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="--fa-animation-duration: 3s;"></i>
+                        {% endif %}
+                    {% else %}
+                        <!-- placeholder -->
+                        <i class="fa-solid fa-minus fa-fw fa-xs"></i>
+                    {% endif %}
+                    
+                    <div class="orderstatus--wrap">
+                        <span class="orderstatus--title">{{ stage.name }}</span>
+                        {% if stage.current %}
+                            {% if status_controller.order_invalid %}
+                                <span class="orderstatus--description">{{ stage.error_help }}</span>
+                            {% else %}
+                                <span class="orderstatus--description">{{ stage.description }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
         </dd>
+
     </dl>
 
     <c-tabs bordered class="mt-4">

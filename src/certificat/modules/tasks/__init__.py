@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 import time
 
@@ -11,6 +11,7 @@ from . import validate_challenge
 from . import housekeeping  # noqa: F401
 from . import beacon  # noqa: F401
 from pathlib import Path
+from huey.contrib.djhuey.stats.models import HueyEvent
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,10 @@ def ping(pong_text: str) -> str:
 
 
 # Adds a ping task to the queue, make sure communication is happening
-# between Huey and Redis
+# between Huey and Redis. This calls another task because Huey fidelity
+# stops at the minute level and ignores seconds.
 @periodic_task(crontab(minute="*"))
-def pinger(task=None):
+def heartbeat(task=None):
     cutoff = time.time() + 60
     while time.time() < cutoff:
         start = time.time()
@@ -38,6 +40,18 @@ def pinger(task=None):
         logger.debug(f"ping executed in {time.time() - start} seconds")
 
         time.sleep(10)
+
+
+# Every five minutes remove the pings from the database, history is irrelevant
+@periodic_task(crontab(minute="*/5"))
+def cleanup_pings():
+    HueyEvent.objects.filter(
+        task__in=[
+            "certificat.modules.tasks.ping",
+            "certificat.modules.tasks.heartbeat",
+            "certificat.modules.tasks.cleanup_pings",
+        ]
+    ).delete()
 
 
 def deferred_task_setup():

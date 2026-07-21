@@ -6,7 +6,7 @@ from certificat.settings.dynamic import (
     RemoteAuthSettings,
     SAMLAuthSettings,
 )
-from certificat.utils import coerce_to_list, split_delimited_string
+from certificat.utils import coerce_to_list, split_delimited_string, unprefix_group
 import djangosaml2.backends
 from django.contrib.auth.models import Group, User
 import logging
@@ -128,7 +128,9 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 def _reconcile_superuser(
     user: User, admins: List[str] = [], admin_groups: List[str] = []
 ):
-    normalized_user_group_names = [g.name.lower() for g in user.groups.all()]
+    normalized_user_group_names = [
+        unprefix_group(g.name.lower()) for g in user.groups.all()
+    ]
     user_in_admin_group = False
     for name in admin_groups:
         if name.lower() in normalized_user_group_names:

@@ -17,11 +17,12 @@ dependencies = [
     "pyyaml>=6.0.2",
     "redis>=5.1.1",
     "markdown>=3.7",
-    "huey>=2.5.3",
+    "huey==3.2.1",
     "django-import-export>=4.3.7",
     "psycopg[binary]>=3.3.3",
     "acme>=2.11.0",
     "acmev2>=0.2.1",
+    "peewee>=4.2.6",
 ]
 
 [dependency-groups]

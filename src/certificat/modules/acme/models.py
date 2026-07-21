@@ -249,8 +249,7 @@ class Certificate(TimestampMixin, Dictable):
         return self.order.name
 
     def save(self, *args, **kwargs):
-        if self.metadata is None:
-            self.rebuild_metadata()
+        self.rebuild_metadata()
 
         return super().save(*args, **kwargs)
 
@@ -505,6 +504,7 @@ class OrderEventType(models.TextChoices):
     STATUS_UPDATED = "ord.StatUpdate", "Order status update"
     FINALIZATION_QUEUED = "ord.FinQueued", "Order finalization queued"
     FINALIZATION_PASSED = "ord.FinPassed", "Order finalized"
+    FINALIZATION_ERROR = "ord.FinErr", "Order finalization error"
     FINALIZATION_FAILED = "ord.FinFailed", "Order finalization failed"
 
 

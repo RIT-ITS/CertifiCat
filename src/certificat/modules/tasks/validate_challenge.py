@@ -26,7 +26,7 @@ def execute_validate_challenge_task(challenge_name: str):
 
 
 def validate_challenge_task(challenge_name: str, task=None):
-    """Validates an HTTP challenge for a pending authorization. It will
+    """Validates a challenge for a pending authorization. It will
     retry the challenge a number of times and set the authorization as
     invalid if it does not pass.
 

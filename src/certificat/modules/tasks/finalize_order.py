@@ -54,6 +54,7 @@ def _run_task(order_name: str):
     csr = db.CertificateRequest.objects.get(order=order).csr
 
     finalizer = get_finalizer(order.account)
+    logger.info(f"Finalizer selected: {finalizer}")
 
     try:
         finalize_response: FinalizeResponse = finalizer.finalize(order, csr)
@@ -63,13 +64,22 @@ def _run_task(order_name: str):
             order.status = OrderStatus.valid
             order.save()
         else:
+            error = (
+                f"{finalize_response.error.code}: {finalize_response.error.description}"
+            )
+            db.TaggedEvent.record(
+                db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": error}
+            )
             db.OrderFinalizationError.objects.create(
                 order=order,
-                error=f"{finalize_response.error.code}: {finalize_response.error.description}",
+                error=error,
             )
 
         return finalize_response.ok()
     except StopFinalization as exc:
+        db.TaggedEvent.record(
+            db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
+        )
         db.OrderFinalizationError.objects.create(order=order, error=str(exc))
         raise
     except NotReadyException:
@@ -77,6 +87,9 @@ def _run_task(order_name: str):
         logger.info(f"{log_prefix}: order was not ready, will be retried if possible")
     except Exception as exc:
         logger.exception(f"{log_prefix}: exception finalizing order")
+        db.TaggedEvent.record(
+            db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
+        )
         db.OrderFinalizationError.objects.create(order=order, error=str(exc))
 
     return False

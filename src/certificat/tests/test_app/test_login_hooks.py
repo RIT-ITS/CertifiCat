@@ -130,6 +130,14 @@ def test_reconcile_superuser():
             expected_admin=False,
             initial_groups=["nonadmin-group", "another-nonadmin-group"],
         ),
+        # ensure prefixed admin group works
+        case(
+            admins=["admin-usr"],
+            admin_groups=["admin-group"],
+            user=user,
+            expected_admin=True,
+            initial_groups=["SAML/nonadmin-group", "SAML/admin-group"],
+        ),
     ]
 
     for idx, case in enumerate(test_cases):

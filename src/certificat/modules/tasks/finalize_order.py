@@ -80,7 +80,7 @@ def _run_task(order_name: str):
         db.TaggedEvent.record(
             db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
         )
-        db.OrderFinalizationError.objects.create(order=order, error=str(exc))
+        db.OrderFinalizationError.objects.create(order=order, error=str(exc) or "No error given by upstream")
         raise
     except NotReadyException:
         # Don't log this as an error, the order is just in a processing state
@@ -90,7 +90,7 @@ def _run_task(order_name: str):
         db.TaggedEvent.record(
             db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
         )
-        db.OrderFinalizationError.objects.create(order=order, error=str(exc))
+        db.OrderFinalizationError.objects.create(order=order, error=str(exc) or "No error given by upstream")
 
     return False
 

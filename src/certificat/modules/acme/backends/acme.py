@@ -266,6 +266,8 @@ class ACMEFinalizer(Finalizer):
             db.Certificate.objects.create(order=order, chain=new_order.fullchain_pem)
 
             return FinalizeResponse(bundle=new_order.fullchain_pem)
+        except acme.errors.TimeoutError as exc:
+            raise StopFinalization("Upstream timed out while finalizing the order") from exc
         except acme.messages.Error as exc:
             # In the case of an ACME error we stop the execution. The ACME client is already polling, we don't
             # need to restart ACME and retry this order 5-10 times resulting in more failures.
@@ -277,4 +279,4 @@ class ACMEFinalizer(Finalizer):
             # sanely. We show the full exception because this is a semi-internal service.
             # That may change in the future and we may prompt the user to bring a correlation
             # ID to a server administrator to look at logs.
-            raise StopFinalization(str(exc)) from exc
+            raise StopFinalization(str(exc) or "No exception given by upstream") from exc

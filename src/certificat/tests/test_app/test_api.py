@@ -1,6 +1,10 @@
 import datetime
 
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import (
+    ACMEFinalizerSettings,
+    AlternativeFinalizerSettings,
+    ApplicationSettings,
+)
 from certificat.modules.acme import models as db
 import inject
 import pytest
@@ -169,6 +173,70 @@ class TestApi:
         # Another good deletion, back to 0
         resp = _post({"del": ["another.valid.tld"]})
         assert acct.preauthorized_identifiers.count() == 0
+
+    @pytest.mark.django_db
+    def test_edit_finalizer(self, web_client: Client):
+        account_owner = gen_user()
+        superuser = gen_user(is_superuser=True)
+        unprivileged_user = gen_user()
+
+        acct = db.Account.objects.create(
+            name="test-account",
+            jwk="invalid-jwk",
+            jwk_thumbprint="invalid-thumbprint",
+        )
+
+        settings = inject.instance(ApplicationSettings)
+        settings.alternative_finalizers = [
+            AlternativeFinalizerSettings(
+                id="fin1",
+                name="alt finalizer",
+                description="My description!",
+                finalizer=ACMEFinalizerSettings(
+                    directory="https://acme.edu/directory",
+                    account_kid="some-kid",
+                    account_hmac_key="some-key",
+                    account_email="noreply@acme.edu",
+                ),
+            )
+        ]
+
+        response = web_client.get(reverse("api:edit_finalizer", args=[acct.name]))
+        assert response.status_code != 200
+
+        # unprivileged users may not edit
+        web_client.force_login(unprivileged_user)
+        response = web_client.post(reverse("api:edit_finalizer", args=[acct.name]))
+        assert response.status_code == 403
+
+        # account owners may not edit
+        web_client.force_login(account_owner)
+        response = web_client.post(reverse("api:edit_finalizer", args=[acct.name]))
+        assert response.status_code == 403
+
+        # only superusers can edit as of right now
+        web_client.force_login(superuser)
+
+        def _post(mods):
+            return web_client.post(
+                reverse("api:edit_finalizer", args=[acct.name]),
+                mods,
+                content_type="application/json",
+            )
+
+        # Success
+        resp = _post({"id": "fin1"})
+        acct.refresh_from_db()
+        assert acct.finalizer == "fin1"
+
+        # Success!
+        resp = _post({"id": None})
+        acct.refresh_from_db()
+        assert not acct.finalizer
+
+        resp = _post({"id": "does-not-exist"})
+        acct.refresh_from_db()
+        assert not acct.finalizer
 
     @pytest.mark.django_db
     def test_get_order_events(self, web_client: Client):

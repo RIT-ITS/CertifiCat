@@ -1,6 +1,7 @@
-__all__ = ["HUEY"]
+__all__ = ["HUEY", "HUEY_STATS"]
 
 import inject
+
 from .dynamic import ApplicationSettings
 
 dynamic_settings = inject.instance(ApplicationSettings)
@@ -28,4 +29,14 @@ HUEY = {
         "check_worker_health": True,  # Enable worker health checks.
         "health_check_interval": 1,
     },
+}
+
+HUEY_STATS = {
+    "retention_hours": 48,  # Prune events older than this.
+    "max_events": 2000,  # Cap on rows retained per queue.
+    "capture_args": False,  # Store a truncated repr of task arguments.
+    # Stats are stored in DATABASES['default'] by default. Override with
+    # a peewee Database instance or db-url string:
+    "database": dynamic_settings.task_queue.stats_database
+    or dynamic_settings.db.to_peewee(),
 }

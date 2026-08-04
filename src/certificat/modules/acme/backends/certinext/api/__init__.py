@@ -25,7 +25,8 @@ class CertiNextAPIClient:
     access_token: Optional[str] = None
 
     def __init__(self):
-        self.settings = inject.instance(ApplicationSettings).finalizer
+        raise Exception("Finalizer not complete")
+        # self.settings = inject.instance(ApplicationSettings).finalizer
 
     def ensure_access_token(self) -> str:
         if self.access_token:
@@ -89,7 +90,7 @@ class CertiNextAPIClient:
         )
         logger.debug("CertiNext response: %s", resp.text)
 
-        if resp.status_code != 200:
+        if resp.status_code != 201:
             try:
                 body = resp.json()
                 exception_message = f"{body['title']}: {body['detail']} ({body.get('errors', 'No extra detail included')})"

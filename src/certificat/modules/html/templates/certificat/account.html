@@ -56,6 +56,22 @@
                                     <span id="binding-note" data-editable-id="note">{{ binding.note }}</span>
                                 </editable-text>
                             </dd>
+
+                            {% if finalizer_controller.should_display_finalizer %}
+                                <dt>Finalizer</dt>
+                                <dd>
+                                    <finalizer-manager
+                                        updateUrl="{% url 'api:edit_finalizer' binding.bound_to.name %}"
+                                        finalizers="{{ finalizer_controller.finalizers_json }}"
+                                        selectedFinalizer="{{ finalizer_controller.selected_finalizer}}"
+                                        defaultFinalizer="{{ finalizer_controller.DEFAULT_FINALIZER }}"
+                                        canEdit="{{ finalizer_controller.editable }}"
+                                        >
+
+                                    </finalizer-manager>
+                                    <div class="subtext mt-2">All orders for this account will use the configured finalizer if possible.</div>
+                                </dd>
+                            {% endif %}
                         </dl>
                     </div>
 
@@ -143,7 +159,7 @@
                             </c-slot>
                         </c-link-table>
                         <div class="row mt-2 center-xs">
-                            <c-pagination :page="orders.page" qs_extra="#order-history" />
+                            <c-pagination target="{% url 'account-tab' binding.id 'history' %}" :page="orders.page" qs_extra="#order-history" />
                         </div>
                     </div>
                 </div>

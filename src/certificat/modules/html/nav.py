@@ -13,7 +13,7 @@ class Sections(str, Enum):
     Orders = "ORDERS"
     Certificates = "CERTIFICATES"
     TOS = "TOS"
-    Admin = "ADMIN"
+    Admin = "admin:index"
 
 
 class NavItem:

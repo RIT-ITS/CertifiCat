@@ -1,18 +1,20 @@
+import multiprocessing
+import os
 import re
-from typing import ClassVar, List, Literal, Mapping, Self, Optional, Tuple, Type, Union
+from collections.abc import Mapping
+from typing import ClassVar, Literal, Self
 
-from pydantic import Field, HttpUrl, ValidationError, BaseModel, field_validator
+import inject
+import peewee
+import yaml
+from acmev2.settings import ACMESettings
+from pydantic import BaseModel, Field, HttpUrl, ValidationError, field_validator
+from pydantic.json_schema import SkipJsonSchema
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
-import os
-import yaml
-from acmev2.settings import ACMESettings
-import multiprocessing
-import inject
-from pydantic.json_schema import SkipJsonSchema
 
 BetaFeature = SkipJsonSchema
 
@@ -24,11 +26,14 @@ class Settings(BaseSettings):
 class DatabaseSettings(BaseModel):
     type: Literal["none"] = "None"
 
-    def to_backend(self):
-        raise Exception("Databaser settings were not configured.")
+    def to_peewee(self) -> peewee.Database:
+        return "sqlite:///huey-stats.db.sqlite3"
+
+    def to_backend(self) -> dict:
+        raise Exception("Database settings were not configured.")  # noqa: TRY002
 
 
-class MariaDBDatabaseSettings(BaseModel):
+class MariaDBDatabaseSettings(DatabaseSettings):
     type: Literal["mysql"] = "mysql"
     engine: SkipJsonSchema[str] = "django.db.backends.mysql"
     name: str = Field(
@@ -43,7 +48,17 @@ class MariaDBDatabaseSettings(BaseModel):
         "", description="An optional table prefix for every table in the database."
     )
 
-    def to_backend(self):
+    def to_peewee(self) -> peewee.MySQLDatabase:
+        return peewee.MySQLDatabase(
+            self.name,
+            user=self.user,
+            password=self.password,
+            host=self.host,
+            port=self.port,
+            ssl=self.options.get("SSL"),
+        )
+
+    def to_backend(self) -> dict:
         return {
             "ENGINE": self.engine,
             "NAME": self.name,
@@ -55,7 +70,7 @@ class MariaDBDatabaseSettings(BaseModel):
         }
 
 
-class PostgresDatabaseSettings(BaseModel):
+class PostgresDatabaseSettings(DatabaseSettings):
     type: Literal["postgresql"] = "postgresql"
     engine: SkipJsonSchema[str] = "django.db.backends.postgresql"
     name: str = Field(
@@ -70,7 +85,7 @@ class PostgresDatabaseSettings(BaseModel):
         "", description="An optional table prefix for every table in the database."
     )
 
-    def to_backend(self):
+    def to_backend(self) -> dict:
         return {
             "ENGINE": self.engine,
             "NAME": self.name,
@@ -82,13 +97,13 @@ class PostgresDatabaseSettings(BaseModel):
         }
 
 
-class SQLiteDatabaseSettings(BaseModel):
+class SQLiteDatabaseSettings(DatabaseSettings):
     type: Literal["sqlite"] = "sqlite"
     engine: SkipJsonSchema[str] = "django.db.backends.sqlite3"
     name: str = Field(description="The location of the sqlite database.")
     options: dict = Field({}, description="Key-value options passed to the driver")
 
-    def to_backend(self):
+    def to_backend(self) -> dict:
         return {
             "ENGINE": self.engine,
             "NAME": self.name,
@@ -101,13 +116,18 @@ class TaskQueueSettings(BaseModel):
         max(5, min(multiprocessing.cpu_count() * 5, 20)),
         description="Number of workers in the Huey task queue.",
     )
+    stats_database: str | None = Field(
+        None,
+        description="Location of the stats database.",
+        examples=["sqlite:///huey-stats.db"],
+    )
 
 
 class CacheSettings(BaseModel):
     type: Literal["django.core.cache.backends.None"] = "django.core.cache.backends.None"
 
     def to_backend(self):
-        raise Exception("Cache settings were not configured.")
+        raise Exception("Cache settings were not configured.")  # noqa: TRY002
 
 
 class RedisCacheSettings(CacheSettings):
@@ -187,14 +207,14 @@ class SAMLSPSettings(BaseModel):
 
 class RemoteIdP(BaseModel):
     url: str = Field(description="IdP metadata URL.")
-    cert: Optional[str] = Field(
+    cert: str | None = Field(
         None, required=False, description="Signing certificate for the remote metadata."
     )
 
 
 class MDQ(BaseModel):
     url: str = Field(description="Metadata query URL.")
-    cert: Optional[str] = Field(
+    cert: str | None = Field(
         None,
         required=False,
         description="Signing certificate for the metadata query URL.",
@@ -203,11 +223,11 @@ class MDQ(BaseModel):
 
 
 class SAMLIdPSettings(BaseModel):
-    local: List[str] = Field([], description="A list of local metadata files.")
-    remote: List[RemoteIdP] = Field(
+    local: list[str] = Field([], description="A list of local metadata files.")
+    remote: list[RemoteIdP] = Field(
         [], description="A list of remote metadata providers.", required=False
     )
-    mdq: SkipJsonSchema[List[MDQ]] = Field(
+    mdq: SkipJsonSchema[list[MDQ]] = Field(
         [], description="A list of metadata query providers.", required=False
     )
 
@@ -216,7 +236,7 @@ class SAMLDiscoverySettings(BaseModel):
     service: str = Field(
         description="SAML discovery service. This feature is experimental and subject to change."
     )
-    response: List[str] = Field(
+    response: list[str] = Field(
         [],
         description="Discovery response endpoints. This feature is experimental and subject to change.",
     )
@@ -251,17 +271,17 @@ class RemoteAuthSettings(BaseModel):
         description="New groups synced from remote auth will be prefixed with this identifier.",
     )
 
-    administrators: List[str] = Field(
+    administrators: list[str] = Field(
         [],
         description="A list of user principals who will automatically be given administrator privileges on login.",
     )
-    administrators_groups: List[str] = Field(
+    administrators_groups: list[str] = Field(
         [],
         description="A list of groups that will automatically give included users administrator privileges on login.",
     )
     force_logout_if_no_header: bool = True
     log_http_headers: bool = False
-    attribute_mapping: Mapping[str, List[str] | str] = Field(
+    attribute_mapping: Mapping[str, list[str] | str] = Field(
         {
             "HTTP_USER_EMAIL": "email",
             "HTTP_USER_FIRSTNAME": "first_name",
@@ -301,11 +321,11 @@ class SAMLAuthSettings(BaseModel):
     session_cookie: str = Field(
         "snickerdoodle", description="The name of the session cookie."
     )
-    administrators: List[str] = Field(
+    administrators: list[str] = Field(
         [],
         description="A list of user principals who will automatically be given administrator privileges on login.",
     )
-    administrators_groups: List[str] = Field(
+    administrators_groups: list[str] = Field(
         [],
         description="A list of groups that will automatically give administrator privileges to any included users on login.",
     )
@@ -323,7 +343,7 @@ class SAMLAuthSettings(BaseModel):
     idp: SAMLIdPSettings
     discovery: SkipJsonSchema[SAMLDiscoverySettings | None] = None
 
-    attribute_mapping: Mapping[str, List[str]] = Field(
+    attribute_mapping: Mapping[str, list[str]] = Field(
         {
             "uid": ["username"],
             "eduPersonPrincipalName": ["username"],
@@ -341,6 +361,39 @@ class FinalizerSettings(BaseModel):
     module: str
 
 
+class WebhookSettings(BaseModel):
+    secret: str = Field(
+        description="Shared secret used to generate webhook signatures. This should be between 24 and 64 bytes."
+    )
+    endpoint: HttpUrl = Field(description="URL to send the webhook request.")
+    timeout: int = Field(5, description="Request timeout for the endpoint URL.")
+
+
+class ACMEFinalizerDNS01ChallengeSettings(BaseModel):
+    perform_verification: bool = Field(
+        False,
+        description="Verify DNS TXT records for challenges before submitting the order.",
+    )
+    verification_nameservers: list[str] = Field(
+        ["1.1.1.1"],
+        description="A list of servers in the format ip or ip:port. The resolver will use these nameservers when verifying challenges. If left blank the system nameservers will be used.",
+    )
+    verification_timeout: int = Field(
+        60,
+        description="Timeout for challenge verification in seconds, after which the order will be marked invalid.",
+    )
+
+
+class ACMEFinalizerChallengeSettings(BaseModel):
+    dns_01: ACMEFinalizerDNS01ChallengeSettings = Field(
+        ACMEFinalizerDNS01ChallengeSettings()
+    )
+    challenge_webhook: WebhookSettings = Field(
+        None,
+        description="Triggered after challenges are received from the upstream server but before they are answered. Requires a 20X status code returned or else the order will fail.",
+    )
+
+
 class ACMEFinalizerSettings(FinalizerSettings):
     type: Literal["acme"] = "acme"
     module: SkipJsonSchema[str] = "certificat.modules.acme.backends.acme.ACMEFinalizer"
@@ -354,8 +407,12 @@ class ACMEFinalizerSettings(FinalizerSettings):
     directory: HttpUrl = Field(
         description="Path to the ACME API endpoint. This usually ends with /directory."
     )
-    account_kid: str = Field(description="External account binding key identifier.")
-    account_hmac_key: str = Field(description="External account binding HMAC key.")
+    account_kid: str = Field(
+        None, description="External account binding key identifier."
+    )
+    account_hmac_key: str = Field(
+        None, description="External account binding HMAC key."
+    )
     account_email: str = Field(
         description="Email address used as a contact when binding an account."
     )
@@ -363,6 +420,7 @@ class ACMEFinalizerSettings(FinalizerSettings):
         False,
         description="Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.",
     )
+
     finalization_timeout: int = Field(
         90,
         description="How long to poll the upstream server before finalization is canceled.",
@@ -370,6 +428,8 @@ class ACMEFinalizerSettings(FinalizerSettings):
     client_user_agent: SkipJsonSchema[str] = Field(
         "certificat/acme-python", description="User agent of the ACME client."
     )
+
+    challenges: ACMEFinalizerChallengeSettings = Field(ACMEFinalizerChallengeSettings())
 
 
 class CertiNextFinalizerSettings(FinalizerSettings):
@@ -462,7 +522,7 @@ class SectigoFinalizerSettings(FinalizerSettings):
     approval_api_password: str = Field(
         description="The password for the approval API user."
     )
-    external_requester_override: Optional[str] = Field(
+    external_requester_override: str | None = Field(
         None,
         description="This email address will receive all Sectigo certificate lifecycle emails instead of the registered account email.",
         required=False,
@@ -496,6 +556,35 @@ class LocalFinalizerSettings(FinalizerSettings):
     cert: str = Field(description="PEM-formatted public key for the CA")
 
 
+type PolymorphicFinalizerSettings = (
+    SectigoFinalizerSettings
+    | CertiNextFinalizerSettings
+    | LocalFinalizerSettings
+    | ACMEFinalizerSettings
+)
+
+
+class AlternativeFinalizerSettings(BaseModel):
+    id: str = Field(
+        description="Unique ID for this finalizer. This will be stored in the account and used to select the correct finalizer at certificate creation."
+    )
+    name: str = Field(
+        description="A short descriptive name for the finalizer. This is preseted in user interfaces when making selections."
+    )
+    description: str = Field(
+        description="A short description of the finalizer. This is presented in user interfaces when making selections."
+    )
+    finalizer: PolymorphicFinalizerSettings = Field(
+        discriminator="type",
+        description="Which order finalizer module to use.",
+        examples=[
+            "local",
+            "sectigo",
+            "certinext",
+        ],
+    )
+
+
 class ApplicationSettings(Settings):
     model_config = SettingsConfigDict(
         validate_default=False,
@@ -511,7 +600,7 @@ class ApplicationSettings(Settings):
 
     def get_deprecations(self):
         deprecations = []
-        models: List[Tuple[Settings, Type[Settings], str]] = [
+        models: list[tuple[Settings, type[Settings], str]] = [
             (self, ApplicationSettings, "certificat")
         ]
 
@@ -534,12 +623,12 @@ class ApplicationSettings(Settings):
 
         return deprecations
 
-    debug: Optional[bool] = Field(
+    debug: bool | None = Field(
         False,
         description="Debug mode for the application. This should never be True for production.",
         deprecated="This field will be removed in a future version and is currently ignored.",
     )
-    proto: Optional[Literal["http", "https"]] = Field(
+    proto: Literal["http", "https"] | None = Field(
         "https",
         deprecated="This field is unused and will be removed in a future version, protocol is now determined at runtime.",
     )
@@ -567,12 +656,12 @@ class ApplicationSettings(Settings):
     web_acme_mountpoint: BetaFeature[str] = Field(
         DEFAULT_ACME_MOUNTPOINT, description="The root of the ACME server."
     )
-    staticfiles_root: SkipJsonSchema[Optional[str]] = Field(
+    staticfiles_root: SkipJsonSchema[str | None] = Field(
         None,
         description="Location of static files. This usually doesn't have to be changed.",
         required=False,
     )
-    root_urlconf: SkipJsonSchema[Optional[str]] = Field(
+    root_urlconf: SkipJsonSchema[str | None] = Field(
         None,
         description="Dotted path to the root urlconfig. This usually doesn't have to be changed.",
         required=False,
@@ -581,16 +670,16 @@ class ApplicationSettings(Settings):
     logging: LoggingSettings = Field(
         LoggingSettings(), description="Logging levels for CertifiCat components"
     )
-    db: Union[
-        MariaDBDatabaseSettings,
-        PostgresDatabaseSettings,
-        SkipJsonSchema[SQLiteDatabaseSettings],
-    ] = Field(
+    db: (
+        MariaDBDatabaseSettings
+        | PostgresDatabaseSettings
+        | SkipJsonSchema[SQLiteDatabaseSettings]
+    ) = Field(
         discriminator="type",
         description="Database engine settings.",
     )
     redis: RedisSettings
-    cache: SkipJsonSchema[Union[RedisCacheSettings, LocalMemoryCacheSettings]] = Field(
+    cache: SkipJsonSchema[RedisCacheSettings | LocalMemoryCacheSettings] = Field(
         RedisCacheSettings(),
         discriminator="type",
         exclude=True,  # This isn't exposed in documentation for the user
@@ -598,14 +687,14 @@ class ApplicationSettings(Settings):
     task_queue: TaskQueueSettings = TaskQueueSettings()
     theming: ThemeSettings = ThemeSettings()
 
-    trust_proxy_forwarded_proto: Optional[bool] = Field(
+    trust_proxy_forwarded_proto: bool | None = Field(
         False,
         description="Signals to the app to trust the HTTP_X_FORWARDED_PROTO header if True.",
         deprecated="This field is ignored and will be removed in the future. The url_root option is used to build and validate URLs.",
     )
-    authentication: Union[
-        SAMLAuthSettings, SkipJsonSchema[LocalAuthSettings], RemoteAuthSettings
-    ] = Field(
+    authentication: (
+        SAMLAuthSettings | SkipJsonSchema[LocalAuthSettings] | RemoteAuthSettings
+    ) = Field(
         discriminator="type",
         description="Authentication settings for the web frontend.",
     )
@@ -635,20 +724,21 @@ class ApplicationSettings(Settings):
         description="How many order finalization retries to perform before marking the order invalid.",
     )
 
-    finalizer: Union[
-        SectigoFinalizerSettings,
-        CertiNextFinalizerSettings,
-        LocalFinalizerSettings,
-        ACMEFinalizerSettings,
-    ] = Field(
+    finalizer: PolymorphicFinalizerSettings = Field(
         discriminator="type",
-        description="Which order finalizer module to use. The server is designed to finalize all requests against one backend.",
+        description="Which order finalizer module to use. The server is designed to finalize all requests against one default backend.",
         examples=[
             "local",
             "sectigo",
             "certinext",
         ],
     )
+
+    alternative_finalizers: list[AlternativeFinalizerSettings] = Field(
+        [],
+        description="A list of alternative finalizers that can be selected depending on order criteria.",
+    )
+
     delete_invalid_orders: bool = Field(
         True,
         description="If set to True, invalid orders will be purged after some time.",
@@ -659,7 +749,7 @@ class ApplicationSettings(Settings):
     )
     show_version: bool = Field(False, description="Show the version on the website.")
 
-    healthcheck_allowed_networks: List[str] = Field(
+    healthcheck_allowed_networks: list[str] = Field(
         ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
     )
     huey_health_file: SkipJsonSchema[str] = Field("/tmp/huey-ping")
@@ -721,7 +811,7 @@ class ConfigFile(BaseSettings):
 
             try:
                 _config = ConfigFile.model_validate(config_values, from_attributes=True)
-                setattr(cls, "_config", _config)
+                cls._config = _config
             except ValidationError as err:
                 print("Fatal error loading config at " + config_file)
                 for err in err.errors():

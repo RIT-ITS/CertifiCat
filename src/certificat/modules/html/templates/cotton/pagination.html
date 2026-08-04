@@ -1,8 +1,10 @@
 {% load certificat %}
 
+<c-vars qs_extra="" target="" />
+
 <ul class="pagination mt-2 mb-4">
     {% if page.has_previous %}
-    <li class="page-item"><a class="page-link" href="{% querystring page=page.previous_page_number %}{{ qs_extra }}">&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="{{ target }}{% querystring page=page.previous_page_number %}{{ qs_extra }}">&laquo;</a></li>
     {% else %}
     <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
     {% endif %}
@@ -15,12 +17,12 @@
     {% if i == page.paginator.ELLIPSIS %}
     <li class="page-item"><span class="page-link">{{ i }}</span></li>
     {% else %}
-    <li class="page-item"><a class="page-link" href="{% querystring page=i %}{{ qs_extra }}">{{ i }}</a></li>
+    <li class="page-item"><a class="page-link" href="{{ target }}{% querystring page=i %}{{ qs_extra }}">{{ i }}</a></li>
     {% endif %}
     {% endif %}
     {% endfor %}
     {% if page.has_next %}
-    <li class="page-item"><a class="page-link" href="{% querystring page=page.next_page_number %}{{ qs_extra }}">&raquo;</a></li>
+    <li class="page-item"><a class="page-link" href="{{ target }}{% querystring page=page.next_page_number %}{{ qs_extra }}">&raquo;</a></li>
     {% else %}
     <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
     {% endif %}

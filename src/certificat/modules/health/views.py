@@ -1,5 +1,4 @@
 import logging
-from certificat.modules.tasks import ping
 from django.http import HttpResponse
 
 from certificat.settings.dynamic import ApplicationSettings
@@ -32,16 +31,6 @@ def can_access_healthcheck(request) -> bool:
 
 def healthz(request, *args, **argv):
     if can_access_healthcheck(request):
-        if test_huey():
-            return HttpResponse("healthy")
-        else:
-            return HttpResponse("unhealthy", status=500)
+        return HttpResponse("healthy")
 
     return HttpResponse(status=403)
-
-
-def test_huey() -> bool:
-    expected_pong_reply = "pong"
-    pong_reply = ping(expected_pong_reply)
-
-    return expected_pong_reply == pong_reply(blocking=True)

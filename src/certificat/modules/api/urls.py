@@ -18,6 +18,11 @@ urlpatterns = [
         name="edit_preauthorizations",
     ),
     path(
+        "account/<account_name>/finalizer",
+        views.edit_finalizer,
+        name="edit_finalizer",
+    ),
+    path(
         "my/groups",
         views.my_groups,
         name="fetch_user_groups",

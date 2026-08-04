@@ -11,13 +11,13 @@ from certificat.settings.dynamic import LocalFinalizerSettings
 
 
 class LocalFinalizer(Finalizer):
-    def finalize(self, order: db.Order, pem_csr: str):
-        ca_settings = LocalFinalizerSettings.get()
+    settings: LocalFinalizerSettings
 
+    def finalize(self, order: db.Order, pem_csr: str):
         ca_key = serialization.load_pem_private_key(
-            ca_settings.key.encode(), password=None
+            self.settings.key.encode(), password=None
         )
-        ca_cert = x509.load_pem_x509_certificate(ca_settings.cert.encode())
+        ca_cert = x509.load_pem_x509_certificate(self.settings.cert.encode())
         csr = x509.load_pem_x509_csr(pem_csr.encode())
 
         builder = (

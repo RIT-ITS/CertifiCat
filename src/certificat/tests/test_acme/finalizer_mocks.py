@@ -144,7 +144,8 @@ rS57Byz7QJ+qRLynH4KtrLbRoqv2xw1yohe5xJ1UfrvVRyM=
 
 
 class MockSectigoBackend(SectigoBackend):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.poll_deadline = 1
 
     def enroll(self, order, csr) -> EnrollResponse:
@@ -211,35 +212,42 @@ class SlowCollectMockSectigoBackend(MockSectigoBackend):
 
 
 class MockSectigoFinalizer(SectigoFinalizer):
-    def __init__(self):
-        self.backend = MockSectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = MockSectigoBackend(*args, **kwargs)
 
 
 class FailingEnrollMockSectigoFinalizer(SectigoFinalizer):
-    def __init__(self):
-        self.backend = FailingEnrollMockSectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = FailingEnrollMockSectigoBackend(*args, **kwargs)
 
 
 class FailingGetMockSectigoFinalizer(SectigoFinalizer):
-    def __init__(self):
-        self.backend = FailingGetMockSectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = FailingGetMockSectigoBackend(*args, **kwargs)
 
 
 class FailingApproveMockSectigoFinalizer(SectigoFinalizer):
-    def __init__(self):
-        self.backend = FailingApproveMockSectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = FailingApproveMockSectigoBackend(*args, **kwargs)
 
 
 class FailingCollectMockSectigoFinalizer(SectigoFinalizer):
-    def __init__(self):
-        self.backend = FailingCollectMockSectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = FailingCollectMockSectigoBackend(*args, **kwargs)
 
 
 class SlowCollectMockSectigoFinalizer(SectigoFinalizer):
-    def __init__(self):
-        self.backend = SlowCollectMockSectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = SlowCollectMockSectigoBackend(*args, **kwargs)
 
 
 class FlakyMockSectigoFinalizer(SectigoFinalizer):
-    def __init__(self):
-        self.backend = FlakySectigoBackend()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.backend = FlakySectigoBackend(*args, **kwargs)

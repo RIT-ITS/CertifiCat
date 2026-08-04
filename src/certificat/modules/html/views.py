@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 import json
 from typing import Any
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse
 from django.views.generic.base import ContextMixin
@@ -10,7 +11,9 @@ from django.core.paginator import Paginator, EmptyPage
 from certificat.auth import user_can_edit_pre_authorizations
 from certificat.modules.acme.models import (
     Certificate,
+    CertificateRequest,
     Order,
+    Account,
     AccountBinding,
     AccountEventType,
     OrderEventType,
@@ -28,7 +31,12 @@ import inject
 from .nav import BreadCrumb, BreadCrumbs, build_breadcrumbs, Sections
 from django.contrib import messages
 import logging
-from acmev2.models import AccountStatus
+from acmev2.models import (
+    AccountStatus,
+    AuthorizationStatus,
+    ChallengeStatus,
+    OrderStatus,
+)
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
 import markdown
@@ -226,6 +234,42 @@ class AccountsView(ViewBase):
         return render(request, "certificat/accounts.html", context)
 
 
+class AccountFinalizerController:
+    DEFAULT_FINALIZER = "https://github.com/RIT-ITS/CertifiCat/finalizer/default"
+    DEFAULT_FINALIZER_VALUES = {
+        "name": "Default",
+        "description": "This is the default finalizer configured for the CertifiCat instance.",
+    }
+    settings = inject.attr(ApplicationSettings)
+
+    def __init__(self, request: HttpRequest, account: Account):
+        self.request = request
+        self.account = account
+
+    def should_display_finalizer(self):
+        user_has_access = self.request.user.is_superuser
+        multiple_finalizers = len(self.settings.alternative_finalizers) > 0
+        non_default_finalizer_selected = self.account.finalizer is not None
+
+        return (
+            user_has_access and multiple_finalizers
+        ) or non_default_finalizer_selected
+
+    def editable(self):
+        return self.request.user.is_superuser
+
+    def selected_finalizer(self) -> str:
+        return self.account.finalizer or ""
+
+    def finalizers_json(self) -> str:
+        fin = {self.DEFAULT_FINALIZER: self.DEFAULT_FINALIZER_VALUES}
+
+        for alt in self.settings.alternative_finalizers:
+            fin[alt.id] = {"name": alt.name, "description": alt.description}
+
+        return json.dumps(fin)
+
+
 class AccountView(ViewBase):
     section = Sections.Accounts
     binding: AccountBinding = None
@@ -331,6 +375,9 @@ class AccountView(ViewBase):
                 len(binding.bound_to.preauthorized_identifiers.all()) > 0
                 or can_edit_preauthorizations
             )
+            context["finalizer_controller"] = AccountFinalizerController(
+                request, binding.bound_to
+            )
             context["can_edit_preauthorizations"] = can_edit_preauthorizations
             context["show_pre_authorized_identifiers"] = show_pre_authorized_identifiers
             context["pre_authorized_identifiers_json"] = json.dumps(
@@ -342,6 +389,106 @@ class AccountView(ViewBase):
         else:
             template = "certificat/account.activate.html"
         return render(request, template, context)
+
+
+@dataclass
+class OrderStage:
+    name: str
+    completed: str
+    description: str = None
+    error_help: str = None
+    current: bool = False
+
+    def upcoming(self):
+        return not self.completed and not self.current
+
+
+class OrderStatusController:
+    request: HttpRequest
+    order: Order
+    messages: list[str]
+
+    def __init__(self, request: HttpRequest, order: Order):
+        self.request = request
+        self.order = order
+        self.messages = []
+
+    def stages(self) -> list[OrderStage]:
+        order_stages: list[OrderStage] = [
+            OrderStage(
+                "Order created",
+                self.order_created(),
+            ),
+            OrderStage(
+                "Authorizations ready",
+                self.authorizations_not_pending(),
+                "The server is waiting for the client to indicate challenges can be validated.",
+                "The server never received a message from the client to validate challenges.",
+            ),
+            OrderStage(
+                "Authorizations processing",
+                self.authorizations_satisfied(),
+                "The server is executing challenges to authorize identifiers.",
+                "One or more client challenge was unable to be validated.",
+            ),
+            OrderStage(
+                "Order ready",
+                self.csr_submitted(),
+                "All identifiers have been authorized, the server is waiting for the client to submit a CSR.",
+                "The client did not finalize the order.",  # This should never be hit
+            ),
+            OrderStage(
+                "Upstream order processing",
+                self.certificate_ready(),
+                "The server is waiting on the upstream finalizer for a certificate.",
+                "There was an error with the upstream finalizer. Please check the finalization section for more detail.",
+            ),
+            OrderStage(
+                "Certificate ready",
+                self.certificate_ready(),
+                "The certificate was successfully generated by the upstream finalizer.",
+            ),
+        ]
+
+        for idx, stage in enumerate(order_stages):
+            if idx == len(order_stages) - 1:
+                stage.current = True
+
+            if not stage.completed:
+                stage.current = True
+                break
+
+        return order_stages
+
+    def order_invalid(self):
+        return self.order.status == OrderStatus.invalid
+
+    def order_created(self):
+        return True
+
+    def authorizations_not_pending(self) -> bool:
+        for auth in self.order.authorizations.all():
+            if auth.status == AuthorizationStatus.valid:
+                return True
+
+            for chall in auth.challenges.all():
+                if chall.status != ChallengeStatus.pending:
+                    return True
+
+        return False
+
+    def authorizations_satisfied(self) -> bool:
+        for auth in self.order.authorizations.all():
+            if auth.status != AuthorizationStatus.valid:
+                return False
+
+        return True
+
+    def csr_submitted(self) -> bool:
+        return CertificateRequest.objects.filter(order=self.order).exists()
+
+    def certificate_ready(self) -> bool:
+        return self.order.status == OrderStatus.valid
 
 
 class OrderView(ViewBase):
@@ -375,7 +522,11 @@ class OrderView(ViewBase):
             return self.handle_no_permission()
 
         creation_event = order.events.filter(event_type=OrderEventType.CREATED).first()
-        context = self.get_context_data(order=order, creation_event=creation_event)
+        context = self.get_context_data(
+            order=order,
+            status_controller=OrderStatusController(request, order),
+            creation_event=creation_event,
+        )
         return render(request, "certificat/order.html", context)
 
 

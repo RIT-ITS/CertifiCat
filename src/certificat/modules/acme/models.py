@@ -36,6 +36,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.timezone import make_naive
 from josepy import JWK
+import josepy
 from pydantic import BaseModel
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -79,11 +80,15 @@ class Account(TimestampMixin):
     status = models.CharField(max_length=15, choices=choices(AccountStatus))
     jwk = models.TextField()
     jwk_thumbprint = models.CharField(max_length=100, unique=True)
+    finalizer = models.CharField(null=True, blank=True, max_length=255)
 
     events = GenericRelation("TaggedEvent")
 
     def __str__(self):
         return self.name
+
+    def josepy_jwk(self) -> josepy.JWK:
+        return josepy.JWK.from_json(json.loads(self.jwk))
 
     def revoke(self):
         self.status = AccountStatus.revoked
@@ -244,8 +249,7 @@ class Certificate(TimestampMixin, Dictable):
         return self.order.name
 
     def save(self, *args, **kwargs):
-        if self.metadata is None:
-            self.rebuild_metadata()
+        self.rebuild_metadata()
 
         return super().save(*args, **kwargs)
 
@@ -500,6 +504,7 @@ class OrderEventType(models.TextChoices):
     STATUS_UPDATED = "ord.StatUpdate", "Order status update"
     FINALIZATION_QUEUED = "ord.FinQueued", "Order finalization queued"
     FINALIZATION_PASSED = "ord.FinPassed", "Order finalized"
+    FINALIZATION_ERROR = "ord.FinErr", "Order finalization error"
     FINALIZATION_FAILED = "ord.FinFailed", "Order finalization failed"
 
 
@@ -600,14 +605,17 @@ class TaggedEvent(models.Model):
 class ACMEFinalizerBinding(TimestampMixin):
     directory = models.URLField()
     account_id = models.URLField()
-    key_id = models.CharField(max_length=255)
+    key_id = models.CharField(max_length=255, null=True)
     private_key = models.TextField()
 
-    def get(key_id: str) -> Self | None:
+    def get(**kwargs) -> Self | None:
         try:
-            return ACMEFinalizerBinding.objects.get(key_id=key_id)
+            return ACMEFinalizerBinding.objects.get(**kwargs)
         except ACMEFinalizerBinding.DoesNotExist:
             return None
+
+    def __str__(self):
+        return f"{self.account_id}"
 
 
 class Config(models.Model):

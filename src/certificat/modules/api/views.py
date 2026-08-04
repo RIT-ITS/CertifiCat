@@ -7,6 +7,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
 from certificat.auth import user_can_edit_pre_authorizations
+from certificat.settings.dynamic import ApplicationSettings
 from certificat.utils import unprefix_group
 from certificat.modules.acme import models as db
 from django.db.models import Count, DateField
@@ -15,6 +16,8 @@ from django.utils import timezone, dateparse
 from django.db.models import Func
 from django.views.decorators.cache import cache_page
 from django.contrib.contenttypes.models import ContentType
+
+import inject
 
 
 class TruncDayNaive(Func):
@@ -119,6 +122,27 @@ def edit_preauthorizations(request: HttpRequest, account_name):
         ],
         ignore_conflicts=True,
     )
+
+    return HttpResponse(status=200)
+
+
+@login_required
+@require_http_methods(["POST"])
+def edit_finalizer(request: HttpRequest, account_name):
+    if not request.user.is_superuser:
+        return HttpResponse(status=403)
+
+    settings = inject.instance(ApplicationSettings)
+    account = get_object_or_404(db.Account, name=account_name)
+    request_json = json.loads(request.body)
+
+    account = get_object_or_404(db.Account, name=account_name)
+    finalizer = request_json.get("id")
+    if finalizer not in [f.id for f in settings.alternative_finalizers]:
+        finalizer = None
+
+    account.finalizer = finalizer
+    account.save()
 
     return HttpResponse(status=200)
 

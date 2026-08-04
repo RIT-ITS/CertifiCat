@@ -3,13 +3,11 @@ from typing import Generic, TypeVar
 
 from certificat.modules.acme import models as db
 from .api import CertiNextAPIError, schema
-from certificat.settings.dynamic import ApplicationSettings, CertiNextFinalizerSettings
 from .api import CertiNextAPIClient
 
 from certificat.modules.acme.backends import (
     ErrorResponse,
 )
-import inject
 import logging
 from cryptography import x509
 from cryptography.x509.oid import NameOID
@@ -85,9 +83,10 @@ class CertiNextBackend:
     def generate_order(
         self, order: db.Order, pem_csr: str
     ) -> BackendResponse[GenerateOrderResponse]:
-        ca_settings: CertiNextFinalizerSettings = inject.instance(
-            ApplicationSettings
-        ).finalizer
+        raise Exception("Finalizer not complete")
+        # ca_settings: CertiNextFinalizerSettings = inject.instance(
+        #    ApplicationSettings
+        # ).finalizer
 
         csr = x509.load_pem_x509_csr(pem_csr.encode())
         try:

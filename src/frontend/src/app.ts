@@ -14,6 +14,7 @@ import "./components/activityGraph";
 import "./components/orderHistory";
 import "./components/modal";
 import "./components/preAuthorizedIdentifiersManager";
+import "./components/finalizerManager";
 
 import "./vendor";
 

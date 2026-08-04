@@ -50,11 +50,6 @@ certificat:
   secret_key: "a-long-generated-secret-key"
   # The url root is used to generate absolute urls to the application.
   url_root: "https://acme.edu"
-  logging: 
-    certificat_level: "INFO"
-    huey_level: "INFO"
-    django_level: "INFO"
-    acmev2_level: "INFO"
   db: 
     type: "mysql"
     # The database to use after a connection is established.

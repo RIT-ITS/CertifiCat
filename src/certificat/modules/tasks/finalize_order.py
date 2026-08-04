@@ -10,7 +10,10 @@ from huey.contrib.djhuey import HUEY
 from huey import RetryTask
 from certificat.modules.acme import models as db
 from acmev2.models import OrderStatus
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import (
+    ApplicationSettings,
+    PolymorphicFinalizerSettings,
+)
 import inject
 from django.utils.module_loading import import_string
 from acmev2.services import IOrderService
@@ -19,8 +22,25 @@ from django.db import transaction
 logger = logging.getLogger(__name__)
 
 
-def _run_task(order_name: str):
+def get_finalizer(account: db.Account) -> Finalizer:
     app_settings = inject.instance(ApplicationSettings)
+
+    logger.info(f"creating finalizer for account {account.id}:{account.name}")
+
+    finalizer_settings: PolymorphicFinalizerSettings = app_settings.finalizer
+    if account.finalizer:
+        for alt_finalizer in app_settings.alternative_finalizers:
+            if alt_finalizer.id == account.finalizer:
+                finalizer_settings = alt_finalizer.finalizer
+                break
+
+    finalizer_klass: type[Finalizer] = import_string(finalizer_settings.module)
+    finalizer: Finalizer = finalizer_klass(finalizer_settings)
+
+    return finalizer
+
+
+def _run_task(order_name: str):
     log_prefix = "order " + order_name
 
     with transaction.atomic():
@@ -33,9 +53,8 @@ def _run_task(order_name: str):
 
     csr = db.CertificateRequest.objects.get(order=order).csr
 
-    logger.info(f"{log_prefix}: creating finalizer")
-    finalizer_klass = import_string(app_settings.finalizer.module)
-    finalizer: Finalizer = finalizer_klass()
+    finalizer = get_finalizer(order.account)
+    logger.info(f"Finalizer selected: {finalizer}")
 
     try:
         finalize_response: FinalizeResponse = finalizer.finalize(order, csr)
@@ -45,21 +64,33 @@ def _run_task(order_name: str):
             order.status = OrderStatus.valid
             order.save()
         else:
+            error = (
+                f"{finalize_response.error.code}: {finalize_response.error.description}"
+            )
+            db.TaggedEvent.record(
+                db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": error}
+            )
             db.OrderFinalizationError.objects.create(
                 order=order,
-                error=f"{finalize_response.error.code}: {finalize_response.error.description}",
+                error=error,
             )
 
         return finalize_response.ok()
     except StopFinalization as exc:
-        db.OrderFinalizationError.objects.create(order=order, error=str(exc))
+        db.TaggedEvent.record(
+            db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
+        )
+        db.OrderFinalizationError.objects.create(order=order, error=str(exc) or "No error given by upstream")
         raise
     except NotReadyException:
         # Don't log this as an error, the order is just in a processing state
         logger.info(f"{log_prefix}: order was not ready, will be retried if possible")
     except Exception as exc:
         logger.exception(f"{log_prefix}: exception finalizing order")
-        db.OrderFinalizationError.objects.create(order=order, error=str(exc))
+        db.TaggedEvent.record(
+            db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
+        )
+        db.OrderFinalizationError.objects.create(order=order, error=str(exc) or "No error given by upstream")
 
     return False
 

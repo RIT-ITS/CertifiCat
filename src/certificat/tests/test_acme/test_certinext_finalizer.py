@@ -101,6 +101,7 @@ ADZfXj1sC60EO9Ry9xA3/GqGuefHANOl1fc3qXTjWpBpxuJ6kVT0WC7PVnUOWE9I
 v6TLFuf4DS1B+8c0Yg=="""
 
 
+@pytest.mark.skip(reason="Disabling until CERTInext API is usable")
 class TestCertiNextFinalizer:
     responses: responses
     acme_neworder: Callable

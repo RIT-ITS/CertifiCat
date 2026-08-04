@@ -1,21 +1,63 @@
 from django.contrib import admin
-from ..acme.models import Authorization, Order, Usage, Certificate
+
+from django.urls import reverse
+
+from certificat.modules.html.nav import Sections
+
+from ..acme.models import Authorization, Order, Certificate, ACMEFinalizerBinding
 from django.db.models import Q
-from import_export.admin import ImportExportModelAdmin
+from import_export.admin import HttpResponseRedirect, ImportExportModelAdmin
 from import_export import resources, fields
 from django.utils import dateparse
+from django.contrib.auth.views import redirect_to_login
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
+from huey.contrib.djhuey.stats import admin as huey_admin
 
 
-@admin.register(Usage)
-class AuthorAdmin(admin.ModelAdmin):
-    pass
+class CertifiCatAdmin(admin.AdminSite):
+    site_header = "CertifiCat Admin"
+
+    def login(self, request, extra_context=...):
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(reverse(Sections.Dashboard.value))
+        else:
+            return redirect_to_login(next=reverse("admin:index"))
+
+
+admin_site = CertifiCatAdmin()
+
+admin_site.register(huey_admin.HueyEvent, huey_admin.HueyEventAdmin)
+admin_site.register(huey_admin.HueyDashboard, huey_admin.HueyDashboardAdmin)
 
 
 class AuthorizationInline(admin.TabularInline):
     model = Authorization
 
 
-@admin.register(Order)
+admin_site.register(User, UserAdmin, site=admin_site)
+admin_site.register(Group, GroupAdmin, site=admin_site)
+
+
+@admin.register(ACMEFinalizerBinding, site=admin_site)
+class ACMEFinalizerBindingAdmin(admin.ModelAdmin):
+    list_display = ["directory", "account_id"]
+    readonly_fields = [field.name for field in ACMEFinalizerBinding._meta.get_fields()]
+
+    def has_add_permission(self, request, obj=...):
+        return False
+
+    def has_delete_permission(self, request, obj=...):
+        return True
+
+    def has_change_permission(self, request, obj=...):
+        return False
+
+    def has_import_permission(self, *args, **kwargs):
+        return False
+
+
+@admin.register(Order, site=admin_site)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ["created_at", "expires", "name", "status", "identifiers"]
     list_display_links = [
@@ -72,7 +114,7 @@ class CertificateExportResource(resources.ModelResource):
         fields = ("id", "order__name", "created_at", "expiration", "sans", "chain")
 
 
-@admin.register(Certificate)
+@admin.register(Certificate, site=admin_site)
 class CertificateAdmin(ImportExportModelAdmin):
     list_display = ["created_at", "expiration", "order__name", "sans"]
     list_display_links = [

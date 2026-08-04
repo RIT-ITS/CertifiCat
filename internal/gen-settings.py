@@ -201,6 +201,10 @@ class SchemaDocGenerator:
         for child in sorted(
             children, key=lambda child: "" if child.name == "type" else child.key_path
         ):
+            if len(child.schema.get("properties", [])) > 0:
+                print(child.key_path)
+                continue
+
             child_path_minus_parent = child.key_path.replace(parent_key, "").lstrip(".")
             full_child_key = (
                 f"{parent_key}.{option.mapping_key}.{child_path_minus_parent}"

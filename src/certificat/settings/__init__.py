@@ -1,6 +1,7 @@
 import inject
-from .dynamic import ApplicationSettings, LocalACMESettings
 from acmev2.settings import ACMESettings
+
+from .dynamic import ApplicationSettings, LocalACMESettings
 
 bindings = [
     (ApplicationSettings, ApplicationSettings.get()),
@@ -14,4 +15,4 @@ inject.configure(
 )
 
 # Don't move this, the DI container must be configured before settings are accessed.
-from .all import *  # noqa: F403, E402
+from .all import *

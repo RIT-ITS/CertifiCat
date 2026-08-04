@@ -1,3 +1,5 @@
+from typing import Callable, TypeVar
+
 from django.contrib.auth.models import User
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -23,6 +25,7 @@ class HelperGlobals:
 
 
 _glob = HelperGlobals()
+T = TypeVar("T")
 
 
 def gen_user(**kwargs):
@@ -82,6 +85,14 @@ def challenge_server(http_01_resources, port=80):
     finally:
         # Shutdown client web server and unbind from PORT
         servers.shutdown_and_server_close()
+
+
+def select_first(objects: list[T], selector: Callable[[T], bool]) -> T | None:
+    for obj in objects:
+        if selector(obj):
+            return obj
+
+    return None
 
 
 def select_failed_authorizations(order: acme.client.messages.OrderResource):

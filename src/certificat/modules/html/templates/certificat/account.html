@@ -159,7 +159,7 @@
                             </c-slot>
                         </c-link-table>
                         <div class="row mt-2 center-xs">
-                            <c-pagination :page="orders.page" qs_extra="#order-history" />
+                            <c-pagination target="{% url 'account-tab' binding.id 'history' %}" :page="orders.page" qs_extra="#order-history" />
                         </div>
                     </div>
                 </div>

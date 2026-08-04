@@ -35,6 +35,7 @@
 | <a href="#opt-certificat-secret-key" id="opt-certificat-secret-key" name="opt-certificat-secret-key">certificat.secret_key</a>|✓ | `-` | Django SECRET_KEY. This should be set to a unique, unpredictable value. |
 | <a href="#opt-certificat-session-cookie-age" id="opt-certificat-session-cookie-age" name="opt-certificat-session-cookie-age">certificat.session_cookie_age</a>| | `28800` | Django SESSION_COOKIE_AGE. This is the maximum age of the session cookie in seconds. |
 | <a href="#opt-certificat-show-version" id="opt-certificat-show-version" name="opt-certificat-show-version">certificat.show_version</a>| | `false` | Show the version on the website. |
+| <a href="#opt-certificat-task-queue-stats-database" id="opt-certificat-task-queue-stats-database" name="opt-certificat-task-queue-stats-database">certificat.task_queue.stats_database</a>| | `null` | Location of the stats database. |
 | <a href="#opt-certificat-task-queue-workers" id="opt-certificat-task-queue-workers" name="opt-certificat-task-queue-workers">certificat.task_queue.workers</a>| | `20` | Number of workers in the Huey task queue. |
 | <a href="#opt-certificat-theming-global-css" id="opt-certificat-theming-global-css" name="opt-certificat-theming-global-css">certificat.theming.global_css</a>| | `null` | Global CSS injected into a style tag rendered on every page. |
 | <a href="#opt-certificat-time-zone" id="opt-certificat-time-zone" name="opt-certificat-time-zone">certificat.time_zone</a>| | `America/New_York` | Django time zone, used mostly for date localization. |

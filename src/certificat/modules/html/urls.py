@@ -1,15 +1,15 @@
-from .admin import admin_site
+import inject
 from django.urls import include, path
 
 from certificat.settings.dynamic import ApplicationSettings
-import inject
+
 from . import views
+from .admin import admin_site
 from .nav import Sections
 
 app_settings = inject.instance(ApplicationSettings)
 
 urlpatterns = [
-    path("admin/", admin_site.urls),
     path("", views.IndexView.as_view(), name=Sections.Dashboard.value),
     path("account/<binding_id>/", views.AccountView.as_view(), name="account"),
     path(

@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses modified [Calendar Versioning](https://calver.org/).
 
-## Unreleased
+## [2026.8.2] - 2024-08-01
+
+### Fixed
 
 - Fixed ssl database option lookup for Huey stats connection
 
@@ -35,6 +37,6 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 - Replaced some potential empty errors from finalizer upstreams with generic error messages
 - Fixed pagination on account orders page not returning to correct tab
 
-### Upgrades
+### Upgraded
 
 - Upgraded all dependencies to latest minor release with uv sync --upgrade

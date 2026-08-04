@@ -55,7 +55,7 @@ class MariaDBDatabaseSettings(DatabaseSettings):
             password=self.password,
             host=self.host,
             port=self.port,
-            ssl=self.options.get("SSL"),
+            ssl=self.options.get("ssl"),
         )
 
     def to_backend(self) -> dict:

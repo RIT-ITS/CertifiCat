@@ -7,6 +7,8 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 ## Unreleased
 
+- Fixed ssl database option lookup for Huey stats connection
+
 ## [2026.8.1] - 2024-08-01
 
 ### Added

@@ -1,30 +1,32 @@
+import asyncio
 import datetime
 import json
+import logging
 import time
 
-import acme.messages
-from certificat.webhooks import PreUpstreamChallengeWebhook
-import dns.resolver
-import dns.exception
-import josepy
-import requests
-
-from cryptography.hazmat.primitives import serialization
-from certificat.modules.acme import models as db
-
-from certificat.modules.acme.backends import (
-    FinalizeResponse,
-    Finalizer,
-    StopFinalization,
-)
-from certificat.settings.dynamic import ACMEFinalizerSettings
-from cryptography.hazmat.primitives.asymmetric import rsa
-from acmev2.models.challenge import ChallengeType
-from dns.nameserver import Do53Nameserver
+import acme.challenges
 import acme.client
 import acme.errors
-import acme.challenges
-import logging
+import acme.messages
+import dns.exception
+import dns.resolver
+import josepy
+import requests
+from acmev2.models.challenge import ChallengeType
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from django.utils import timezone
+from dns.nameserver import Do53Nameserver
+
+from certificat.modules.acme import models as db
+from certificat.modules.acme.backends import (
+    Finalizer,
+    FinalizeResponse,
+    StopFinalization,
+)
+from certificat.modules.acme.util import DNSTXTValidator
+from certificat.settings.dynamic import ACMEFinalizerSettings
+from certificat.webhooks import PreUpstreamChallengeWebhook
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +46,7 @@ class ACMEFinalizer(Finalizer):
                 directory = requests.get(self.settings.directory, timeout=5).json()
             except Exception as exc:
                 # hide ugly timeout/retry error since these messages are presented to the user
-                raise Exception(
+                raise Exception(  # noqa: TRY002
                     f"Error reading ACME directory at '{self.settings.directory}'"
                 ) from exc
 
@@ -167,53 +169,51 @@ class ACMEFinalizer(Finalizer):
                         )
                     ] = challenge_body.chall.validation(self.client.net.key)
 
-        timeout = datetime.datetime.now() + datetime.timedelta(
+        timeout = timezone.now() + datetime.timedelta(
             seconds=self.settings.challenges.dns_01.verification_timeout
         )
 
-        nameservers = []
-        for nameserver in self.settings.challenges.dns_01.verification_nameservers:
-            ip, _, port = nameserver.partition(":")
-            nameservers.append(Do53Nameserver(ip, int(port) if port else 53))
+        # Every resolver must have the record in their cache before we can continue
+        resolvers: list[dns.resolver.Resolver] = []
+        if self.settings.challenges.dns_01.verification_nameservers:
+            for nameserver in self.settings.challenges.dns_01.verification_nameservers:
+                logger.info("Creating DNS validator with nameserver: %s", nameserver)
+                resolver = dns.resolver.Resolver()
+                ip, _, port = nameserver.partition(":")
+                resolver.nameservers = [Do53Nameserver(ip, int(port) if port else 53)]
 
-        resolver = dns.resolver.Resolver()
-        if len(nameservers) != 0:
-            resolver.nameservers = nameservers
+                resolvers.append(resolver)
+        else:
+            # If a nameserver is not specified (not recommended) then we use a default resolver
+            resolvers.append(dns.resolver.Resolver())
+
+        validators = [
+            DNSTXTValidator(resolvers, k, v) for k, v in verification_tokens.items()
+        ]
 
         logger.info(
             "Validating the following domains->token pairs: "
             + json.dumps(verification_tokens)
         )
-        verified_domains: list[str] = []
-        while datetime.datetime.now() < timeout:
-            for domain, token in verification_tokens.items():
-                if domain in verified_domains:
-                    continue
 
-                try:
-                    answers = resolver.resolve(domain, "TXT")
-                    answer_data = [answer.to_text().strip('"') for answer in answers]
+        loop = asyncio.new_event_loop()
+        try:
+            while timezone.now() < timeout:
+                tasks = [
+                    loop.create_task(v.validate())
+                    for v in validators
+                    if not v.validated
+                ]
+                if len(tasks) == 0:
+                    logger.info("All domains verified successfully")
+                    return True
 
-                    if token in answer_data:
-                        logger.debug(f"{domain} verified successfully")
-                        verified_domains.append(domain)
-                    else:
-                        logger.debug(f"Verification token not found for {domain}")
-                except dns.exception.DNSException:
-                    logger.debug(f"No answer returned for {domain}")
-                    # This is fine, try again
-                    pass
+                loop.run_until_complete(asyncio.wait(tasks, timeout=15))
+                time.sleep(2)
+        finally:
+            loop.close()
 
-            if len(verified_domains) == len(verification_tokens):
-                logger.info("All domains verified successfully")
-                return True
-
-            time.sleep(2)
-
-        logger.info(
-            f"Timeout reached verifying domains. Verified successfully: {verified_domains}"
-        )
-
+        logger.info("Timeout reached verifying domains.")
         raise StopFinalization("Timeout reached verifying DNS challenges.")
 
     def preferred_challenge(self):
@@ -267,7 +267,9 @@ class ACMEFinalizer(Finalizer):
 
             return FinalizeResponse(bundle=new_order.fullchain_pem)
         except acme.errors.TimeoutError as exc:
-            raise StopFinalization("Upstream timed out while finalizing the order") from exc
+            raise StopFinalization(
+                "Upstream timed out while finalizing the order"
+            ) from exc
         except acme.messages.Error as exc:
             # In the case of an ACME error we stop the execution. The ACME client is already polling, we don't
             # need to restart ACME and retry this order 5-10 times resulting in more failures.
@@ -279,4 +281,6 @@ class ACMEFinalizer(Finalizer):
             # sanely. We show the full exception because this is a semi-internal service.
             # That may change in the future and we may prompt the user to bring a correlation
             # ID to a server administrator to look at logs.
-            raise StopFinalization(str(exc) or "No exception given by upstream") from exc
+            raise StopFinalization(
+                str(exc) or "No exception given by upstream"
+            ) from exc

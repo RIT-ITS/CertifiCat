@@ -11,6 +11,14 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 - Fixed ssl database option lookup for Huey stats connection
 
+- Changing ACME finalizer to verify all nameservers for presence of DNS-01 token before submitting order to upstream
+
+## [2026.8.2] - 2024-08-01
+
+### Fixed
+
+- Fixed ssl database option lookup for Huey stats connection
+
 ## [2026.8.1] - 2024-08-01
 
 ### Added

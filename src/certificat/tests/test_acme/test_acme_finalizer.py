@@ -2,30 +2,31 @@ import json
 import os
 import re
 import subprocess
+import threading
 import time
-from typing import Callable
+from collections.abc import Callable
 
-from certificat.tests.dns.load_records import Zone
-from certificat.tests.dns.server import DNSServer
-from certificat.webhooks import Webhook
+import acme
+import pytest
+import pytest_responses  # noqa: F401
 import requests
+import responses
+from acme import errors
+from acmev2.models import OrderStatus
 
+from certificat.modules.acme import models as db
 from certificat.settings.dynamic import (
+    ACMEFinalizerChallengeSettings,
     ACMEFinalizerDNS01ChallengeSettings,
     ACMEFinalizerSettings,
-    ACMEFinalizerChallengeSettings,
     ApplicationSettings,
     WebhookSettings,
 )
 from certificat.tests.conftest import NewOrderRet
+from certificat.tests.dns.load_records import Zone
+from certificat.tests.dns.server import DNSServer
 from certificat.tests.helpers import do_challenge, finalize_order
-import pytest
-import acme
-from certificat.modules.acme import models as db
-import pytest_responses  # noqa: F401
-import responses
-from acme import errors
-from acmev2.models import OrderStatus
+from certificat.webhooks import Webhook
 
 
 class TestACMEFinalizer:
@@ -35,6 +36,7 @@ class TestACMEFinalizer:
     acme_acct = None
     pebble_directory = "https://localhost:14000/dir"
     dns_server_port = 11345
+    dns_server2_port = 11346
 
     @pytest.fixture(scope="function", autouse=True)
     def setup_test(
@@ -52,6 +54,15 @@ class TestACMEFinalizer:
     @pytest.fixture(scope="function")
     def dns_server(self):
         dns_server = DNSServer(port=self.dns_server_port)
+        dns_server.start()
+
+        yield dns_server
+
+        dns_server.stop()
+
+    @pytest.fixture(scope="function")
+    def dns_server2(self):
+        dns_server = DNSServer(port=self.dns_server2_port)
         dns_server.start()
 
         yield dns_server
@@ -97,12 +108,10 @@ class TestACMEFinalizer:
                 cwd="/opt/pebble",
                 env=dict(
                     os.environ,
-                    **{
-                        "PEBBLE_VA_ALWAYS_VALID": "1",
-                        "PEBBLE_VA_NOSLEEP": "1",
-                        "PEBBLE_WFE_NONCEREJECT": "0",
-                        "PEBBLE_AUTHZREUSE": "100",
-                    },
+                    PEBBLE_VA_ALWAYS_VALID="1",
+                    PEBBLE_VA_NOSLEEP="1",
+                    PEBBLE_WFE_NONCEREJECT="0",
+                    PEBBLE_AUTHZREUSE="100",
                 ),
             )
 
@@ -132,7 +141,7 @@ class TestACMEFinalizer:
             pebble.wait()
 
     def _get_processed_order(
-        self, expect_failure=False, new_order: NewOrderRet = None
+        self, expect_failure=False, new_order: NewOrderRet = None, timeout=5
     ) -> db.Order:
         if not new_order:
             new_order: NewOrderRet = self.acme_neworder(
@@ -145,7 +154,7 @@ class TestACMEFinalizer:
                 # This always errors, so make it happen fast
                 order = finalize_order(self.acme_client, order, timeout=0)
         else:
-            order = finalize_order(self.acme_client, order, timeout=5)
+            order = finalize_order(self.acme_client, order, timeout=timeout)
 
         order_name = order.uri.split("/")[-1]
         return db.Order.objects.get(name=order_name)
@@ -242,7 +251,7 @@ class TestACMEFinalizer:
 
         try:
             finalize_order(self.acme_client, order, timeout=1)
-        except Exception:  # noqa: E722
+        except Exception:
             pass
 
         order_name = order.uri.split("/")[-1]
@@ -381,11 +390,11 @@ class TestACMEFinalizer:
             body = json.loads(arg.body)
 
             domain = body["data"]["authorizations"][0]["identifier"][4:]
-            validation = [
+            validation = next(
                 c["validation"]
                 for c in body["data"]["authorizations"][0]["challenges"]
                 if c["type"] == "dns-01"
-            ][0]
+            )
 
             dns_server.add_record(
                 Zone(
@@ -406,6 +415,162 @@ class TestACMEFinalizer:
 
         assert order.status == OrderStatus.valid
         assert order.certificate is not None
+
+    @pytest.mark.slow
+    @pytest.mark.django_db
+    def test_check_dns_propagation_multiple_servers(
+        self, pebble_starter, dns_server: DNSServer, dns_server2: DNSServer
+    ):
+        pebble_starter()
+        webhook_endpoint = "https://webhook.localhost/pre-neworder"
+        shared_secret = "s3cret"
+        settings = ACMEFinalizerSettings.get()
+        settings.challenges = ACMEFinalizerChallengeSettings(
+            challenge_webhook=WebhookSettings(
+                secret=shared_secret, endpoint=webhook_endpoint
+            ),
+            dns_01=ACMEFinalizerDNS01ChallengeSettings(
+                verification_nameservers=[
+                    f"127.0.0.1:{self.dns_server_port}",
+                    f"127.0.0.1:{self.dns_server2_port}",
+                ],
+                verification_timeout=5,
+                perform_verification=True,
+            ),
+        )
+
+        domain = "acme.localhost"
+        new_order: NewOrderRet = self.acme_neworder(
+            self.acme_client,
+            self.acme_acct,
+            cn=domain,
+            sans=[domain, "acme2.localhost", "mock.me"],
+        )
+
+        def webhook_callback(arg):
+            webhook = Webhook(shared_secret)
+            webhook.verify(arg.body.encode(), arg.headers)
+            body = json.loads(arg.body)
+            for authz in body["data"]["authorizations"]:
+                domain = authz["identifier"][4:]
+                validation = next(
+                    c["validation"]
+                    for c in authz["challenges"]
+                    if c["type"] == "dns-01"
+                )
+
+                dns_server.add_record(
+                    Zone(
+                        f"_acme-challenge.{domain}",
+                        "TXT",
+                        validation,
+                    )
+                )
+
+                def add_dns_server2_record(domain: str, validation: str):
+                    time.sleep(2)
+                    dns_server2.add_record(
+                        Zone(
+                            f"_acme-challenge.{domain}",
+                            "TXT",
+                            validation,
+                        )
+                    )
+
+                threading.Thread(
+                    target=add_dns_server2_record, args=[domain, validation]
+                ).start()
+
+            return (200, {}, "")
+
+        self.responses.add_callback(
+            responses.POST,
+            webhook_endpoint,
+            callback=webhook_callback,
+        )
+
+        order = self._get_processed_order(new_order=new_order, timeout=10)
+
+        assert order.status == OrderStatus.valid
+        assert order.certificate is not None
+
+    @pytest.mark.slow
+    @pytest.mark.django_db
+    def test_check_dns_propagation_multiple_servers_failure(
+        self, pebble_starter, dns_server: DNSServer, dns_server2: DNSServer
+    ):
+        pebble_starter()
+        webhook_endpoint = "https://webhook.localhost/pre-neworder"
+        shared_secret = "s3cret"
+        settings = ACMEFinalizerSettings.get()
+        settings.challenges = ACMEFinalizerChallengeSettings(
+            challenge_webhook=WebhookSettings(
+                secret=shared_secret, endpoint=webhook_endpoint
+            ),
+            dns_01=ACMEFinalizerDNS01ChallengeSettings(
+                verification_nameservers=[
+                    f"127.0.0.1:{self.dns_server_port}",
+                    f"127.0.0.1:{self.dns_server2_port}",
+                ],
+                verification_timeout=5,
+                perform_verification=True,
+            ),
+        )
+
+        domain = "acme.localhost"
+        new_order: NewOrderRet = self.acme_neworder(
+            self.acme_client,
+            self.acme_acct,
+            cn=domain,
+            sans=[domain, "acme2.localhost", "mock.me"],
+        )
+
+        def webhook_callback(arg):
+            webhook = Webhook(shared_secret)
+            webhook.verify(arg.body.encode(), arg.headers)
+            body = json.loads(arg.body)
+            for authz in body["data"]["authorizations"]:
+                domain = authz["identifier"][4:]
+                validation = next(
+                    c["validation"]
+                    for c in authz["challenges"]
+                    if c["type"] == "dns-01"
+                )
+
+                dns_server.add_record(
+                    Zone(
+                        f"_acme-challenge.{domain}",
+                        "TXT",
+                        validation,
+                    )
+                )
+
+                def add_dns_server2_record(domain: str, validation: str):
+                    time.sleep(2)
+                    dns_server2.add_record(
+                        Zone(
+                            f"_acme-challenge.{domain}",
+                            "TXT",
+                            "incorrect-token",
+                        )
+                    )
+
+                threading.Thread(
+                    target=add_dns_server2_record, args=[domain, validation]
+                ).start()
+
+            return (200, {}, "")
+
+        self.responses.add_callback(
+            responses.POST,
+            webhook_endpoint,
+            callback=webhook_callback,
+        )
+
+        order = self._get_processed_order(new_order=new_order, expect_failure=True)
+
+        assert order.status == OrderStatus.invalid
+        assert order.last_finalization_error() is not None
 
     @pytest.mark.slow
     @pytest.mark.django_db

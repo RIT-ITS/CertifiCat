@@ -7,6 +7,7 @@ LOGLEVEL='DEBUG'
 
 ROOT="$(realpath ${HERE}/../)"
 SRC_PATH="${ROOT}/src"
+DOCS_PATH="${ROOT}/docs"
 VENV_PATH="${SRC_PATH}/.venv"
 VENV_PYTHON="${VENV_PATH}/bin/python3"
 VENV_PYTEST="${VENV_PATH}/bin/pytest"
@@ -58,6 +59,7 @@ Release Commands:
                     according to the versioning scheme
   gen-bom           Generate software BOM
   gen-tag           Generates a new local tag
+  gen-settings      Generate all settings documentation
 EOF
 }
 
@@ -103,6 +105,21 @@ build() {
   )
 }
 
+gen_settings() {
+  (
+    cd "${DOCS_PATH}" &&
+      "${ROOT}"/internal/gen-settings-section.py acme "${DOCS_PATH}"/src/snippets/configuration/acme.toplevel.md shallow &&
+      "${ROOT}"/internal/gen-settings-section.py certificat "${DOCS_PATH}"/src/snippets/configuration/certificat.toplevel.md shallow &&
+      "${ROOT}"/internal/gen-settings-section.py certificat.authentication "${DOCS_PATH}"/src/snippets/configuration/certificat.authentication.md deep &&
+      "${ROOT}"/internal/gen-settings-section.py certificat.db "${DOCS_PATH}"/src/snippets/configuration/certificat.db.md deep &&
+      "${ROOT}"/internal/gen-settings-section.py certificat.finalizer "${DOCS_PATH}"/src/snippets/configuration/certificat.finalizer.md deep &&
+      "${ROOT}"/internal/gen-settings-section.py certificat.redis "${DOCS_PATH}"/src/snippets/configuration/certificat.redis.md deep &&
+      "${ROOT}"/internal/gen-settings-section.py certificat.logging "${DOCS_PATH}"/src/snippets/configuration/certificat.logging.md deep &&
+      "${ROOT}"/internal/gen-settings-section.py certificat.theming "${DOCS_PATH}"/src/snippets/configuration/certificat.theming.md deep &&
+      "${ROOT}"/internal/gen-settings-section.py '$ref' "${DOCS_PATH}"/src/snippets/configuration/references.md shallow
+  )
+}
+
 sync_venv
 
 SUB_COMMAND=${1}
@@ -132,6 +149,10 @@ test)
 
 gen-bom)
   gen_bom "$@"
+  ;;
+
+gen-settings)
+  gen_settings "$@"
   ;;
 
 build)

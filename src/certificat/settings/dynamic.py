@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 import re
+import textwrap
 from collections.abc import Mapping
 from typing import ClassVar, Literal, Self
 
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
 
 
 class DatabaseSettings(BaseModel):
-    type: Literal["none"] = "None"
+    type: SkipJsonSchema[Literal["none"]] = "None"
 
     def to_peewee(self) -> peewee.Database:
         return "sqlite:///huey-stats.db.sqlite3"
@@ -34,18 +35,20 @@ class DatabaseSettings(BaseModel):
 
 
 class MariaDBDatabaseSettings(DatabaseSettings):
-    type: Literal["mysql"] = "mysql"
+    type: SkipJsonSchema[Literal["mysql"]] = "mysql"
     engine: SkipJsonSchema[str] = "django.db.backends.mysql"
     name: str = Field(
         description="The database to use after a connection is established."
     )
     user: str = Field(description="User for the database connection.")
-    password: str = Field(None, description="Password for the database connection")
-    host: str = Field(None, description="Host for the database connection")
-    port: int = 3306
-    options: dict = Field({}, description="Key-value options passed to the driver")
+    password: str = Field(None, description="Password for the database connection.")
+    host: str = Field(None, description="Host for the database connection.")
+    port: int = Field(3306, description="Port for the database connection.")
+    options: dict = Field({}, description="Key-value options passed to the driver.")
     table_prefix: SkipJsonSchema[str] = Field(
-        "", description="An optional table prefix for every table in the database."
+        "",
+        description="An optional table prefix for every table in the database.",
+        deprecated="This option is deprecated and is not supported for future development. It may be removed at any time.",
     )
 
     def to_peewee(self) -> peewee.MySQLDatabase:
@@ -71,16 +74,16 @@ class MariaDBDatabaseSettings(DatabaseSettings):
 
 
 class PostgresDatabaseSettings(DatabaseSettings):
-    type: Literal["postgresql"] = "postgresql"
+    type: SkipJsonSchema[Literal["postgresql"]] = "postgresql"
     engine: SkipJsonSchema[str] = "django.db.backends.postgresql"
     name: str = Field(
         description="The database to use after a connection is established."
     )
     user: str = Field(description="User for the database connection.")
-    password: str = Field(None, description="Password for the database connection")
-    host: str = Field(None, description="Host for the database connection")
-    port: int = 5432
-    options: dict = Field({}, description="Key-value options passed to the driver")
+    password: str = Field(None, description="Password for the database connection.")
+    host: str = Field(None, description="Host for the database connection.")
+    port: int = Field(5432, description="Port for the database connection.")
+    options: dict = Field({}, description="Key-value options passed to the driver.")
     table_prefix: SkipJsonSchema[str] = Field(
         "", description="An optional table prefix for every table in the database."
     )
@@ -98,7 +101,7 @@ class PostgresDatabaseSettings(DatabaseSettings):
 
 
 class SQLiteDatabaseSettings(DatabaseSettings):
-    type: Literal["sqlite"] = "sqlite"
+    type: SkipJsonSchema[Literal["sqlite"]] = "sqlite"
     engine: SkipJsonSchema[str] = "django.db.backends.sqlite3"
     name: str = Field(description="The location of the sqlite database.")
     options: dict = Field({}, description="Key-value options passed to the driver")
@@ -118,20 +121,22 @@ class TaskQueueSettings(BaseModel):
     )
     stats_database: str | None = Field(
         None,
-        description="Location of the stats database.",
-        examples=["sqlite:///huey-stats.db"],
+        description="Location of the stats database. This is a connection string.",
+        examples=["`sqlite:///huey-stats.db`"],
     )
 
 
 class CacheSettings(BaseModel):
-    type: Literal["django.core.cache.backends.None"] = "django.core.cache.backends.None"
+    type: SkipJsonSchema[Literal["django.core.cache.backends.None"]] = (
+        "django.core.cache.backends.None"
+    )
 
     def to_backend(self):
         raise Exception("Cache settings were not configured.")  # noqa: TRY002
 
 
 class RedisCacheSettings(CacheSettings):
-    type: Literal["redis"] = "redis"
+    type: SkipJsonSchema[Literal["redis"]] = "redis"
     backend: str = "django.core.cache.backends.redis.RedisCache"
 
     def to_backend(self):
@@ -144,7 +149,7 @@ class RedisCacheSettings(CacheSettings):
 
 
 class LocalMemoryCacheSettings(CacheSettings):
-    type: Literal["local"] = "local"
+    type: SkipJsonSchema[Literal["local"]] = "local"
     backend: str = "django.core.cache.backends.locmem.LocMemCache"
 
     def to_backend(self):
@@ -155,9 +160,9 @@ class RedisSettings(BaseModel):
     backend: SkipJsonSchema[Literal["django.core.cache.backends.redis.RedisCache"]] = (
         "django.core.cache.backends.redis.RedisCache"
     )
-    host: str = Field(description="Host for the redis connection.")
-    password: str = Field(description="Password for the Redis connection")
-    port: int = Field(6379, description="Port for the Redis connection")
+    host: str = Field(description="Host for the Redis connection.")
+    password: str = Field(description="Password for the Redis connection.")
+    port: int = Field(6379, description="Port for the Redis connection.")
 
 
 class LoggingSettings(BaseModel):
@@ -178,7 +183,58 @@ class LoggingSettings(BaseModel):
 
 class ThemeSettings(BaseModel):
     global_css: str | None = Field(
-        None, description="Global CSS injected into a style tag rendered on every page."
+        None,
+        description=textwrap.dedent("""
+            Global CSS injected into a style tag rendered on every page. For example the following section configures the site to use RIT branding:
+
+            !!! example
+
+                ```yaml
+                certificat:
+                  theming:
+                    global_css: |
+                      html:root {
+                        --primary-color: #F76902;
+                        --link-color: #C75300;
+                        --logo-accent-color: #F76902;
+                        --neutral-cool-color--100: #D0D3D4;
+                        --neutral-cool-color--200: #A2AAAD;
+                        --neutral-cool-color--300: #7C878E;
+                        --neutral-warm-color--100: #D7D2CB;
+                        --neutral-warm-color--200: #ACA39A;
+                        --green-accent-color: #84BD00;
+                        --lime-accent-color: #C4D600;
+                        --blue-accent-color: #009CBD;
+                        --purple-accent-color: #7D55C7;
+                        --red-accent-color: #DA291C;
+                        --orange-accent-color: #F6BE00;
+                        --gray-color--100: #f8f9fa;
+                        --gray-color--200: #e9ecef;
+                        --gray-color--300: #dee2e6;
+                        --gray-color--400: #ced4da;
+                        --gray-color--500: #adb5bd;
+                        --gray-color--600: #6c757d;
+                        --gray-color--700: #495057;
+                        --gray-color--800: #343a40;
+                        --gray-color--900: #212529;
+                        --body-text-color: #212529;
+                        --font-stack: Helvetica Neue, Helvetica, Arial, sans‑serif;
+                        
+                        --width--small-smartphone: 480px;
+                        --width--large-smartphone: 768px;
+                        --width--tiny-desktop: 1000px;
+                        --width--small-desktop: 1200px;
+                        --width--max: 1400px;
+                        
+                        --font-size: 16px;
+                      }
+
+                      activity-graph {
+                        --heat-calendar--start-color: #cff182 !important;
+                        --heat-calendar--end-color: #fff8a4 !important;
+                      }
+                ```
+        """),
     )
 
 
@@ -186,12 +242,12 @@ class SAMLSPSettings(BaseModel):
     entity_id: str = Field(
         description="SAML service entity id. It should be unique and a URI."
     )
-    name: str = Field("CertifiCat", description="The SP name")
+    name: str = Field("CertifiCat", description="The SP name in generated metadata.")
     key_file: str = Field(
-        description="The location of the PEM-formatted private key file"
+        description="The location of the PEM-formatted private key file."
     )
     cert_file: str = Field(
-        description="The location of the PEM-formatted public key file"
+        description="The location of the PEM-formatted public key file."
     )
     signing_algorithm: str = Field(
         "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
@@ -201,7 +257,7 @@ class SAMLSPSettings(BaseModel):
         "http://www.w3.org/2001/04/xmlenc#sha256",
         description="The default digest algorithm",
     )
-    force_authn: bool = Field(False, description="Disable SSO session reuse on login")
+    force_authn: bool = Field(False, description="Disable SSO session reuse on login.")
     allow_unsolicited: bool = Field(True, description="Allow IdP-initiated SSO.")
 
 
@@ -249,12 +305,12 @@ class LocalAuthAdminSettings(BaseModel):
 
 
 class LocalAuthSettings(BaseModel):
-    type: Literal["local"] = "local"
+    type: SkipJsonSchema[Literal["local"]] = "local"
     admin: LocalAuthAdminSettings
 
 
 class RemoteAuthSettings(BaseModel):
-    type: Literal["remote"] = "remote"
+    type: SkipJsonSchema[Literal["remote"]] = "remote"
     user_header: str = Field(
         "HTTP_USER",
         description="The header that will be used to populate user principal.",
@@ -262,6 +318,7 @@ class RemoteAuthSettings(BaseModel):
     groups_header: str | None = Field(
         None,
         description="The header that will be used to populate groups. This is delimited by the groups_header_delimiter setting.",
+        examples=["`HTTP_GROUPS`"],
     )
     groups_header_delimiter: str = Field(
         ";", description="The delimiter used when parsing the groups_header value."
@@ -279,8 +336,14 @@ class RemoteAuthSettings(BaseModel):
         [],
         description="A list of groups that will automatically give included users administrator privileges on login.",
     )
-    force_logout_if_no_header: bool = True
-    log_http_headers: bool = False
+    force_logout_if_no_header: bool = Field(
+        True,
+        description="Destroys the user session if the remote header is not present. This should be turned off if the header is not transmitted with every request.",
+    )
+    log_http_headers: bool = Field(
+        False,
+        description="Adds header debugging to the web logs. Useful when debugging why user authentication is not behaving as expected.",
+    )
     attribute_mapping: Mapping[str, list[str] | str] = Field(
         {
             "HTTP_USER_EMAIL": "email",
@@ -290,13 +353,19 @@ class RemoteAuthSettings(BaseModel):
         description="A dictionary mapping of src:targets where attributes are mapped from headers to Django attributes.",
     )
     redirect_template: str = Field(
-        description="Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource.",
-        examples=["https://auth.example/?redirect_to={ redirect }"],
+        description=textwrap.dedent("""
+            Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource instead of the user returning to the root. This allows you to deep-link back to the protected resource.
+
+            For example, if a user attempted to access the protected resource `https://acme.edu/accounts/` and the authorization server lived at `https://auth.acme.edu/` 
+            you could set the redirect_template to `https://auth.acme.edu/?redirect_to={{ redirect }}`.
+
+            CertifiCat would redirect the request to `https://auth.acme.edu/?redirect_to=https%3A%2F%2Facme.edu%2Faccounts%2F`.
+        """)
     )
 
 
 class SAMLAuthSettings(BaseModel):
-    type: Literal["saml"] = "saml"
+    type: SkipJsonSchema[Literal["saml"]] = "saml"
     model_config = SettingsConfigDict(
         validate_default=False,
         env_prefix="SAML__",
@@ -312,7 +381,7 @@ class SAMLAuthSettings(BaseModel):
 
     debug: bool = Field(
         False,
-        description="The debug setting for the Django SAML plugin.",
+        description="The debug setting for the Django SAML plugin. This increases log verbosity.",
     )
     xmlsec_binary: SkipJsonSchema[str] = Field(
         "/usr/bin/xmlsec1", description="The absolute path to the xmlsec binary."
@@ -336,7 +405,7 @@ class SAMLAuthSettings(BaseModel):
     )
     group_sync_prefix: str = Field(
         "SAML/",
-        description="New groups synced from SAML will be prefixed with this identifier.",
+        description="New groups synced from SAML will be prefixed with this identifier. Generally leave this setting as the default.",
     )
 
     sp: SAMLSPSettings
@@ -352,12 +421,26 @@ class SAMLAuthSettings(BaseModel):
             "givenName": ["first_name"],
             "sn": ["last_name"],
         },
-        description="A dictionary mapping of src:[target] where attributes are mapped from SAML responses to Django attributes. This is designed to work with a yaml config, not environment variables.",
+        description=textwrap.dedent("""
+            A dictionary mapping of src:[target] where attributes are mapped from SAML responses to Django attributes.
+
+            The default mapping is a best-effort guess at how attributes may flow from the IdP to the CertifiCat service. Depending on attribute naming
+            you may need to adjust these. For example, consider an IdP that sends the `urn:oid:0.9.2342.19200300.100.1.1` attribute for uid and the `urn:oid:0.9.2342.19200300.100.1.3` attribute for mail.
+
+            ```yaml
+            certificat:
+              authentication:
+                attribute_mapping:
+                  "urn:oid:0.9.2342.19200300.100.1.1": ["username"]
+                  "urn:oid:0.9.2342.19200300.100.1.3": ["mail"]
+                  ...
+            ```
+        """),
     )
 
 
 class FinalizerSettings(BaseModel):
-    type: Literal["none"] = "none"
+    type: SkipJsonSchema[Literal["none"]] = "none"
     module: str
 
 
@@ -395,7 +478,7 @@ class ACMEFinalizerChallengeSettings(BaseModel):
 
 
 class ACMEFinalizerSettings(FinalizerSettings):
-    type: Literal["acme"] = "acme"
+    type: SkipJsonSchema[Literal["acme"]] = "acme"
     module: SkipJsonSchema[str] = "certificat.modules.acme.backends.acme.ACMEFinalizer"
 
     @classmethod
@@ -429,11 +512,59 @@ class ACMEFinalizerSettings(FinalizerSettings):
         "certificat/acme-python", description="User agent of the ACME client."
     )
 
-    challenges: ACMEFinalizerChallengeSettings = Field(ACMEFinalizerChallengeSettings())
+    challenges: SkipJsonSchema[ACMEFinalizerChallengeSettings] = Field(
+        ACMEFinalizerChallengeSettings()
+    )
+
+
+class CERTINextExternalAccountBinding(BaseModel):
+    directory: HttpUrl = Field(
+        description="Path to the ACME API endpoint. This usually ends with /directory."
+    )
+    account_kid: str = Field("External account binding key identifier.")
+    account_hmac_key: str = Field(
+        None, description="External account binding HMAC key."
+    )
+    account_email: str = Field(
+        description="Email address used when binding an account."
+    )
+
+
+class CERTINextACMEFinalizerSettings(FinalizerSettings):
+    type: SkipJsonSchema[Literal["certinext-acme"]] = "certinext-acme"
+    module: SkipJsonSchema[str] = (
+        "certificat.modules.acme.backends.certinext_acme.CERTINextACMEFinalizer"
+    )
+
+    @classmethod
+    def get(cls) -> Self:
+        settings = inject.instance(ApplicationSettings)
+        if settings.finalizer.type == "certinext-acme":
+            return settings.finalizer
+
+    single_domain_binding: CERTINextExternalAccountBinding = Field(
+        description="ACME credentials used when creating a single-domain certificate."
+    )
+    multi_domain_binding: CERTINextExternalAccountBinding = Field(
+        description="ACME credentials used when creating a multi-domain certificate."
+    )
+
+    skip_answering_challenges: bool = Field(
+        False,
+        description="Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.",
+    )
+
+    finalization_timeout: int = Field(
+        90,
+        description="How long to poll the upstream server before finalization is canceled.",
+    )
+    client_user_agent: SkipJsonSchema[str] = Field(
+        "certificat/acme-python", description="User agent of the ACME client."
+    )
 
 
 class CertiNextFinalizerSettings(FinalizerSettings):
-    type: Literal["certinext"] = "certinext"
+    type: SkipJsonSchema[Literal["certinext"]] = "certinext"
     module: SkipJsonSchema[str] = (
         "certificat.modules.acme.backends.certinext.CertiNextFinalizer"
     )
@@ -448,41 +579,46 @@ class CertiNextFinalizerSettings(FinalizerSettings):
         "https://us-api.certinext.io/", description="Base URL of the CERTInext API."
     )
     org_number: str = Field(
-        description="Organization ID that will be requesting the certificate"
+        description="Organization ID that will be requesting the certificate."
     )
     product_variant: str = Field(
         "ov", description="Product variant, defaults to organization validated."
     )
-    product_code: str = Field(description="Unique product code for the order")
+    product_code: str = Field(description="Unique product code for the order.")
     oauth_client_id: str = Field(
-        "Client ID for the OAuth client credentials grant request"
+        "Client ID for the OAuth client credentials grant request."
     )
     oauth_client_secret: str = Field(
-        "Client secret for the OAuth client credentials grant request"
+        "Client secret for the OAuth client credentials grant request."
     )
 
-    requestor_name: str = Field("CertifiCat", description="Name of the requestor")
-    requestor_email: str = Field(description="Email of the requestor")
-    requestor_phone: str = Field(description="Phone number of the requestor")
-    requestor_designation: str = Field("+1", description="Designation of the requestor")
+    requestor_name: str = Field("CertifiCat", description="Name of the requestor.")
+    requestor_email: str = Field(description="Email of the requestor.")
+    requestor_phone: str = Field(description="Phone number of the requestor.")
+    requestor_designation: str = Field(
+        "+1", description="Designation of the requestor."
+    )
 
     agreement_signer: str = Field(
-        description="Name of the agreement signer for certificate issuance"
+        description="Name of the agreement signer for certificate issuance."
     )
     agreement_signer_place: str = Field(
-        description="Place of the agreement signer for certificate issuance"
+        description="Place of the agreement signer for certificate issuance."
     )
 
     order_remarks: str = Field(
         "Submitted by CertifiCat",
-        description="Optional order remarks to include with each certificate order",
+        description="Optional order remarks to include with each certificate order.",
     )
 
     poll_deadline: int = Field(
         60 * 5,
         description="The finalizer task will continue to poll the CERTINext backend to check if the certificate is fulfilled until hitting this deadline in seconds.",
     )
-    poll_interval: int = 1
+    poll_interval: int = Field(
+        1,
+        description="The finalizer will sleep for this duration between polling certificate order status.",
+    )
 
 
 class SectigoFinalizerSettings(FinalizerSettings):
@@ -490,7 +626,7 @@ class SectigoFinalizerSettings(FinalizerSettings):
         validate_default=False, env_prefix="SECTIGO__", env_nested_delimiter="__"
     )
 
-    type: Literal["sectigo"] = "sectigo"
+    type: SkipJsonSchema[Literal["sectigo"]] = "sectigo"
     module: SkipJsonSchema[str] = (
         "certificat.modules.acme.backends.sectigo.SectigoFinalizer"
     )
@@ -509,7 +645,7 @@ class SectigoFinalizerSettings(FinalizerSettings):
     )
     customer_uri: str = Field(
         description="Customer URI, found in the cert-manager URL.",
-        examples=["InCommon", "InCommon_test"],
+        examples=["`InCommon` `InCommon_test`"],
     )
     api_base: str = Field(
         "https://cert-manager.com/api/", description="Base URL of the cert-manager API."
@@ -535,7 +671,7 @@ class SectigoFinalizerSettings(FinalizerSettings):
 
 
 class LocalFinalizerSettings(FinalizerSettings):
-    type: Literal["local"] = "local"
+    type: SkipJsonSchema[Literal["local"]] = "local"
     module: SkipJsonSchema[str] = (
         "certificat.modules.acme.backends.local.LocalFinalizer"
     )
@@ -557,10 +693,11 @@ class LocalFinalizerSettings(FinalizerSettings):
 
 
 type PolymorphicFinalizerSettings = (
-    SectigoFinalizerSettings
-    | CertiNextFinalizerSettings
+    SkipJsonSchema[SectigoFinalizerSettings]
+    | SkipJsonSchema[CertiNextFinalizerSettings]
     | LocalFinalizerSettings
     | ACMEFinalizerSettings
+    | CERTINextACMEFinalizerSettings
 )
 
 
@@ -569,7 +706,7 @@ class AlternativeFinalizerSettings(BaseModel):
         description="Unique ID for this finalizer. This will be stored in the account and used to select the correct finalizer at certificate creation."
     )
     name: str = Field(
-        description="A short descriptive name for the finalizer. This is preseted in user interfaces when making selections."
+        description="A short descriptive name for the finalizer. This is presented in user interfaces when making selections."
     )
     description: str = Field(
         description="A short description of the finalizer. This is presented in user interfaces when making selections."
@@ -578,9 +715,7 @@ class AlternativeFinalizerSettings(BaseModel):
         discriminator="type",
         description="Which order finalizer module to use.",
         examples=[
-            "local",
-            "sectigo",
-            "certinext",
+            "`local` `acme` `certinext-acme`",
         ],
     )
 
@@ -633,7 +768,15 @@ class ApplicationSettings(Settings):
         deprecated="This field is unused and will be removed in a future version, protocol is now determined at runtime.",
     )
     secret_key: str = Field(
-        description="Django SECRET_KEY. This should be set to a unique, unpredictable value."
+        description=textwrap.dedent("""
+            [Django SECRET_KEY.](https://docs.djangoproject.com/en/6.1/ref/settings/#std-setting-SECRET_KEY) This should be set to a unique, unpredictable value.
+            
+            You can generate a secret key by using the following snippet: 
+            
+            ``` bash
+            tr -dc 'a-zA-Z0-9!@#$%^&*(-_=+)' < /dev/urandom | head -c 50; echo
+            ```
+        """)
     )
     session_cookie_age: int = Field(
         60 * 60 * 8,
@@ -641,11 +784,15 @@ class ApplicationSettings(Settings):
     )
     time_zone: str = Field(
         "America/New_York",
-        description="Django time zone, used mostly for date localization.",
+        description="Django TIME_ZONE, used mostly for date localization.",
     )
     url_root: str = Field(
-        description="The url root is used to generate absolute urls to the application. It should not contain path and parameters.",
-        examples=["https://acme.edu/"],
+        description=textwrap.dedent("""
+            The url root is used to generate absolute urls to the application. It should not contain path and parameters.
+            !!! warning
+                If your url_root changes your existing ACME accounts will become unusable. This is due to [request URL integrity](https://datatracker.ietf.org/doc/html/rfc8555#section-6.4).
+        """),
+        examples=["`https://acme.edu/`"],
     )
     web_ui_mountpoint: BetaFeature[str] = Field(
         "", description="The root of the web UI."
@@ -676,16 +823,24 @@ class ApplicationSettings(Settings):
         | SkipJsonSchema[SQLiteDatabaseSettings]
     ) = Field(
         discriminator="type",
-        description="Database engine settings.",
+        description="Database connection settings. CertifiCat requires an external database to store ACME and management state.",
     )
-    redis: RedisSettings
+    redis: RedisSettings = Field(
+        description="Redis connection settings. CertifiCat requires Redis to store cache and faciliate background jobs."
+    )
     cache: SkipJsonSchema[RedisCacheSettings | LocalMemoryCacheSettings] = Field(
         RedisCacheSettings(),
         discriminator="type",
         exclude=True,  # This isn't exposed in documentation for the user
     )
-    task_queue: TaskQueueSettings = TaskQueueSettings()
-    theming: ThemeSettings = ThemeSettings()
+    task_queue: TaskQueueSettings = Field(
+        TaskQueueSettings(),
+        description="Settings for the Redis-powered Huey task queue.",
+    )
+    theming: ThemeSettings = Field(
+        ThemeSettings(),
+        description="Theming and customization settings for the web front-end.",
+    )
 
     trust_proxy_forwarded_proto: bool | None = Field(
         False,
@@ -696,7 +851,7 @@ class ApplicationSettings(Settings):
         SAMLAuthSettings | SkipJsonSchema[LocalAuthSettings] | RemoteAuthSettings
     ) = Field(
         discriminator="type",
-        description="Authentication settings for the web frontend.",
+        description="Authentication settings for the web frontend. This controls how you authenticate and automatically provision access to the CertifiCat HTML service.",
     )
 
     hmac_id_length: int = Field(
@@ -726,26 +881,38 @@ class ApplicationSettings(Settings):
 
     finalizer: PolymorphicFinalizerSettings = Field(
         discriminator="type",
-        description="Which order finalizer module to use. The server is designed to finalize all requests against one default backend.",
-        examples=[
-            "local",
-            "sectigo",
-            "certinext",
-        ],
+        description="Which order finalizer module to use. The server is designed to finalize all requests against one default backend. This will be the backend initially used by all accounts.",
     )
 
     alternative_finalizers: list[AlternativeFinalizerSettings] = Field(
         [],
-        description="A list of alternative finalizers that can be selected depending on order criteria.",
+        description="A list of alternative finalizers that can be used to request certificates through manual configuration.",
+        examples=[
+            textwrap.dedent("""
+            ``` yaml
+            certificat: 
+              alternative_finalizers:
+                - id: "alt-finalizer-1"
+                  name: "Alternative Finalizer 1"
+                  description: "A description for the web UI"
+                  finalizer: ... certificat.finalizer ...
+
+                - id: "alt-finalizer-2"
+                  name: "Alternative Finalizer 2"
+                  description: "A different description for the web UI"
+                  finalizer: ... certificat.finalizer ...
+            ```
+            """)
+        ],
     )
 
     delete_invalid_orders: bool = Field(
         True,
-        description="If set to True, invalid orders will be purged after some time.",
+        description="Purge invalid orders after some amount of time.",
     )
     beacon_enabled: bool = Field(
         True,
-        description="If true, will send tracking information about usage to RIT. All tracking info is logged.",
+        description="Send tracking information about platform usage to RIT.",
     )
     show_version: bool = Field(False, description="Show the version on the website.")
 

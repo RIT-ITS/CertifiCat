@@ -1,0 +1,77 @@
+site_name: CertifiCat
+site_description: Documentation for the CertifiCat ACME server
+dev_addr: '127.0.0.1:8202'
+
+theme:
+  name: material
+  custom_dir: overrides
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate 
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.path
+    - navigation.top
+    - navigation.sections
+    
+    - toc.follow
+    - toc.integrate
+
+nav:
+  - "Home": index.md
+  - "Getting Started": 
+    - "Evaluation Example": "getting-started/local.md"
+    - "Production Example": "getting-started/production.md"
+  - "Features":
+    - "Overview": "features/index.md"
+  - "Configuration":
+    - "Settings": "configuration/index.md"
+  #- "Convention": "configuration/convention.md"
+
+not_in_nav: |
+  convention.md
+
+extra_javascript:
+  - assets/javascripts/toc-collapse.js
+  
+
+hooks:
+  - overrides/hooks/shortcodes.py
+
+markdown_extensions:
+  - admonition
+  - fenced_code
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - def_list
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path:
+        - "docs/src/snippets"
+  - pymdownx.superfences:
+        # make exceptions to highlighting of code:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
+  - md_in_html
+
+plugins:
+  - search
+  - mermaid2:
+      version: '11.17.2'
+      arguments:
+        securityLevel: 'antiscript'
+
+docs_dir: 'src'
+site_dir: 'html'
+strict: true
+

@@ -31,113 +31,115 @@ from certificat.webhooks import PreUpstreamChallengeWebhook
 logger = logging.getLogger(__name__)
 
 
+class CertifiCatACMEClient(acme.client.ClientV2):
+    directory_url: str = None
+
+
+def create_acme_client(directory_url: str, user_agent: str) -> CertifiCatACMEClient:
+    try:
+        directory = requests.get(directory_url, timeout=5).json()
+    except Exception as exc:
+        # hide ugly timeout/retry error since these messages are presented to the user
+        raise Exception(  # noqa: TRY002
+            f"Error reading ACME directory at '{directory_url}'"
+        ) from exc
+
+    net = acme.client.ClientNetwork(user_agent=user_agent)
+    client = CertifiCatACMEClient(
+        acme.client.messages.Directory.from_json(directory), net=net
+    )
+    client.directory_url = directory_url
+
+    return client
+
+
+def ensure_acme_account_registered(
+    client: CertifiCatACMEClient,
+    account_email: str,
+    key_id: str | None = None,
+    hmac_key: str | None = None,
+):
+    binding = db.ACMEFinalizerBinding.get(key_id=key_id)
+
+    if binding:
+        logger.info("Existing account found, reusing from database.")
+        account_key = josepy.JWKRSA.load(binding.private_key.encode())
+
+        account = acme.messages.RegistrationResource.from_json(
+            {
+                "body": {
+                    "contact": (account_email,),
+                    "status": "valid",
+                    "termsOfServiceAgreed": True,
+                },
+                "uri": binding.account_id,
+            }
+        )
+        client.net = acme.client.ClientNetwork(
+            account_key, account, user_agent=client.net.user_agent
+        )
+    else:
+        logger.info("Existing account not found, registering with CA from settings.")
+        # TODO: Make these options configurable
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        pem_private_key = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+
+        client.net.key = josepy.JWKRSA.load(pem_private_key)
+        if key_id and hmac_key:
+            logger.info(
+                "EAB settings configured, credentials will be sent with account registration."
+            )
+            eab = acme.client.messages.ExternalAccountBinding.from_data(
+                account_public_key=client.net.key.public_key(),
+                kid=key_id,
+                hmac_key=hmac_key,
+                directory=client.directory,
+            )
+        else:
+            logger.info("No EAB settings configured, account will be anonymous.")
+            eab = None
+
+        new_registration = acme.client.messages.NewRegistration.from_data(
+            email=account_email,
+            terms_of_service_agreed=True,
+            external_account_binding=eab,
+        )
+
+        account_id: str = None
+
+        try:
+            registration = client.new_account(new_registration)
+            account_id = registration.uri
+        except acme.messages.Error as exc:
+            raise StopFinalization(
+                f"{exc.typ}: {exc.description} :: {exc.detail}"
+            ) from exc
+        except acme.errors.ConflictError:
+            # This has already been registered. We don't and can't support this.
+            raise StopFinalization(
+                "The ACME account has already been bound. Regenerate the ACME EAB credentials and restart the server with new account information."
+            )
+
+        db.ACMEFinalizerBinding.objects.create(
+            directory=client.directory_url,
+            account_id=account_id,
+            key_id=key_id,
+            private_key=pem_private_key.decode(),
+        )
+
+
 class ACMEFinalizer(Finalizer):
     settings: ACMEFinalizerSettings
-    _client: acme.client.ClientV2
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._client = None
-
-    @property
-    def client(self):
-        if not self._client:
-            try:
-                directory = requests.get(self.settings.directory, timeout=5).json()
-            except Exception as exc:
-                # hide ugly timeout/retry error since these messages are presented to the user
-                raise Exception(  # noqa: TRY002
-                    f"Error reading ACME directory at '{self.settings.directory}'"
-                ) from exc
-
-            net = acme.client.ClientNetwork(user_agent=self.settings.client_user_agent)
-            self._client = acme.client.ClientV2(
-                acme.client.messages.Directory.from_json(directory), net=net
-            )
-
-        return self._client
-
-    def _ensure_account_registered(self):
-        # TODO: Should this also join on directory?
-        lookup_args = {"directory": str(self.settings.directory)}
-        if self.settings.account_kid:
-            lookup_args["key_id"] = self.settings.account_kid
-        binding = db.ACMEFinalizerBinding.get(**lookup_args)
-
-        if binding:
-            logger.info("Existing account found, reusing from database.")
-            account_key = josepy.JWKRSA.load(binding.private_key.encode())
-
-            account = acme.messages.RegistrationResource.from_json(
-                {
-                    "body": {
-                        "contact": (self.settings.account_email,),
-                        "status": "valid",
-                        "termsOfServiceAgreed": True,
-                    },
-                    "uri": binding.account_id,
-                }
-            )
-            self.client.net = acme.client.ClientNetwork(
-                account_key, account, user_agent=self.settings.client_user_agent
-            )
-        else:
-            logger.info(
-                "Existing account not found, registering with CA from settings."
-            )
-            # TODO: Make these options configurable
-            private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-            pem_private_key = private_key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=serialization.NoEncryption(),
-            )
-
-            self.client.net.key = josepy.JWKRSA.load(pem_private_key)
-            if self.settings.account_kid and self.settings.account_hmac_key:
-                logger.debug(
-                    "EAB settings configured, credentials will be sent with account registration."
-                )
-                eab = acme.client.messages.ExternalAccountBinding.from_data(
-                    account_public_key=self.client.net.key.public_key(),
-                    kid=self.settings.account_kid,
-                    hmac_key=self.settings.account_hmac_key,
-                    directory=self.client.directory,
-                )
-            else:
-                logger.debug("No EAB settings configured, account will be anonymous.")
-                eab = None
-
-            new_registration = acme.client.messages.NewRegistration.from_data(
-                email=self.settings.account_email,
-                terms_of_service_agreed=True,
-                external_account_binding=eab,
-            )
-
-            account_id: str = None
-
-            try:
-                registration = self.client.new_account(new_registration)
-                account_id = registration.uri
-            except acme.messages.Error as exc:
-                raise StopFinalization(
-                    f"{exc.typ}: {exc.description} :: {exc.detail}"
-                ) from exc
-            except acme.errors.ConflictError:
-                # This has already been registered. We don't and can't support this.
-                raise StopFinalization(
-                    "The ACME account has already been bound. Regenerate the ACME EAB credentials and restart the server with new account information."
-                )
-
-            db.ACMEFinalizerBinding.objects.create(
-                directory=str(self.settings.directory),
-                account_id=account_id,
-                key_id=self.settings.account_kid,
-                private_key=pem_private_key.decode(),
-            )
 
     def execute_challenge_webhook(
-        self, upstream_order: acme.messages.OrderResource
+        self, client: CertifiCatACMEClient, upstream_order: acme.messages.OrderResource
     ) -> None:
         webhook_settings = self.settings.challenges.challenge_webhook
         if not webhook_settings:
@@ -145,10 +147,10 @@ class ACMEFinalizer(Finalizer):
 
         logger.info("Executing PreNewOrderWebhook webhook")
         webhook = PreUpstreamChallengeWebhook(webhook_settings.secret)
-        webhook.publish(webhook_settings.endpoint, self.client.net.key, upstream_order)
+        webhook.publish(webhook_settings.endpoint, client.net.key, upstream_order)
 
     def check_dns_propagation(
-        self, upstream_order: acme.messages.OrderResource
+        self, client: CertifiCatACMEClient, upstream_order: acme.messages.OrderResource
     ) -> bool:
         """Verifies DNS records set for the challenge domains. This never returns False, it raises
         a StopFinalization error on failure.
@@ -167,7 +169,7 @@ class ACMEFinalizer(Finalizer):
                         challenge_body.chall.validation_domain_name(
                             authz.body.identifier.value
                         )
-                    ] = challenge_body.chall.validation(self.client.net.key)
+                    ] = challenge_body.chall.validation(client.net.key)
 
         timeout = timezone.now() + datetime.timedelta(
             seconds=self.settings.challenges.dns_01.verification_timeout
@@ -223,44 +225,58 @@ class ACMEFinalizer(Finalizer):
         return acme.challenges.HTTP01
 
     def finalize(self, order: db.Order, pem_csr: str):
+        client = create_acme_client(
+            self.settings.directory, self.settings.client_user_agent
+        )
         # This could fail and may retrigger a retry
-        self._ensure_account_registered()
+        ensure_acme_account_registered(
+            client,
+            self.settings.account_email,
+            self.settings.account_kid,
+            self.settings.account_hmac_key,
+        )
 
         try:
             # This block has automatic retry already built-in, so any exceptions will
             # result in a StopFinalization error that will prevent retry
 
-            new_order = self.client.new_order(pem_csr.encode())
+            new_order = client.new_order(pem_csr.encode())
 
             # This may all be unnecessary. The test server requires answering challenges,
             # other servers may pre-validate the authorizations and skip this step.
             if not self.settings.skip_answering_challenges:
-                authz_list = new_order.authorizations
-                preferred_challenges = []
+                authz_list: list[acme.messages.AuthorizationResource] = (
+                    new_order.authorizations
+                )
+                preferred_challenges: list[acme.messages.ChallengeBody] = []
                 for authz in authz_list:
                     # Choosing challenge.
-                    # authz.body.challenges is a set of ChallengeBody objects.
-                    for i in authz.body.challenges:
+                    challenges: list[acme.messages.ChallengeBody] = (
+                        authz.body.challenges
+                    )
+                    for c in challenges:
                         # Find the preferred/supported challenge.
-                        if isinstance(i.chall, self.preferred_challenge()):
-                            preferred_challenges.append(i)
+                        if isinstance(c.chall, self.preferred_challenge()):
+                            preferred_challenges.append(c)
 
-                self.execute_challenge_webhook(new_order)
-                if self.settings.challenges.dns_01.perform_verification:
-                    if not self.check_dns_propagation(new_order):
-                        raise StopFinalization("Unable to verify DNS challenges")
+                self.execute_challenge_webhook(client, new_order)
+                if (
+                    self.settings.challenges.dns_01.perform_verification
+                    and not self.check_dns_propagation(client, new_order)
+                ):
+                    raise StopFinalization("Unable to verify DNS challenges")
 
                 # This may not be necessary for acme upstreams we integrate with
                 for chall in preferred_challenges:
-                    response, _ = chall.response_and_validation(self.client.net.key)
+                    response, _ = chall.response_and_validation(client.net.key)
                     # I think there's a bit of a race condition here, the response could say it's been validated
                     # It may be useful to swallow this error or have a toggle to swallow it
                     if not chall.validated:
-                        self.client.answer_challenge(chall, response)
+                        client.answer_challenge(chall, response)
 
-            new_order = self.client.poll_and_finalize(
+            new_order = client.poll_and_finalize(
                 new_order,
-                datetime.datetime.now()
+                datetime.datetime.now()  # noqa: DTZ005 : This is necessary for the acme api
                 + datetime.timedelta(seconds=self.settings.finalization_timeout),
             )
             db.Certificate.objects.create(order=order, chain=new_order.fullchain_pem)

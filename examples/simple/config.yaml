@@ -15,10 +15,11 @@ certificat:
     certificat_level: DEBUG
     acmev2_level: DEBUG
   authentication: 
-    type: remote
-    user_header: HTTP_REMOTE_USER
-    log_http_headers: True
-    redirect_template: http://auth.localhost
+    type: local
+    admin:
+      username: admin
+      password: admin
+      email: noreply@localhost
   finalizer: 
     type: local
     key: |

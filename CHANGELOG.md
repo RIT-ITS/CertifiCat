@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses modified [Calendar Versioning](https://calver.org/).
 
+### Unreleased
+
+- account KID URLs now redirect to the account page
+- mkdocs documentation
+- certinext-acme finalizer
+- `start` command for docker build that spawns the web ui and task runner
+
 ## [2026.8.2] - 2024-08-01
 
 ### Fixed

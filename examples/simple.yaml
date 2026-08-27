@@ -7,7 +7,7 @@
 
 services:
   web:
-    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:2026.8.2}
     restart: unless-stopped
     depends_on:
       mariadb:
@@ -21,7 +21,7 @@ services:
       - CERTIFICAT__CONFIG=/etc/certificat/config.yaml
     
   tasks:
-    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:2026.8.2}
     restart: unless-stopped
     depends_on:
       mariadb:

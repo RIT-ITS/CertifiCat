@@ -2,6 +2,7 @@ import os
 from urllib.parse import urljoin
 
 import inject
+
 from .dynamic import ApplicationSettings
 
 dynamic_settings = inject.instance(ApplicationSettings)

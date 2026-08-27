@@ -4,6 +4,8 @@ requirements.txt
 # node
 node_modules/
 
+.sass-cache/
+
 bundle-report.html
 import-graph.json
 

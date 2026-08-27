@@ -1,24 +1,28 @@
+import json
 from urllib.parse import urljoin
 
-from django.views.decorators.http import require_http_methods
-from acmev2.services import IDirectoryService
+import inject
 from acmev2.handlers import (
     ACMERequestHandler,
-    NewNonceRequestHandler,
-    NewAccountRequestHandler,
-    NewOrderRequestHandler,
     AuthorizationRequestHandler,
+    CertRequestHandler,
     ChallengeRequestHandler,
+    NewAccountRequestHandler,
+    NewNonceRequestHandler,
+    NewOrderRequestHandler,
     OrderFinalizationRequestHandler,
     OrderRequestHandler,
-    CertRequestHandler,
 )
 from acmev2.handlers import handle as process_acme_request
-from certificat.settings.dynamic import ApplicationSettings
-import inject
-from django.http import HttpResponse, JsonResponse, HttpRequest
-import json
+from acmev2.services import IDirectoryService
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
+from certificat.settings.dynamic import ApplicationSettings
+
+from . import models as db
 
 
 @require_http_methods(["GET"])
@@ -105,3 +109,8 @@ def cert(request, cert_id: str):
 @csrf_exempt
 def finalize(request, order_id: str):
     return handleACMERequest(request, OrderFinalizationRequestHandler)
+
+
+def acct_redirect(request, acct_id: str):
+    binding = get_object_or_404(db.AccountBinding, bound_to__name=acct_id)
+    return redirect("account", binding_id=binding.id)

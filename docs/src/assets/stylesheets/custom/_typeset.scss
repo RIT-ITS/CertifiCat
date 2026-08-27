@@ -1,0 +1,197 @@
+////
+/// Copyright (c) 2016-2025 Martin Donath <martin.donath@squidfunk.com>
+///
+/// Permission is hereby granted, free of charge, to any person obtaining a
+/// copy of this software and associated documentation files (the "Software"),
+/// to deal in the Software without restriction, including without limitation
+/// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+/// and/or sell copies of the Software, and to permit persons to whom the
+/// Software is furnished to do so, subject to the following conditions:
+///
+/// The above copyright notice and this permission notice shall be included in
+/// all copies or substantial portions of the Software.
+///
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+/// FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+/// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+/// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+/// DEALINGS
+////
+
+@use "sass:color";
+@use "sass:math";
+
+// ----------------------------------------------------------------------------
+// Helpers
+// ----------------------------------------------------------------------------
+
+///
+/// Strip units from a number
+///
+@function strip-units($number) {
+  @return math.div($number, ($number * 0 + 1));
+}
+
+///
+/// Convert color in HEX to HSL
+///
+/// Note, that we need to strip the `deg` units from the `hue` value, as they
+/// were added in Color Level 4, which not all browsers support.
+///
+@function hex2hsl($color) {
+  @return
+    round(strip-units(color.channel($color, "hue", $space: hsl))),
+    round(color.channel($color, "saturation", $space: hsl)),
+    round(color.channel($color, "lightness", $space: hsl));
+}
+
+///
+/// Convert color in RGBA to RGB look-alike
+///
+@function rgba2rgb($color, $background: #FFFFFF) {
+  @return mix(
+    rgb(red($color), green($color), blue($color)),
+    $background,
+    alpha($color) * 100%
+  );
+}
+
+// ----------------------------------------------------------------------------
+
+///
+/// Convert font size in px to em
+///
+@function px2em($size, $base: 16px) {
+  @if math.unit($size) == px {
+    @if math.unit($base) == px {
+      @return math.div($size, $base) * 1em;
+    } @else {
+      @error "Invalid base: #{$base} - unit must be 'px'";
+    }
+  } @else {
+    @error "Invalid size: #{$size} - unit must be 'px'";
+  }
+}
+
+///
+/// Convert font size in px to rem
+///
+@function px2rem($size, $base: 20px) {
+  @if math.unit($size) == px {
+    @if math.unit($base) == px {
+      @return math.div($size, $base) * 1rem;
+    } @else {
+      @error "Invalid base: #{$base} - unit must be 'px'";
+    }
+  } @else {
+    @error "Invalid size: #{$size} - unit must be 'px'";
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Rules
+// ----------------------------------------------------------------------------
+
+// Scoped in typesetted content to match specificity of regular content
+
+
+  // Twitter icon
+  .twitter {
+    color: #00acee;
+  }
+
+  // Mastodon icon - it's not the exact brand color, because that doesn't work
+  // well on dark backgrounds, so we lightened it up a bit.
+  .mastodon {
+    color: #897ff8;
+  }
+
+  // Insiders video
+  .mdx-video {
+    width: auto;
+
+    // Insiders video container
+    &__inner {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.138%;
+    }
+
+    // Insiders video iframe
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border: none;
+    }
+  }
+
+  // Pumping heart
+  .mdx-heart {
+    animation: heart 1000ms infinite;
+  }
+
+  
+
+  // BETA #####################################################################
+
+  // Badge
+  .mdx-badge {
+    font-size: 0.85em;
+
+    
+
+    // Badge moved to the right
+    &--right {
+      float: right;
+      margin-left: 0.35em;
+    }
+
+    // Badge icon
+    &__icon {
+      padding: px2rem(4px);
+      background: var(--md-accent-fg-color--transparent);
+      border-start-start-radius: px2rem(2px);
+      border-end-start-radius: px2rem(2px);
+
+      // If icon is alone, round corners
+      &:last-child {
+        border-radius: px2rem(2px);
+      }
+    }
+
+    // Badge text
+    &__text {
+      padding: px2rem(4px) px2rem(6px);
+      border-start-end-radius: px2rem(2px);
+      border-end-end-radius: px2rem(2px);
+      box-shadow: 0 0 0 1px inset var(--md-accent-fg-color--transparent);
+    }
+  }
+
+  // BETA #####################################################################
+
+  // Switch buttons
+  .mdx-switch button {
+    cursor: pointer;
+    transition: opacity 250ms;
+
+    // Button on focus/hover
+    &:is(:focus, :hover) {
+      opacity: 0.75;
+    }
+
+    // Code block
+    > code {
+      display: block;
+      color: var(--md-primary-bg-color);
+      background-color: var(--md-primary-fg-color);
+    }
+  }
+

@@ -12,11 +12,12 @@ usage() {
 Usage: COMMAND [OPTIONS] 
 
 Commands:
-  manage
-  migrate
-  start_server
-  start_huey
-  shell
+  manage            Run the Django manage script
+  migrate           Run all database migrations
+  start             Start all services
+  start_server      Start only front-end services
+  start_huey        Start only Huey, the task runner
+  shell             Spawn a BASH shell
 EOF
 }
 
@@ -27,6 +28,8 @@ EOF
 
 # Logging functions
 function log_output {
+  # shellcheck disable=SC2046
+  # shellcheck disable=SC2006
   echo `date "+%Y/%m/%d %H:%M:%S"`" $1"
 }
 
@@ -62,6 +65,16 @@ manage() {
   "${PYTHON}" /srv/www/manage.py "$@"
 }
 
+initserver() {
+    log_info "Running Django migrate command"
+    migrate
+
+    log_info "Collecting static files to /srv/www/static"
+    collectstatic
+
+    "${PYTHON}" /srv/www/manage.py initialize_authentication
+}
+
 runserver() {
     [ -f "${CONFIG}" ] || {
         log_err "File ${CONFIG} not found and is required."
@@ -88,7 +101,16 @@ runhuey() {
         exit 1;
     }
         
-    "${PYTHON}" /srv/www/manage.py run_huey
+    supervisord -c /etc/supervisor/supervisord.tasks.conf
+}
+
+runall() {
+  [ -f "${CONFIG}" ] || {
+        log_err "File ${CONFIG} not found and is required."
+        exit 1;
+    }
+        
+    supervisord -c /etc/supervisor/supervisord.all.conf
 }
 
 SUB_COMMAND=${1}; shift
@@ -129,14 +151,22 @@ case "$SUB_COMMAND" in
         esac
       done 
       
-      log_info "Running Django migrate command"
-      migrate
-
-      log_info "Collecting static files to /srv/www/static"
-      collectstatic
-
-      "${PYTHON}" /srv/www/manage.py initialize_authentication
+      initserver
       runserver
+      ;;
+
+    start)
+      while getopts ":" flag; do
+        case "${flag}" in
+            *) 
+              usage
+              exit 1
+              ;;
+        esac
+      done 
+      
+      initserver
+      runall
       ;;
 
     start_huey)

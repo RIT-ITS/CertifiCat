@@ -1,23 +1,21 @@
 import datetime
 import json
-from typing import List
-
-from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_http_methods
-from certificat.auth import user_can_edit_pre_authorizations
-from certificat.settings.dynamic import ApplicationSettings
-from certificat.utils import unprefix_group
-from certificat.modules.acme import models as db
-from django.db.models import Count, DateField
-from django.utils.dateformat import format
-from django.utils import timezone, dateparse
-from django.db.models import Func
-from django.views.decorators.cache import cache_page
-from django.contrib.contenttypes.models import ContentType
 
 import inject
+from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Count, DateField, Func
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils import dateparse, timezone
+from django.utils.dateformat import format
+from django.views.decorators.cache import cache_page
+from django.views.decorators.http import require_http_methods
+
+from certificat.auth import user_can_edit_pre_authorizations
+from certificat.modules.acme import models as db
+from certificat.settings.dynamic import ApplicationSettings
+from certificat.utils import unprefix_group
 
 
 class TruncDayNaive(Func):
@@ -88,11 +86,11 @@ def edit_preauthorizations(request: HttpRequest, account_name):
     account = get_object_or_404(db.Account, name=account_name)
     request_json = json.loads(request.body)
 
-    def normalize_identifiers(identifiers: List[str]):
+    def normalize_identifiers(identifiers: list[str]):
         return [i.strip().lower() for i in identifiers]
 
-    removals: List[str] = normalize_identifiers(request_json.get("del", []))
-    additions: List[str] = normalize_identifiers(request_json.get("add", []))
+    removals: list[str] = normalize_identifiers(request_json.get("del", []))
+    additions: list[str] = normalize_identifiers(request_json.get("add", []))
 
     for domain in additions:
         domain_parts = domain.split(".")

@@ -1,12 +1,39 @@
-from base64 import urlsafe_b64encode
 import json
 import operator
-import string
 import secrets
+import string
+from base64 import urlsafe_b64encode
+from collections.abc import Mapping
+from datetime import datetime
 from enum import Enum
-from typing import List, Mapping, Self
+from typing import Self
 
+import cryptography
+import cryptography.x509
+import cryptography.x509.extensions
+import inject
+import josepy
+from acmev2.models import (
+    AccountStatus,
+    AuthorizationStatus,
+    ChallengeStatus,
+    ChallengeType,
+    IdentifierType,
+    OrderStatus,
+)
+from acmev2.services import ACMEEndpoint, IDirectoryService
+from cryptography import x509
+from django.conf import settings
+from django.contrib.auth.models import Group, User
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db import models
+from django.utils import timezone
+from django.utils.timezone import make_naive
+from josepy import JWK
+from pydantic import BaseModel
+
 from certificat.modules.acme.pydantic import (
     DjangoAccountResource,
     DjangoAuthorizationResource,
@@ -16,40 +43,13 @@ from certificat.modules.acme.pydantic import (
     DjangoIdentifierResource,
     DjangoOrderResource,
 )
-from certificat.utils import unprefix_group
-import cryptography
-import cryptography.x509
-import cryptography.x509.extensions
-import inject
-from acmev2.models import (
-    AccountStatus,
-    AuthorizationStatus,
-    ChallengeStatus,
-    ChallengeType,
-    IdentifierType,
-    OrderStatus,
-)
-from acmev2.services import IDirectoryService, ACMEEndpoint
-from django.conf import settings
-from django.contrib.auth.models import User, Group
-from django.db import models
-from django.utils import timezone
-from django.utils.timezone import make_naive
-from josepy import JWK
-import josepy
-from pydantic import BaseModel
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
-from cryptography import x509
-from certificat.settings.dynamic import ApplicationSettings
 from certificat.modules.html.contextvars import request_context
-from datetime import datetime
+from certificat.settings.dynamic import ApplicationSettings
+from certificat.utils import unprefix_group
 
 
 class Dictable:
-    dict_fields = [
-        "id",
-    ]
+    dict_fields = ("id",)
 
     def to_dict(self):
         return {name: operator.attrgetter(name)(self) for name in self.dict_fields}
@@ -133,7 +133,9 @@ class AccountBinding(TimestampMixin):
         return self.creator
 
     @classmethod
-    def generate(cls, creator: User, name: str = None, note: str = None) -> Self:
+    def generate(
+        cls, creator: User, name: str | None = None, note: str | None = None
+    ) -> Self:
         app_settings = inject.instance(ApplicationSettings)
 
         binding = AccountBinding(
@@ -196,7 +198,7 @@ class OrderManager(models.Manager):
 
 class Order(TimestampMixin, Dictable):
     objects = OrderManager()
-    dict_fields = ["id", "name", "repr"]
+    dict_fields = ("id", "name", "repr")
 
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="orders"
@@ -230,11 +232,11 @@ class CertificateMetadata(BaseModel):
     version: int
     not_valid_before: datetime
     not_valid_after: datetime
-    sans: List[str]
+    sans: list[str]
 
 
 class Certificate(TimestampMixin, Dictable):
-    dict_fields = ["id", "repr"]
+    dict_fields = ("id", "repr")
     order = models.OneToOneField(
         Order, on_delete=models.CASCADE, related_name="certificate"
     )
@@ -331,7 +333,7 @@ class PreAuthorizedAccountIdentifier(TimestampMixin):
 
 
 class Authorization(TimestampMixin, Dictable):
-    dict_fields = ["id", "name", "repr"]
+    dict_fields = ("id", "name", "repr")
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name="authorizations"
     )
@@ -362,7 +364,7 @@ class Authorization(TimestampMixin, Dictable):
 
 
 class Challenge(TimestampMixin, Dictable):
-    dict_fields = ["id", "name", "repr"]
+    dict_fields = ("id", "name", "repr")
     authorization = models.ForeignKey(
         Authorization, on_delete=models.CASCADE, related_name="challenges"
     )
@@ -494,7 +496,7 @@ def to_pydantic(model: models.Model) -> DjangoBaseModel:
                 model_id=model.id, id=model.order.name, pem=model.chain
             )
         case _:
-            raise Exception(
+            raise Exception(  # noqa: TRY002
                 f"Error converting model {model} to pydantic representation"
             )
 
@@ -596,7 +598,7 @@ class TaggedEvent(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
-        indexes = [
+        indexes = [  # noqa: RUF012
             models.Index(fields=["event_type"]),
             models.Index(fields=["content_type", "object_id"]),
         ]
@@ -657,4 +659,4 @@ class Config(models.Model):
     class Meta:
         verbose_name = "Configuration Setting"
         verbose_name_plural = "Configuration Settings"
-        ordering = ["key"]
+        ordering = ["key"]  # noqa: RUF012

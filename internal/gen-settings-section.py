@@ -78,17 +78,21 @@ def defaults_badge(default: str):
     if default == "null":
         return ""
 
-    return badge(icon=f"[:{icon}:]({'/convention'} 'Default value')", text=default)
+    return badge(
+        icon=f"[:{icon}:]({'../convention#default'} 'Default value')", text=default
+    )
 
 
 def type_badge(type: str):
     icon = "material-shape"
-    return badge(icon=f"[:{icon}:]({'/convention'} 'Type')", text=type)
+    return badge(icon=f"[:{icon}:]({'../convention#type'} 'Type')", text=type)
 
 
 def required_badge():
     icon = "material-alert"
-    return badge(icon=f"[:{icon}:]({'/convention'} 'Required value')", text="required")
+    return badge(
+        icon=f"[:{icon}:]({'../convention#required'} 'Required value')", text="required"
+    )
 
 
 def badge(icon: str, text: str = "", type: str = "", title: str = ""):

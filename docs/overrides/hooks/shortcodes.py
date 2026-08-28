@@ -248,7 +248,8 @@ def _badge_for_demo(text: str, page: Page, files: Files):
 # Create badge for default value
 def _badge_for_default(text: str, page: Page, files: Files):
     icon = "material-water"
-    return _badge(icon=f"[:{icon}:]('Default value')", text=text)
+    href = _resolve_path("convention.md#default", page, files)
+    return _badge(icon=f"[:{icon}:]({href} 'Default value')", text=text)
 
 
 # Create badge for empty default value

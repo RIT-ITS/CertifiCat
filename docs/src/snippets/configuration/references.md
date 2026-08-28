@@ -1,45 +1,45 @@
 ### ACMEFinalizerSettings {: #refs.ACMEFinalizerSettings}
 #### `ACMEFinalizerSettings.account_email` {data-toc-label='account_email*' : #ACMEFinalizerSettings.account_email}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Email address used as a contact when binding an account.
 
 ---
 
 #### `ACMEFinalizerSettings.directory` {data-toc-label='directory*' : #ACMEFinalizerSettings.directory}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Path to the ACME API endpoint. This usually ends with /directory.
 
 ---
 
 #### `ACMEFinalizerSettings.account_hmac_key` {data-toc-label='account_hmac_key' : #ACMEFinalizerSettings.account_hmac_key}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 External account binding HMAC key.
 
 ---
 
 #### `ACMEFinalizerSettings.account_kid` {data-toc-label='account_kid' : #ACMEFinalizerSettings.account_kid}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 External account binding key identifier.
 
 ---
 
 #### `ACMEFinalizerSettings.finalization_timeout` {data-toc-label='finalization_timeout' : #ACMEFinalizerSettings.finalization_timeout}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">90</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">90</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 How long to poll the upstream server before finalization is canceled.
 
 ---
 
 #### `ACMEFinalizerSettings.skip_answering_challenges` {data-toc-label='skip_answering_challenges' : #ACMEFinalizerSettings.skip_answering_challenges}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.
 
@@ -47,16 +47,16 @@ Skip answering authorization challenges. This may be used if the upstream ACME s
 
 ### AlternativeFinalizerSettings {: #refs.AlternativeFinalizerSettings}
 #### `AlternativeFinalizerSettings.description` {data-toc-label='description*' : #AlternativeFinalizerSettings.description}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 A short description of the finalizer. This is presented in user interfaces when making selections.
 
 ---
 
 #### `AlternativeFinalizerSettings.finalizer` {data-toc-label='finalizer*' : #AlternativeFinalizerSettings.finalizer}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
 
 Which order finalizer module to use.
 !!! example
@@ -73,16 +73,16 @@ This is a polymorphic property controlled by the `AlternativeFinalizerSettings.f
 ---
 
 #### `AlternativeFinalizerSettings.id` {data-toc-label='id*' : #AlternativeFinalizerSettings.id}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Unique ID for this finalizer. This will be stored in the account and used to select the correct finalizer at certificate creation.
 
 ---
 
 #### `AlternativeFinalizerSettings.name` {data-toc-label='name*' : #AlternativeFinalizerSettings.name}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 A short descriptive name for the finalizer. This is presented in user interfaces when making selections.
 
@@ -90,8 +90,8 @@ A short descriptive name for the finalizer. This is presented in user interfaces
 
 ### ApplicationSettings {: #refs.ApplicationSettings}
 #### `ApplicationSettings.authentication` {data-toc-label='authentication*' : #ApplicationSettings.authentication}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
 
 Authentication settings for the web frontend. This controls how you authenticate and automatically provision access to the CertifiCat HTML service.
 
@@ -104,8 +104,8 @@ This is a polymorphic property controlled by the `ApplicationSettings.authentica
 ---
 
 #### `ApplicationSettings.db` {data-toc-label='db*' : #ApplicationSettings.db}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
 
 Database connection settings. CertifiCat requires an external database to store ACME and management state.
 
@@ -118,8 +118,8 @@ This is a polymorphic property controlled by the `ApplicationSettings.db.type` k
 ---
 
 #### `ApplicationSettings.finalizer` {data-toc-label='finalizer*' : #ApplicationSettings.finalizer}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">polymorphic</span></span>
 
 Which order finalizer module to use. The server is designed to finalize all requests against one default backend. This will be the backend initially used by all accounts.
 
@@ -133,8 +133,8 @@ This is a polymorphic property controlled by the `ApplicationSettings.finalizer.
 ---
 
 #### `ApplicationSettings.redis` {data-toc-label='redis*' : #ApplicationSettings.redis}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 
 Redis connection settings. CertifiCat requires Redis to store cache and faciliate background jobs.
 
@@ -143,8 +143,8 @@ Redis connection settings. CertifiCat requires Redis to store cache and faciliat
 ---
 
 #### `ApplicationSettings.secret_key` {data-toc-label='secret_key*' : #ApplicationSettings.secret_key}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 
 [Django SECRET_KEY.](https://docs.djangoproject.com/en/6.1/ref/settings/#std-setting-SECRET_KEY) This should be set to a unique, unpredictable value.
@@ -159,8 +159,8 @@ tr -dc 'a-zA-Z0-9!@#$%^&*(-_=+)' < /dev/urandom | head -c 50; echo
 ---
 
 #### `ApplicationSettings.url_root` {data-toc-label='url_root*' : #ApplicationSettings.url_root}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 
 The url root is used to generate absolute urls to the application. It should not contain path and parameters.
@@ -174,8 +174,8 @@ The url root is used to generate absolute urls to the application. It should not
 ---
 
 #### `ApplicationSettings.alternative_finalizers` {data-toc-label='alternative_finalizers' : #ApplicationSettings.alternative_finalizers}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;[AlternativeFinalizerSettings](#refs.AlternativeFinalizerSettings)&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;[AlternativeFinalizerSettings](#refs.AlternativeFinalizerSettings)&gt;</span></span>
 
 A list of alternative finalizers that can be used to request certificates through manual configuration.
 !!! example
@@ -198,79 +198,79 @@ A list of alternative finalizers that can be used to request certificates throug
 ---
 
 #### `ApplicationSettings.beacon_enabled` {data-toc-label='beacon_enabled' : #ApplicationSettings.beacon_enabled}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">true</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">true</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Send tracking information about platform usage to RIT.
 
 ---
 
 #### `ApplicationSettings.challenge_max_retries` {data-toc-label='challenge_max_retries' : #ApplicationSettings.challenge_max_retries}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">5</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">5</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 How many challenge retries to perform before marking the challenge invalid.
 
 ---
 
 #### `ApplicationSettings.challenge_retry_delay` {data-toc-label='challenge_retry_delay' : #ApplicationSettings.challenge_retry_delay}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">2</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">2</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 How long to wait between challenge retries in seconds.
 
 ---
 
 #### `ApplicationSettings.delete_invalid_orders` {data-toc-label='delete_invalid_orders' : #ApplicationSettings.delete_invalid_orders}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">true</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">true</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Purge invalid orders after some amount of time.
 
 ---
 
 #### `ApplicationSettings.finalize_max_retries` {data-toc-label='finalize_max_retries' : #ApplicationSettings.finalize_max_retries}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">10</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">10</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 How many order finalization retries to perform before marking the order invalid.
 
 ---
 
 #### `ApplicationSettings.finalize_retry_delay` {data-toc-label='finalize_retry_delay' : #ApplicationSettings.finalize_retry_delay}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">10</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">10</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 How long to wait between order finalization retries in seconds.
 
 ---
 
 #### `ApplicationSettings.healthcheck_allowed_networks` {data-toc-label='healthcheck_allowed_networks' : #ApplicationSettings.healthcheck_allowed_networks}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">["127.0.0.1/32"]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">["127.0.0.1/32"]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 Networks allowed to access the health endpoints.
 
 ---
 
 #### `ApplicationSettings.hmac_id_length` {data-toc-label='hmac_id_length' : #ApplicationSettings.hmac_id_length}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">40</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">40</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 The length of the hmac id generated for an ACME external account binding.
 
 ---
 
 #### `ApplicationSettings.hmac_key_length` {data-toc-label='hmac_key_length' : #ApplicationSettings.hmac_key_length}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">90</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">90</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 The length of the hmac key generated for an ACME external account binding.
 
 ---
 
 #### `ApplicationSettings.logging` {data-toc-label='logging' : #ApplicationSettings.logging}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 ``` json title='default' 
 {
   "certificat_level": "INFO",
@@ -288,23 +288,23 @@ Logging levels for CertifiCat components
 ---
 
 #### `ApplicationSettings.session_cookie_age` {data-toc-label='session_cookie_age' : #ApplicationSettings.session_cookie_age}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">28800</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">28800</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 Django SESSION_COOKIE_AGE. This is the maximum age of the session cookie in seconds.
 
 ---
 
 #### `ApplicationSettings.show_version` {data-toc-label='show_version' : #ApplicationSettings.show_version}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Show the version on the website.
 
 ---
 
 #### `ApplicationSettings.task_queue` {data-toc-label='task_queue' : #ApplicationSettings.task_queue}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 ``` json title='default' 
 {
   "workers": 20,
@@ -319,7 +319,7 @@ Settings for the Redis-powered Huey task queue.
 ---
 
 #### `ApplicationSettings.theming` {data-toc-label='theming' : #ApplicationSettings.theming}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 ``` json title='default' 
 {
   "global_css": null
@@ -333,8 +333,8 @@ Theming and customization settings for the web front-end.
 ---
 
 #### `ApplicationSettings.time_zone` {data-toc-label='time_zone' : #ApplicationSettings.time_zone}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"America/New_York"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"America/New_York"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Django TIME_ZONE, used mostly for date localization.
 
@@ -342,8 +342,8 @@ Django TIME_ZONE, used mostly for date localization.
 
 ### CERTINextACMEFinalizerSettings {: #refs.CERTINextACMEFinalizerSettings}
 #### `CERTINextACMEFinalizerSettings.multi_domain_binding` {data-toc-label='multi_domain_binding*' : #CERTINextACMEFinalizerSettings.multi_domain_binding}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 
 ACME credentials used when creating a multi-domain certificate.
 
@@ -352,8 +352,8 @@ ACME credentials used when creating a multi-domain certificate.
 ---
 
 #### `CERTINextACMEFinalizerSettings.single_domain_binding` {data-toc-label='single_domain_binding*' : #CERTINextACMEFinalizerSettings.single_domain_binding}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 
 ACME credentials used when creating a single-domain certificate.
 
@@ -362,16 +362,16 @@ ACME credentials used when creating a single-domain certificate.
 ---
 
 #### `CERTINextACMEFinalizerSettings.finalization_timeout` {data-toc-label='finalization_timeout' : #CERTINextACMEFinalizerSettings.finalization_timeout}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">90</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">90</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 How long to poll the upstream server before finalization is canceled.
 
 ---
 
 #### `CERTINextACMEFinalizerSettings.skip_answering_challenges` {data-toc-label='skip_answering_challenges' : #CERTINextACMEFinalizerSettings.skip_answering_challenges}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.
 
@@ -379,36 +379,36 @@ Skip answering authorization challenges. This may be used if the upstream ACME s
 
 ### CERTINextExternalAccountBinding {: #refs.CERTINextExternalAccountBinding}
 #### `CERTINextExternalAccountBinding.account_email` {data-toc-label='account_email*' : #CERTINextExternalAccountBinding.account_email}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Email address used when binding an account.
 
 ---
 
 #### `CERTINextExternalAccountBinding.directory` {data-toc-label='directory*' : #CERTINextExternalAccountBinding.directory}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Path to the ACME API endpoint. This usually ends with /directory.
 
 ---
 
 #### `CERTINextExternalAccountBinding.account_hmac_key` {data-toc-label='account_hmac_key' : #CERTINextExternalAccountBinding.account_hmac_key}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 External account binding HMAC key.
 
 ---
 
 #### `CERTINextExternalAccountBinding.account_kid` {data-toc-label='account_kid' : #CERTINextExternalAccountBinding.account_kid}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"External account binding key identifier."</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"External account binding key identifier."</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 ---
 
 ### Challenges {: #refs.Challenges}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">enum</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">enum</span></span>
 
  - `"custom"`
  - `"dns-01"`
@@ -419,72 +419,72 @@ External account binding HMAC key.
 
 ### LocalACMESettings {: #refs.LocalACMESettings}
 #### `LocalACMESettings.authorization_client_delay` {data-toc-label='authorization_client_delay' : #LocalACMESettings.authorization_client_delay}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">15</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">15</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 The Retry-After header sent to ACME clients.
 
 ---
 
 #### `LocalACMESettings.blacklisted_domains` {data-toc-label='blacklisted_domains' : #LocalACMESettings.blacklisted_domains}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 The server will refuse to issue domains for any identifiers in this list. It supports regular expressions.
 
 ---
 
 #### `LocalACMESettings.challenges_available` {data-toc-label='challenges_available' : #LocalACMESettings.challenges_available}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">["http-01"]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;[Challenges](#refs.Challenges)&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">["http-01"]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;[Challenges](#refs.Challenges)&gt;</span></span>
 
 Default set of challenges created when an authorization is created
 
 ---
 
 #### `LocalACMESettings.dns_challenge_nameservers` {data-toc-label='dns_challenge_nameservers' : #LocalACMESettings.dns_challenge_nameservers}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 A list of servers in the format ip or ip:port. The DNS challenge resolver will use these nameservers. If left blank the system nameservers will be used.
 
 ---
 
 #### `LocalACMESettings.eab_required` {data-toc-label='eab_required' : #LocalACMESettings.eab_required}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Whether all accounts are required to use external account binding or not.
 
 ---
 
 #### `LocalACMESettings.http_01_challenge_user_agent` {data-toc-label='http_01_challenge_user_agent' : #LocalACMESettings.http_01_challenge_user_agent}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"python-acmev2/0.2.1"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"python-acmev2/0.2.1"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 User agent the http-01 challenge validator uses when requesting the challenge document from the client server
 
 ---
 
 #### `LocalACMESettings.mask_order_processing_status_ua_match` {data-toc-label='mask_order_processing_status_ua_match' : #LocalACMESettings.mask_order_processing_status_ua_match}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"^cert-manager-clusterissuers.*"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"^cert-manager-clusterissuers.*"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Any order requests from this user agent will mask the processing state as pending
 
 ---
 
 #### `LocalACMESettings.max_identifiers` {data-toc-label='max_identifiers' : #LocalACMESettings.max_identifiers}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">50</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">50</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 Max number of identifiers that can be passed to a new order request.
 
 ---
 
 #### `LocalACMESettings.resource_expiration_delta` {data-toc-label='resource_expiration_delta' : #LocalACMESettings.resource_expiration_delta}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"PT8H"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"PT8H"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 How long should the order and authorization objects be valid for after generation?
 
@@ -492,16 +492,16 @@ How long should the order and authorization objects be valid for after generatio
 
 ### LocalFinalizerSettings {: #refs.LocalFinalizerSettings}
 #### `LocalFinalizerSettings.cert` {data-toc-label='cert*' : #LocalFinalizerSettings.cert}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 PEM-formatted public key for the CA
 
 ---
 
 #### `LocalFinalizerSettings.key` {data-toc-label='key*' : #LocalFinalizerSettings.key}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 PEM-formatted private key for the CA
 
@@ -509,40 +509,40 @@ PEM-formatted private key for the CA
 
 ### LoggingSettings {: #refs.LoggingSettings}
 #### `LoggingSettings.acmev2_level` {data-toc-label='acmev2_level' : #LoggingSettings.acmev2_level}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 Logging level for ACME server component.
 
 ---
 
 #### `LoggingSettings.certificat_level` {data-toc-label='certificat_level' : #LoggingSettings.certificat_level}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 Logging level for the CertifiCat frontend.
 
 ---
 
 #### `LoggingSettings.django_level` {data-toc-label='django_level' : #LoggingSettings.django_level}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 Logging level for Django components.
 
 ---
 
 #### `LoggingSettings.huey_level` {data-toc-label='huey_level' : #LoggingSettings.huey_level}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 Logging level for the task runner.
 
 ---
 
 #### `LoggingSettings.root_level` {data-toc-label='root_level' : #LoggingSettings.root_level}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"INFO"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 Logging level for root logger.
 
@@ -550,30 +550,30 @@ Logging level for root logger.
 
 ### MariaDBDatabaseSettings {: #refs.MariaDBDatabaseSettings}
 #### `MariaDBDatabaseSettings.name` {data-toc-label='name*' : #MariaDBDatabaseSettings.name}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The database to use after a connection is established.
 
 ---
 
 #### `MariaDBDatabaseSettings.user` {data-toc-label='user*' : #MariaDBDatabaseSettings.user}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 User for the database connection.
 
 ---
 
 #### `MariaDBDatabaseSettings.host` {data-toc-label='host' : #MariaDBDatabaseSettings.host}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Host for the database connection.
 
 ---
 
 #### `MariaDBDatabaseSettings.options` {data-toc-label='options' : #MariaDBDatabaseSettings.options}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 ``` json title='default' 
 {}
 ```
@@ -583,15 +583,15 @@ Key-value options passed to the driver.
 ---
 
 #### `MariaDBDatabaseSettings.password` {data-toc-label='password' : #MariaDBDatabaseSettings.password}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Password for the database connection.
 
 ---
 
 #### `MariaDBDatabaseSettings.port` {data-toc-label='port' : #MariaDBDatabaseSettings.port}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">3306</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">3306</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 Port for the database connection.
 
@@ -599,30 +599,30 @@ Port for the database connection.
 
 ### PostgresDatabaseSettings {: #refs.PostgresDatabaseSettings}
 #### `PostgresDatabaseSettings.name` {data-toc-label='name*' : #PostgresDatabaseSettings.name}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The database to use after a connection is established.
 
 ---
 
 #### `PostgresDatabaseSettings.user` {data-toc-label='user*' : #PostgresDatabaseSettings.user}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 User for the database connection.
 
 ---
 
 #### `PostgresDatabaseSettings.host` {data-toc-label='host' : #PostgresDatabaseSettings.host}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Host for the database connection.
 
 ---
 
 #### `PostgresDatabaseSettings.options` {data-toc-label='options' : #PostgresDatabaseSettings.options}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 ``` json title='default' 
 {}
 ```
@@ -632,15 +632,15 @@ Key-value options passed to the driver.
 ---
 
 #### `PostgresDatabaseSettings.password` {data-toc-label='password' : #PostgresDatabaseSettings.password}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Password for the database connection.
 
 ---
 
 #### `PostgresDatabaseSettings.port` {data-toc-label='port' : #PostgresDatabaseSettings.port}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">5432</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">5432</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 Port for the database connection.
 
@@ -648,24 +648,24 @@ Port for the database connection.
 
 ### RedisSettings {: #refs.RedisSettings}
 #### `RedisSettings.host` {data-toc-label='host*' : #RedisSettings.host}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Host for the Redis connection.
 
 ---
 
 #### `RedisSettings.password` {data-toc-label='password*' : #RedisSettings.password}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 Password for the Redis connection.
 
 ---
 
 #### `RedisSettings.port` {data-toc-label='port' : #RedisSettings.port}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">6379</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">6379</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 Port for the Redis connection.
 
@@ -673,8 +673,8 @@ Port for the Redis connection.
 
 ### RemoteAuthSettings {: #refs.RemoteAuthSettings}
 #### `RemoteAuthSettings.redirect_template` {data-toc-label='redirect_template*' : #RemoteAuthSettings.redirect_template}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 
 Templated URL target for redirects. The redirect variable is substituted with the URL encoded path of the protected resource instead of the user returning to the root. This allows you to deep-link back to the protected resource.
@@ -688,23 +688,23 @@ CertifiCat would redirect the request to `https://auth.acme.edu/?redirect_to=htt
 ---
 
 #### `RemoteAuthSettings.administrators` {data-toc-label='administrators' : #RemoteAuthSettings.administrators}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 A list of user principals who will automatically be given administrator privileges on login.
 
 ---
 
 #### `RemoteAuthSettings.administrators_groups` {data-toc-label='administrators_groups' : #RemoteAuthSettings.administrators_groups}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 A list of groups that will automatically give included users administrator privileges on login.
 
 ---
 
 #### `RemoteAuthSettings.attribute_mapping` {data-toc-label='attribute_mapping' : #RemoteAuthSettings.attribute_mapping}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 ``` json title='default' 
 {
   "HTTP_USER_EMAIL": "email",
@@ -718,15 +718,15 @@ A dictionary mapping of src:targets where attributes are mapped from headers to 
 ---
 
 #### `RemoteAuthSettings.force_logout_if_no_header` {data-toc-label='force_logout_if_no_header' : #RemoteAuthSettings.force_logout_if_no_header}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">true</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">true</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Destroys the user session if the remote header is not present. This should be turned off if the header is not transmitted with every request.
 
 ---
 
 #### `RemoteAuthSettings.groups_header` {data-toc-label='groups_header' : #RemoteAuthSettings.groups_header}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 The header that will be used to populate groups. This is delimited by the groups_header_delimiter setting.
 !!! example
@@ -736,24 +736,24 @@ The header that will be used to populate groups. This is delimited by the groups
 ---
 
 #### `RemoteAuthSettings.groups_header_delimiter` {data-toc-label='groups_header_delimiter' : #RemoteAuthSettings.groups_header_delimiter}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">";"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">";"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The delimiter used when parsing the groups_header value.
 
 ---
 
 #### `RemoteAuthSettings.log_http_headers` {data-toc-label='log_http_headers' : #RemoteAuthSettings.log_http_headers}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Adds header debugging to the web logs. Useful when debugging why user authentication is not behaving as expected.
 
 ---
 
 #### `RemoteAuthSettings.user_header` {data-toc-label='user_header' : #RemoteAuthSettings.user_header}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"HTTP_USER"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"HTTP_USER"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The header that will be used to populate user principal.
 
@@ -761,15 +761,15 @@ The header that will be used to populate user principal.
 
 ### RemoteIdP {: #refs.RemoteIdP}
 #### `RemoteIdP.url` {data-toc-label='url*' : #RemoteIdP.url}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 IdP metadata URL.
 
 ---
 
 #### `RemoteIdP.cert` {data-toc-label='cert' : #RemoteIdP.cert}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 Signing certificate for the remote metadata.
 
@@ -777,39 +777,39 @@ Signing certificate for the remote metadata.
 
 ### SAMLAuthSettings {: #refs.SAMLAuthSettings}
 #### `SAMLAuthSettings.idp` {data-toc-label='idp*' : #SAMLAuthSettings.idp}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 
 [:material-shape: View Type Reference](#refs.SAMLIdPSettings)
 
 ---
 
 #### `SAMLAuthSettings.sp` {data-toc-label='sp*' : #SAMLAuthSettings.sp}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 
 [:material-shape: View Type Reference](#refs.SAMLSPSettings)
 
 ---
 
 #### `SAMLAuthSettings.administrators` {data-toc-label='administrators' : #SAMLAuthSettings.administrators}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 A list of user principals who will automatically be given administrator privileges on login.
 
 ---
 
 #### `SAMLAuthSettings.administrators_groups` {data-toc-label='administrators_groups' : #SAMLAuthSettings.administrators_groups}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 A list of groups that will automatically give administrator privileges to any included users on login.
 
 ---
 
 #### `SAMLAuthSettings.attribute_mapping` {data-toc-label='attribute_mapping' : #SAMLAuthSettings.attribute_mapping}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">object</span></span>
 ``` json title='default' 
 {
   "uid": [
@@ -852,32 +852,32 @@ certificat:
 ---
 
 #### `SAMLAuthSettings.debug` {data-toc-label='debug' : #SAMLAuthSettings.debug}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 The debug setting for the Django SAML plugin. This increases log verbosity.
 
 ---
 
 #### `SAMLAuthSettings.group_attribute` {data-toc-label='group_attribute' : #SAMLAuthSettings.group_attribute}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"memberof"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"memberof"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The name (or translated name) of the group attribute in the returned SAML assertion
 
 ---
 
 #### `SAMLAuthSettings.group_sync_prefix` {data-toc-label='group_sync_prefix' : #SAMLAuthSettings.group_sync_prefix}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"SAML/"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"SAML/"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 New groups synced from SAML will be prefixed with this identifier. Generally leave this setting as the default.
 
 ---
 
 #### `SAMLAuthSettings.session_cookie` {data-toc-label='session_cookie' : #SAMLAuthSettings.session_cookie}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"snickerdoodle"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"snickerdoodle"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The name of the session cookie.
 
@@ -885,16 +885,16 @@ The name of the session cookie.
 
 ### SAMLIdPSettings {: #refs.SAMLIdPSettings}
 #### `SAMLIdPSettings.local` {data-toc-label='local' : #SAMLIdPSettings.local}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
 
 A list of local metadata files.
 
 ---
 
 #### `SAMLIdPSettings.remote` {data-toc-label='remote' : #SAMLIdPSettings.remote}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;[RemoteIdP](#refs.RemoteIdP)&gt;</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">array&lt;[RemoteIdP](#refs.RemoteIdP)&gt;</span></span>
 
 A list of remote metadata providers.
 
@@ -902,64 +902,64 @@ A list of remote metadata providers.
 
 ### SAMLSPSettings {: #refs.SAMLSPSettings}
 #### `SAMLSPSettings.cert_file` {data-toc-label='cert_file*' : #SAMLSPSettings.cert_file}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The location of the PEM-formatted public key file.
 
 ---
 
 #### `SAMLSPSettings.entity_id` {data-toc-label='entity_id*' : #SAMLSPSettings.entity_id}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 SAML service entity id. It should be unique and a URI.
 
 ---
 
 #### `SAMLSPSettings.key_file` {data-toc-label='key_file*' : #SAMLSPSettings.key_file}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The location of the PEM-formatted private key file.
 
 ---
 
 #### `SAMLSPSettings.allow_unsolicited` {data-toc-label='allow_unsolicited' : #SAMLSPSettings.allow_unsolicited}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">true</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">true</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Allow IdP-initiated SSO.
 
 ---
 
 #### `SAMLSPSettings.digest_algorithm` {data-toc-label='digest_algorithm' : #SAMLSPSettings.digest_algorithm}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"http://www.w3.org/2001/04/xmlenc#sha256"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"http://www.w3.org/2001/04/xmlenc#sha256"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The default digest algorithm
 
 ---
 
 #### `SAMLSPSettings.force_authn` {data-toc-label='force_authn' : #SAMLSPSettings.force_authn}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">boolean</span></span>
 
 Disable SSO session reuse on login.
 
 ---
 
 #### `SAMLSPSettings.name` {data-toc-label='name' : #SAMLSPSettings.name}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"CertifiCat"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"CertifiCat"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The SP name in generated metadata.
 
 ---
 
 #### `SAMLSPSettings.signing_algorithm` {data-toc-label='signing_algorithm' : #SAMLSPSettings.signing_algorithm}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The default signing algorithm.
 
@@ -967,7 +967,7 @@ The default signing algorithm.
 
 ### TaskQueueSettings {: #refs.TaskQueueSettings}
 #### `TaskQueueSettings.stats_database` {data-toc-label='stats_database' : #TaskQueueSettings.stats_database}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 Location of the stats database. This is a connection string.
 !!! example
@@ -977,8 +977,8 @@ Location of the stats database. This is a connection string.
 ---
 
 #### `TaskQueueSettings.workers` {data-toc-label='workers' : #TaskQueueSettings.workers}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">20</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](../convention#default 'Default value')</span><span class="mdx-badge__text">20</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 Number of workers in the Huey task queue.
 
@@ -986,7 +986,7 @@ Number of workers in the Huey task queue.
 
 ### ThemeSettings {: #refs.ThemeSettings}
 #### `ThemeSettings.global_css` {data-toc-label='global_css' : #ThemeSettings.global_css}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 
 Global CSS injected into a style tag rendered on every page. For example the following section configures the site to use RIT branding:

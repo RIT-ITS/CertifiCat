@@ -9,6 +9,7 @@ node_modules/
 bundle-report.html
 import-graph.json
 
+.sass-cache
 smoke-test.sh
 
 # Byte-compiled / optimized / DLL files

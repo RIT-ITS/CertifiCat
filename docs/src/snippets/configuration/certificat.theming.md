@@ -1,5 +1,5 @@
 #### `certificat.theming.global_css` {data-toc-label='global_css' : #certificat.theming.global_css}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](../convention#type 'Type')</span><span class="mdx-badge__text">string | null</span></span>
 
 
 Global CSS injected into a style tag rendered on every page. For example the following section configures the site to use RIT branding:

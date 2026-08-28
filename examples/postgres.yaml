@@ -9,6 +9,7 @@
 services:
   web:
     image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    pull_policy: always
     restart: unless-stopped
     depends_on:
       postgres:
@@ -23,6 +24,7 @@ services:
     
   tasks:
     image: ${CERTIFICAT_IMAGE:-ghcr.io/rit-its/certificat:latest}
+    pull_policy: always
     restart: unless-stopped
     depends_on:
       postgres:

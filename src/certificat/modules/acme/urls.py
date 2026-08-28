@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 app_name = "acme"
@@ -13,4 +14,6 @@ urlpatterns = [
     path("order/<order_id>", views.order, name="order"),
     path("order/<order_id>/finalize", views.finalize, name="finalize"),
     path("cert/<cert_id>", views.cert, name="cert"),
+    # redirect requests for the account endpoint to the web managment endpoint
+    path("acct/<acct_id>", views.acct_redirect, name="acct-redirect"),
 ]

@@ -1,12 +1,14 @@
-from django.apps import AppConfig
-from certificat.settings import bindings as settings_bindings
-from django.db.models.signals import class_prepared
-from certificat.settings.dynamic import ApplicationSettings
-import inject
-from acmev2.settings import ACMESettings
 import logging
 import os
+
+import inject
+from acmev2.settings import ACMESettings
+from django.apps import AppConfig
+from django.db.models.signals import class_prepared
+
 from certificat import __version__
+from certificat.settings import bindings as settings_bindings
+from certificat.settings.dynamic import ApplicationSettings
 
 logger = logging.getLogger(__name__)
 
@@ -20,23 +22,23 @@ class CertificatConfig(AppConfig):
         # This only happens once and it happens on app startup,
         # so the performance hit is low.
         from acmev2.services import (
-            INonceService,
-            IDirectoryService,
             IAccountService,
-            IOrderService,
             IAuthorizationService,
-            IChallengeService,
             ICertService,
+            IChallengeService,
+            IDirectoryService,
+            INonceService,
+            IOrderService,
         )
 
         from certificat.modules.acme.services import (
-            NonceService,
-            DirectoryService,
             AccountService,
-            OrderService,
             AuthorizationService,
-            ChallengeService,
             CertService,
+            ChallengeService,
+            DirectoryService,
+            NonceService,
+            OrderService,
         )
 
         # Re-binds instances to the injector. Since it can only happen once
@@ -58,7 +60,7 @@ class CertificatConfig(AppConfig):
         )
 
         # Import tasks to register them and make them available to call
-        import certificat.modules.tasks  # noqa: F401
+        import certificat.modules.tasks
 
         certificat.modules.tasks.deferred_task_setup()
 

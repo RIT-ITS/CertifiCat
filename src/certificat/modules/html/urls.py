@@ -9,6 +9,7 @@ from .nav import Sections
 
 app_settings = inject.instance(ApplicationSettings)
 
+
 urlpatterns = [
     path("", views.IndexView.as_view(), name=Sections.Dashboard.value),
     path("account/<binding_id>/", views.AccountView.as_view(), name="account"),

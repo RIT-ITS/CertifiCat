@@ -1,23 +1,24 @@
 import logging
 
+import inject
+from acmev2.models import OrderStatus
+from acmev2.services import IOrderService
+from django.db import transaction
+from django.utils.module_loading import import_string
+from huey import RetryTask
+from huey.contrib.djhuey import HUEY
+
+from certificat.modules.acme import models as db
 from certificat.modules.acme.backends import (
-    FinalizeResponse,
     Finalizer,
+    FinalizeResponse,
     NotReadyException,
     StopFinalization,
 )
-from huey.contrib.djhuey import HUEY
-from huey import RetryTask
-from certificat.modules.acme import models as db
-from acmev2.models import OrderStatus
 from certificat.settings.dynamic import (
     ApplicationSettings,
     PolymorphicFinalizerSettings,
 )
-import inject
-from django.utils.module_loading import import_string
-from acmev2.services import IOrderService
-from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,9 @@ def _run_task(order_name: str):
         db.TaggedEvent.record(
             db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
         )
-        db.OrderFinalizationError.objects.create(order=order, error=str(exc) or "No error given by upstream")
+        db.OrderFinalizationError.objects.create(
+            order=order, error=str(exc) or "No error given by upstream"
+        )
         raise
     except NotReadyException:
         # Don't log this as an error, the order is just in a processing state
@@ -90,7 +93,9 @@ def _run_task(order_name: str):
         db.TaggedEvent.record(
             db.OrderEventType.FINALIZATION_ERROR, order, payload={"error": str(exc)}
         )
-        db.OrderFinalizationError.objects.create(order=order, error=str(exc) or "No error given by upstream")
+        db.OrderFinalizationError.objects.create(
+            order=order, error=str(exc) or "No error given by upstream"
+        )
 
     return False
 

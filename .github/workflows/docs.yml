@@ -18,7 +18,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install --no-deps -r requirements/requirements-docs.txt
+        run: pip install --no-deps -r docs/requirements.txt
 
       - name: Build site
         run: scripts/docs build --strict

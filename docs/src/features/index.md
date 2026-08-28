@@ -124,7 +124,7 @@ Set <!-- md:config `certificat.authentication[remote].log_http_headers` `certifi
 
 Every user able to authenticate to CertifiCat is authorized to create a new external ACME account and then bind that account to a local ACME client.
 
-## Supported ACME Challenges
+## ACME Challenges
 
 <!-- md:config `acme.challenges_available` -->
 
@@ -155,7 +155,7 @@ For some institutions or applications HTTP-01 can be impractical. CertifiCat als
 
 ### Pre-Authorizations
 
-Administrators may also configure pre-authorized identifiers per account. Any orders from the configured account with identifiers matching the pre-configured ones will automatically create valid authorizations. This is usually used sparingly with services that have significant roadblocks to `DNS-01` or `HTTP-01` challenges.
+Administrators may also configure pre-authorized identifiers per account using the account management web interface. Any orders from the configured account with identifiers matching the pre-configured ones will automatically create valid authorizations. This is usually used sparingly with services that have significant roadblocks to `DNS-01` or `HTTP-01` challenges.
 
 ## Finalizers
 
@@ -223,3 +223,13 @@ Reference the <!-- md:config `certificat.finalizer[certinext-acme]` --> section.
 ACME has a mechanism to return descriptive errors on order failure. The order page will echo those errors, and they should be able to help diagnose any problems. If that is not enough, you can refer to the logs in the CertifiCat tasks runner for debugging. Remember to adjust <!-- md:config `certificat.logging` --> and enable `"DEBUG"` logging if the output is not verbose enough.
 
 It is unlikely that you will see more error detail by looking at the logs, in most cases you will have to adjust your API integration or reach out to CERTINext directly to diagnose why your API integration is not working.
+
+---
+
+### Using Multiple Finalizers
+
+<!-- md:config `certificat.alternative_finalizers` -->
+
+Operators may provide a list of alternative finalizers that can be used instead of the default finalizer. Anyone who can edit an account may choose to use one of these alternative finalizers instead of the default one.
+
+If an alternative finalizer is removed or the id changes, all accounts using that finalizer will revert to the default finalizer.

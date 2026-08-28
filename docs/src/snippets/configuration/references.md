@@ -66,9 +66,9 @@ Which order finalizer module to use.
 This is a polymorphic property controlled by the `AlternativeFinalizerSettings.finalizer.type` key, which means the shape of the configuration is different depending on the implementation. This property can be configured using the following types:
 
 
- - [acme](#AlternativeFinalizerSettings.finalizer.type[acme])
- - [certinext-acme](#AlternativeFinalizerSettings.finalizer.type[certinext-acme])
- - [local](#AlternativeFinalizerSettings.finalizer.type[local])
+ - [acme](#refs.ACMEFinalizerSettings)
+ - [certinext-acme](#refs.CERTINextACMEFinalizerSettings)
+ - [local](#refs.LocalFinalizerSettings)
 
 ---
 
@@ -98,8 +98,8 @@ Authentication settings for the web frontend. This controls how you authenticate
 This is a polymorphic property controlled by the `ApplicationSettings.authentication.type` key, which means the shape of the configuration is different depending on the implementation. This property can be configured using the following types:
 
 
- - [remote](#ApplicationSettings.authentication.type[remote])
- - [saml](#ApplicationSettings.authentication.type[saml])
+ - [remote](#refs.RemoteAuthSettings)
+ - [saml](#refs.SAMLAuthSettings)
 
 ---
 
@@ -112,8 +112,8 @@ Database connection settings. CertifiCat requires an external database to store 
 This is a polymorphic property controlled by the `ApplicationSettings.db.type` key, which means the shape of the configuration is different depending on the implementation. This property can be configured using the following types:
 
 
- - [mysql](#ApplicationSettings.db.type[mysql])
- - [postgresql](#ApplicationSettings.db.type[postgresql])
+ - [mysql](#refs.MariaDBDatabaseSettings)
+ - [postgresql](#refs.PostgresDatabaseSettings)
 
 ---
 
@@ -126,9 +126,9 @@ Which order finalizer module to use. The server is designed to finalize all requ
 This is a polymorphic property controlled by the `ApplicationSettings.finalizer.type` key, which means the shape of the configuration is different depending on the implementation. This property can be configured using the following types:
 
 
- - [acme](#ApplicationSettings.finalizer.type[acme])
- - [certinext-acme](#ApplicationSettings.finalizer.type[certinext-acme])
- - [local](#ApplicationSettings.finalizer.type[local])
+ - [acme](#refs.ACMEFinalizerSettings)
+ - [certinext-acme](#refs.CERTINextACMEFinalizerSettings)
+ - [local](#refs.LocalFinalizerSettings)
 
 ---
 

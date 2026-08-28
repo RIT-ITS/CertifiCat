@@ -7,8 +7,8 @@ Authentication settings for the web frontend. This controls how you authenticate
 This is a polymorphic property controlled by the `certificat.authentication.type` key, which means the shape of the configuration is different depending on the implementation. This property can be configured using the following types:
 
 
- - [remote](#certificat.authentication.type[remote])
- - [saml](#certificat.authentication.type[saml])
+ - [remote](#certificat.authentication[remote])
+ - [saml](#certificat.authentication[saml])
 
 ---
 
@@ -21,8 +21,8 @@ Database connection settings. CertifiCat requires an external database to store 
 This is a polymorphic property controlled by the `certificat.db.type` key, which means the shape of the configuration is different depending on the implementation. This property can be configured using the following types:
 
 
- - [mysql](#certificat.db.type[mysql])
- - [postgresql](#certificat.db.type[postgresql])
+ - [mysql](#certificat.db[mysql])
+ - [postgresql](#certificat.db[postgresql])
 
 ---
 
@@ -35,9 +35,9 @@ Which order finalizer module to use. The server is designed to finalize all requ
 This is a polymorphic property controlled by the `certificat.finalizer.type` key, which means the shape of the configuration is different depending on the implementation. This property can be configured using the following types:
 
 
- - [acme](#certificat.finalizer.type[acme])
- - [certinext-acme](#certificat.finalizer.type[certinext-acme])
- - [local](#certificat.finalizer.type[local])
+ - [acme](#certificat.finalizer[acme])
+ - [certinext-acme](#certificat.finalizer[certinext-acme])
+ - [local](#certificat.finalizer[local])
 
 ---
 

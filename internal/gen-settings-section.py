@@ -202,6 +202,7 @@ class PropertyInfo:
 
         for key, mapping in mappings.items():
             mappings[key] = self.root_schema.get_ref(mapping)
+            mappings[key]["$ref"] = mapping
 
         return self.schema._def.get("discriminator", {})
 
@@ -311,12 +312,23 @@ class PropFormatter:
         if self.property.is_polymorphic():
             discriminator = self.property.discriminator()
             discriminatorProp = discriminator.get("propertyName")
-            links = "\n".join(
-                [
-                    f" - [{k}](#{self.property.key_path}.{discriminatorProp}[{k}])"
-                    for k, m in discriminator["mapping"].items()
-                ]
-            )
+            # This generates differently depending on if it's a certificat. property or a #refs property
+            # certificat. properties should link to a descriptive section, #refs should link to
+            # another ref
+            if self.property.key_path.startswith("certificat."):
+                links = "\n".join(
+                    [
+                        f" - [{k}](#{self.property.key_path}[{k}])"
+                        for k, m in discriminator["mapping"].items()
+                    ]
+                )
+            else:
+                links = "\n".join(
+                    [
+                        f" - [{k}]({ref_link(m['$ref'])})"
+                        for k, m in discriminator["mapping"].items()
+                    ]
+                )
 
             lines.append(
                 textwrap.dedent(f"""\

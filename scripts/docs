@@ -25,6 +25,6 @@ case "${1:-}" in
     ;;
 esac
 
-exec uvx --with "mkdocs==1.6.1" --with "mkdocs-material" --with "mkdocs-mermaid2-plugin" mkdocs "${ACTION}" \
+exec uvx --with-requirements "$REPO_ROOT"/docs/requirements.txt mkdocs "${ACTION}" \
   --config-file "${REPO_ROOT}/docs/mkdocs.yml" \
   "$@"

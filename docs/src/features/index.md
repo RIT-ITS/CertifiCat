@@ -220,7 +220,7 @@ Reference the <!-- md:config `certificat.finalizer[certinext-acme]` --> section.
 
 #### Troubleshooting
 
-ACME has a mechanism to return descriptive errors on order failure. The order page will echo those errors, and they should be able to help diagnose any problems. If that is not enough, you can refer to the logs in the CertifiCat tasks runner for debugging. Remember to adjust <!-- md:config `certificat.logging` --> and enable `"DEBUG"` logging if the output is not verbose enough.
+ACME has a mechanism to return descriptive errors on order failure. The order page will echo those errors, and they should help diagnose any problems. If that is not enough, you can refer to the logs in the CertifiCat tasks runner for debugging. Remember to adjust <!-- md:config `certificat.logging` --> and enable `"DEBUG"` logging if the output is not verbose enough.
 
 It is unlikely that you will see more error detail by looking at the logs, in most cases you will have to adjust your API integration or reach out to CERTINext directly to diagnose why your API integration is not working.
 

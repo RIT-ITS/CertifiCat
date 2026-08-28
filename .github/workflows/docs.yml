@@ -9,6 +9,9 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pages: write
     steps:
       - name: Checkout source
         uses: actions/checkout@v4

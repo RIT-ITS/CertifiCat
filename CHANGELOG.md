@@ -3,16 +3,18 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project uses modified [Calendar Versioning](https://calver.org/).
+and this project uses modified [Calendar Versioning](https://calver.org/). 
 
-### Unreleased
+## [2026.8.3] - 2026-08-03
 
-- account KID URLs now redirect to the account page
-- mkdocs documentation
-- certinext-acme finalizer
+### Added
+
+- Redirect KID URLs to the account page
+- mkdocs documentation hosted at https://rit-its.github.io/CertifiCat/
 - `start` command for docker build that spawns the web ui and task runner
+- certinext-acme finalizer
 
-## [2026.8.2] - 2024-08-01
+## [2026.8.2] - 2026-08-01
 
 ### Fixed
 
@@ -20,13 +22,13 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 - Changing ACME finalizer to verify all nameservers for presence of DNS-01 token before submitting order to upstream
 
-## [2026.8.2] - 2024-08-01
+## [2026.8.2] - 2026-08-01
 
 ### Fixed
 
 - Fixed ssl database option lookup for Huey stats connection
 
-## [2026.8.1] - 2024-08-01
+## [2026.8.1] - 2026-08-01
 
 ### Added
 

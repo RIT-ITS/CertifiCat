@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pwd && ls -al && pip install --no-deps -r ./docs/requirements.txt
+        run: pip install --no-deps -r docs/requirements.txt
 
       - name: Build site
         run: scripts/docs build --strict

@@ -51,18 +51,19 @@ CERTINEXT_ACME_FINALIZER_EXAMPLE = """``` yaml
 certificat:
   finalizer: 
     type: "certinext-acme"
-      # This binding should use a single-domain non-UCC profile
-      single_domain_binding:
-        directory: "https://acme-us.certinext.io/v1/directory"
-        account_kid: "atTXZtcIpapuQnvikq...jkH1EagEJJoi7Ae"
-        account_hmac_key: "Uaf92GO53kY8DJRw...eoYvyJLUUDoLiF"
-        account_email: "contact@acme.edu"
-      # This binding should use a UCC profile
-      multi_domain_binding:
-        directory: "https://acme-us.certinext.io/v1/directory"
-        account_kid: "1emo4ehgTQyT9R...MPY6IjOL5EHm4PSmNL"
-        account_hmac_key: "vYELs8X22sXymmQh6...e59l6IeAaSL0G4"
-        account_email: "contact@acme.edu"
+    # This binding should use a single-domain non-UCC profile
+    single_domain_binding:
+      directory: "https://acme-us.certinext.io/v1/directory"
+      account_kid: "atTXZtcIpapuQnvikq...jkH1EagEJJoi7Ae"
+      account_hmac_key: "Uaf92GO53kY8DJRw...eoYvyJLUUDoLiF"
+      account_email: "contact@acme.edu"
+
+    # This binding should use a UCC profile
+    multi_domain_binding:
+      directory: "https://acme-us.certinext.io/v1/directory"
+      account_kid: "1emo4ehgTQyT9R...MPY6IjOL5EHm4PSmNL"
+      account_hmac_key: "vYELs8X22sXymmQh6...e59l6IeAaSL0G4"
+      account_email: "contact@acme.edu"
 ```"""
 
 SAML_AUTH_EXAMPLE = """``` yaml

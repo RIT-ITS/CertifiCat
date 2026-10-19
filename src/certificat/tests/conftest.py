@@ -1,10 +1,38 @@
-from collections import namedtuple
-from importlib import reload
+import io
 import re
 import sys
 import uuid
+from collections import namedtuple
+from importlib import reload
+from urllib.parse import urljoin, urlparse
+
+import acme.client
 import acme.messages
+import inject
+import josepy
+import pytest
+import requests
+import requests.adapters
+import urllib3
+from acmev2.services import (
+    IAccountService,
+    IAuthorizationService,
+    ICertService,
+    IChallengeService,
+    IDirectoryService,
+    INonceService,
+    IOrderService,
+)
+from acmev2.settings import ACMESettings
+from apprise.decorators import notify
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.conf import settings
+from django.test import Client
+from django.urls import clear_url_caches
+
+from certificat.modules.acme import models as db
 from certificat.modules.acme.services import (
     AccountService,
     AuthorizationService,
@@ -14,40 +42,24 @@ from certificat.modules.acme.services import (
     NonceService,
     OrderService,
 )
-
 from certificat.settings.dynamic import (
     ApplicationSettings,
     CertiNextFinalizerSettings,
     LocalACMESettings,
 )
-from acmev2.settings import ACMESettings
-from django.urls import clear_url_caches
-import inject
-import pytest
-from urllib.parse import urljoin, urlparse
-from certificat.modules.acme import models as db
-from acmev2.services import (
-    IDirectoryService,
-    INonceService,
-    IAccountService,
-    IAuthorizationService,
-    IOrderService,
-    IChallengeService,
-    ICertService,
-)
-import io
-import acme.client
-from django.test import Client
-import josepy
-import requests
-import requests.adapters
-import urllib3
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend
+
 from . import helpers
 
 ROOT_URL = "http://mock.me"
+
+notifications = []
+
+
+@notify(on="pytest", name="PyTest Memory Plugin")
+def test_notifications(body, title, notify_type, *args, **kwargs):
+    """Triggers on all pytest:// calls"""
+    global notifications  # noqa: PLW0602
+    notifications.append((body, title, notify_type))
 
 
 class TestDirectoryService(DirectoryService):
@@ -57,6 +69,10 @@ class TestDirectoryService(DirectoryService):
 @pytest.fixture(autouse=True, scope="function")
 def setup(responses, reload_urls):
     import dnsmock
+
+    global notifications  # noqa: PLW0602
+
+    notifications.clear()
 
     # I have no idea why these are necessary. If they don't exist then DNS resolution
     # will intermittently fail. Suspect it has something to do with Docker networking

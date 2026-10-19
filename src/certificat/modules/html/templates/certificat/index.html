@@ -38,6 +38,9 @@
                 {% endfor %}
             </c-slot>
         </c-link-table>
+        {% if recent_orders %}
+            <a class="btn btn--secondary btn--sm btn--outline btn--more-details full-width mt-2" href="{% url 'ORDERS' %}">view all <span class="fa-solid fa-chevron-right"></span></a>
+        {% endif %}
     </div>
     <div class="col-xl-6">
         <h4 class="icon"><i class="fa-solid fa-scroll"></i>Recent Certificates</h4>
@@ -63,6 +66,9 @@
                 {% endfor %}
             </c-slot>
         </c-link-table>
+        {% if recent_certificates %}
+            <a class="btn btn--secondary btn--sm btn--outline btn--more-details full-width mt-2" href="{% url 'CERTIFICATES' %}">view all <span class="fa-solid fa-chevron-right"></span></a>
+        {% endif %}
     </div>
 </div>
 

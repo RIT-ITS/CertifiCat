@@ -1,17 +1,22 @@
-from datetime import datetime, timedelta
 import logging
 import time
+from datetime import datetime, timedelta
+from pathlib import Path
+
+import inject
+from huey import crontab
+from huey.contrib.djhuey import db_task, periodic_task, task
+from huey.contrib.djhuey.stats.models import HueyEvent
 
 from certificat.settings.dynamic import ApplicationSettings
-from huey.contrib.djhuey import task, db_task, periodic_task
-from huey import crontab
-import inject
-from . import finalize_order
-from . import validate_challenge
-from . import housekeeping  # noqa: F401
-from . import beacon  # noqa: F401
-from pathlib import Path
-from huey.contrib.djhuey.stats.models import HueyEvent
+
+from . import (
+    beacon,  # noqa: F401
+    finalize_order,
+    housekeeping,  # noqa: F401
+    notifications,  # noqa: F401
+    validate_challenge,
+)
 
 logger = logging.getLogger(__name__)
 

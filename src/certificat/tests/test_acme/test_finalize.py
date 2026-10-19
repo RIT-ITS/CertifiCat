@@ -1,13 +1,15 @@
 import acme.client
-from certificat.settings.dynamic import ApplicationSettings, SectigoFinalizerSettings
 import inject
 import pytest
-from ..helpers import do_challenge, finalize_order
-from ..conftest import NewOrderRet
-from certificat.modules.acme import models as db
 from acme import errors
 from acmev2.models import OrderStatus
 from django.contrib.contenttypes.models import ContentType
+
+from certificat.modules.acme import models as db
+from certificat.settings.dynamic import ApplicationSettings, SectigoFinalizerSettings
+
+from ..conftest import NewOrderRet
+from ..helpers import do_challenge, finalize_order
 
 
 @pytest.mark.django_db

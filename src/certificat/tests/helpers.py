@@ -1,23 +1,23 @@
-from typing import Callable, TypeVar
-
-from django.contrib.auth.models import User
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography import x509
-from cryptography.x509.oid import NameOID
-from contextlib import contextmanager
 import datetime
-from acme import messages, challenges, standalone, client
+from collections.abc import Callable
+from contextlib import contextmanager
+from typing import TypeVar
+
 import acme.client
 import acme.messages
-from cryptography.hazmat.primitives import serialization
 import inject
+from acme import challenges, client, messages, standalone
+from acmev2.models import AuthorizationStatus, ChallengeStatus
 from acmev2.services import (
+    IAuthorizationService,
     IChallengeService,
     IOrderService,
-    IAuthorizationService,
 )
-from acmev2.models import ChallengeStatus, AuthorizationStatus
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
+from django.contrib.auth.models import User
 
 
 class HelperGlobals:

@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable
 
 from django.http import HttpRequest
 from django.urls import reverse
@@ -44,19 +44,19 @@ class NavItem:
 
 
 def is_admin_test(request: HttpRequest):
-    # TODO: Make admin group
     return request.user.is_superuser
 
 
 class Navigation:
-    top_level_nav = [
+    top_level_nav = [  # noqa: RUF012
         NavItem(Sections.Dashboard, "Dashboard"),
         NavItem(Sections.Accounts, "Accounts"),
+        NavItem(Sections.Orders, "Orders"),
         NavItem(Sections.Certificates, "Certificates"),
         NavItem(Sections.Usage, "Usage"),
         NavItem(Sections.Admin, "Admin", is_admin_test),
     ]
-    indexed_top_level_nav = {n.section: n for n in top_level_nav}
+    indexed_top_level_nav = {n.section: n for n in top_level_nav}  # noqa: RUF012
 
     def __init__(self, request: HttpRequest):
         for nav in self.top_level_nav:

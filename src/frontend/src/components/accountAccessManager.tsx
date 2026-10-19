@@ -22,6 +22,8 @@ export class AccountAccessManagerElement extends LitElement {
     accessor accessibleBy!: Set<Group>;
     @property({type: Boolean})
     accessor clientIsOwner: boolean = false;
+    @property({type: Boolean})
+    accessor readonly = false;
     @state()
     accessor editMode = false;
     @state()
@@ -191,7 +193,7 @@ export class AccountAccessManagerElement extends LitElement {
     }
 
     protected renderEditButton() {
-        if(this.editMode) return null;
+        if(this.editMode || this.readonly) return null;
 
         return html`<a
                     href="javascript:return false;"

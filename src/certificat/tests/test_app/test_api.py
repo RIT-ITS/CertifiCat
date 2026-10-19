@@ -1,19 +1,21 @@
 import datetime
 
+import inject
+import pytest
+from django.contrib.auth.models import Group
+from django.core.cache import cache
+from django.test import Client
+from django.urls import reverse
+from django.utils import timezone
+
+from certificat.modules.acme import models as db
 from certificat.settings.dynamic import (
     ACMEFinalizerSettings,
     AlternativeFinalizerSettings,
     ApplicationSettings,
 )
-from certificat.modules.acme import models as db
-import inject
-import pytest
-from django.test import Client
+
 from ..helpers import create_cert, gen_user
-from django.core.cache import cache
-from django.utils import timezone
-from django.urls import reverse
-from django.contrib.auth.models import Group
 
 
 class TestApi:
@@ -185,6 +187,8 @@ class TestApi:
             jwk="invalid-jwk",
             jwk_thumbprint="invalid-thumbprint",
         )
+        binding = db.AccountBinding.generate(account_owner, acct.name)
+        binding.bind_to(acct)
 
         settings = inject.instance(ApplicationSettings)
         settings.alternative_finalizers = [
@@ -209,20 +213,20 @@ class TestApi:
         response = web_client.post(reverse("api:edit_finalizer", args=[acct.name]))
         assert response.status_code == 403
 
-        # account owners may not edit
-        web_client.force_login(account_owner)
-        response = web_client.post(reverse("api:edit_finalizer", args=[acct.name]))
-        assert response.status_code == 403
-
-        # only superusers can edit as of right now
-        web_client.force_login(superuser)
-
         def _post(mods):
             return web_client.post(
                 reverse("api:edit_finalizer", args=[acct.name]),
                 mods,
                 content_type="application/json",
             )
+
+        # account owners may edit
+        resp = _post({"id": "fin1"})
+        acct.refresh_from_db()
+        assert acct.finalizer == "fin1"
+
+        # also test superusers
+        web_client.force_login(superuser)
 
         # Success
         resp = _post({"id": "fin1"})

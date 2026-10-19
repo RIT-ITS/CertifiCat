@@ -4,7 +4,7 @@
 
 {% block body %}
 
-<c-layouts.base fullwidth>
+<c-layouts.base fullwidth nomargin>
     <fade-on-load>
         {% if account_invalid %}
             <div class="mb-4 container">
@@ -45,14 +45,14 @@
 
                             <dt>Name</dt>
                             <dd>
-                                <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                                <editable-text class="horizontal" {% if not can_edit %}readonly{% endif %} url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
                                     <span id="binding-name" data-editable-id="name">{{ binding.name }}</span>
                                 </editable-text>
                             </dd>
 
                             <dt>Note</dt>
                             <dd>
-                                <editable-text class="horizontal" url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
+                                <editable-text class="horizontal" {% if not can_edit %}readonly{% endif %} url="{% url 'api:edit_binding' binding.id %}" editButtonDisplay="link" actionButtonDisplay="link" editButtonText="Edit">
                                     <span id="binding-note" data-editable-id="note">{{ binding.note }}</span>
                                 </editable-text>
                             </dd>
@@ -87,6 +87,7 @@
                             <dt>Access</dt>
                             <dd>
                                 <account-access-manager 
+                                    {% if not can_edit %}readonly{% endif %}
                                     groupFetchUrl="{% url 'api:fetch_user_groups' %}" 
                                     groupUpdateUrl="{% url 'api:edit_binding' binding.id %}" 
                                     accessibleBy="{{ access_group_json }}"
@@ -164,7 +165,7 @@
                     </div>
                 </div>
             </c-tab>
-            {% if not account_invalid %}
+            {% if not account_invalid and can_edit %}
                 <c-tab group="main" id="management" label="Revocation" :default="{% if tab == "management" %}True{% endif %}">
                     <div class="container wrap">
                         <div class="container mt-4">

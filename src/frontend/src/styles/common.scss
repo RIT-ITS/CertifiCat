@@ -589,14 +589,6 @@ activity-graph {
     border-top: 1px solid var(--gray-color--300);
 }
 
-.divider-horizontal {
-    //border-right: 1px solid theme.$lightGrayColor;
-}
-
-.background-lightgray {
-    //background-color: color.mix(theme.$lightGrayColor, white, 50%);
-}
-
 .adjustable-hex {
     display: flex;
     flex-wrap: wrap;
@@ -814,8 +806,6 @@ ul.orderstatus {
     }
 }
 
-
-
 #footer > div {
     .version {
         opacity: .75;
@@ -837,5 +827,15 @@ ul.orderstatus {
             margin-right: .5rem;
             fill: var(--btn-text-color);
         }
+    }
+}
+
+.btn.btn--more-details {
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+
+    &:hover {
+        background-color: var(--primary-color);
     }
 }

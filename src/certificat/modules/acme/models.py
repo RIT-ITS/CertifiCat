@@ -6,7 +6,7 @@ from base64 import urlsafe_b64encode
 from collections.abc import Mapping
 from datetime import datetime
 from enum import Enum
-from typing import Self
+from typing import Optional, Self
 
 import cryptography
 import cryptography.x509
@@ -27,6 +27,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import EmptyPage, Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.utils import timezone
@@ -44,6 +45,7 @@ from certificat.modules.acme.pydantic import (
     DjangoOrderResource,
 )
 from certificat.modules.html.contextvars import request_context
+from certificat.modules.perms import Perms
 from certificat.settings.dynamic import ApplicationSettings
 from certificat.utils import unprefix_group
 
@@ -67,12 +69,19 @@ class TimestampMixin(models.Model):
         abstract = True
 
 
-class Usage(TimestampMixin):
+class MarkdownDisplay(TimestampMixin):
     text = models.TextField()
 
+    class Meta:
+        abstract = True
 
-class TermsOfService(TimestampMixin):
-    text = models.TextField()
+
+class Usage(MarkdownDisplay):
+    pass
+
+
+class TermsOfService(MarkdownDisplay):
+    pass
 
 
 class Account(TimestampMixin):
@@ -99,9 +108,9 @@ class Account(TimestampMixin):
         return directory_service.url_for(ACMEEndpoint.account, self.name)
 
 
-class AccountBindingManager(models.Manager):
-    def by_user(self, user: User):
-        if user.is_superuser:
+class AccountBindingQuerySet(models.QuerySet):
+    def by_user(self, user: User) -> Self:
+        if user.has_perm(Perms.VIEW_ALL_ACCOUNTS):
             return self
 
         # TODO: Add owner clause when owner is added to the schema
@@ -109,17 +118,52 @@ class AccountBindingManager(models.Manager):
             models.Q(creator=user) | models.Q(group_scopes__group__in=user.groups.all())
         )
 
+    def active(self, filter: str | None = None) -> Self:
+        queryset = (
+            self.filter(
+                models.Q(bound_to=None) | models.Q(bound_to__status=AccountStatus.valid)
+            )
+            .select_related("bound_to", "creator")
+            .prefetch_related("group_scopes", "group_scopes__group")
+            .order_by("-created_at")
+        ).distinct()
+
+        if filter:
+            queryset = queryset.filter(
+                models.Q(name__icontains=filter) | models.Q(note__icontains=filter)
+            )
+
+        return queryset
+
+    def paginated(
+        self, curr_page: int = 1, per_page: int = 20, order_by="-created_at"
+    ) -> Self:
+        paginator = Paginator(self.order_by(order_by), per_page)
+
+        try:
+            page = paginator.page(curr_page)
+        except EmptyPage:
+            page = paginator.page(1)
+
+        return (paginator, page)
+
 
 class AccountBinding(TimestampMixin):
     KID_ENTROPY = string.ascii_lowercase + string.ascii_uppercase + string.digits
     HMAC_ENTROPY = string.ascii_lowercase + string.ascii_uppercase + string.digits
-    objects = AccountBindingManager()
+    objects: AccountBindingQuerySet = AccountBindingQuerySet.as_manager()
 
     hmac_id = models.CharField(max_length=255, unique=True)
     hmac_key = models.CharField(max_length=255)
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name="created_bindings",
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="owned_bindings",
     )
     bound_to = models.OneToOneField(
         Account, null=True, on_delete=models.CASCADE, related_name="binding"
@@ -127,10 +171,6 @@ class AccountBinding(TimestampMixin):
     bound_at = models.DateTimeField(null=True)
     name = models.CharField(max_length=100)
     note = models.TextField(null=True)
-
-    @property
-    def owner(self):
-        return self.creator
 
     @classmethod
     def generate(
@@ -156,8 +196,19 @@ class AccountBinding(TimestampMixin):
         binding.save()
         return binding
 
+    def account_invalid(self) -> bool:
+        return self.bound_to and self.bound_to.status != AccountStatus.valid
+
     def accessible_by(self, user: User):
-        if user.is_superuser:
+        if user.has_perm(Perms.VIEW_ALL_ACCOUNTS):
+            return True
+
+        return user.id == self.creator_id or self.group_scopes.filter(
+            group__in=user.groups.all()
+        )
+
+    def editable_by(self, user: User):
+        if user.has_perm(Perms.CHANGE_ALL_ACCOUNTS):
             return True
 
         return user.id == self.creator_id or self.group_scopes.filter(
@@ -185,9 +236,9 @@ class AccountBindingGroupScope(TimestampMixin):
         ordering = ("group__name",)
 
 
-class OrderManager(models.Manager):
-    def by_user(self, user: User):
-        if user.is_superuser:
+class OrderQuerySet(models.QuerySet):
+    def by_user(self, user: User) -> Self:
+        if user.has_perm(Perms.VIEW_ALL_ORDERS):
             return self
 
         return self.filter(
@@ -195,9 +246,54 @@ class OrderManager(models.Manager):
             | models.Q(account__binding__group_scopes__group__in=user.groups.all())
         )
 
+    def recent(self, max: int = 10) -> Self:
+        return (
+            self.order_by("-created_at")
+            .prefetch_related("identifiers")
+            .distinct()[:max]
+        )
+
+    def by_account(self, account: Account) -> Self:
+        return (
+            self.filter(account=account)
+            .prefetch_related("identifiers")
+            .distinct()
+            .order_by("-created_at")
+        )
+
+    def search(self, query: str) -> Self:
+        if query:
+            query_filter = models.Q()
+            for identifier in query.split(","):
+                identifier = identifier.strip()
+                if identifier.startswith("/") and identifier.endswith("/"):
+                    query_filter |= models.Q(
+                        identifiers__value__iregex=identifier[1:-1]
+                    )
+                else:
+                    query_filter |= models.Q(
+                        identifiers__value__iexact=identifier.strip()
+                    )
+
+            return self.filter(query_filter)
+
+        return self
+
+    def paginated(
+        self, curr_page: int = 1, per_page: int = 10, order_by="-created_at"
+    ) -> Self:
+        paginator = Paginator(self.order_by(order_by), per_page)
+
+        try:
+            page = paginator.page(curr_page)
+        except EmptyPage:
+            page = paginator.page(1)
+
+        return (paginator, page)
+
 
 class Order(TimestampMixin, Dictable):
-    objects = OrderManager()
+    objects: OrderQuerySet = OrderQuerySet.as_manager()
     dict_fields = ("id", "name", "repr")
 
     account = models.ForeignKey(
@@ -213,6 +309,12 @@ class Order(TimestampMixin, Dictable):
     @property
     def repr(self):
         return f"Order <{self.name}>"
+
+    def accessible_by(self, user: User):
+        if user.has_perm(Perms.VIEW_ALL_ORDERS):
+            return True
+
+        return self.account.binding.accessible_by(user)
 
     def __str__(self):
         return self.name
@@ -235,8 +337,44 @@ class CertificateMetadata(BaseModel):
     sans: list[str]
 
 
+class CertificateQuerySet(models.QuerySet):
+    def recent(self, max: int = 10) -> Self:
+        return self.order_by("-created_at")[:max]
+
+    def search(self, query: str) -> Self:
+        if query:
+            query_filter = models.Q()
+            for identifier in query.split(","):
+                identifier = identifier.strip()
+                if identifier.startswith("/") and identifier.endswith("/"):
+                    query_filter |= models.Q(
+                        order__identifiers__value__iregex=identifier[1:-1]
+                    )
+                else:
+                    query_filter |= models.Q(
+                        order__identifiers__value__iexact=identifier.strip()
+                    )
+
+            return self.filter(query_filter)
+
+        return self
+
+    def paginated(
+        self, curr_page: int = 1, per_page: int = 20, order_by="-created_at"
+    ) -> Self:
+        paginator = Paginator(self.order_by(order_by), per_page)
+
+        try:
+            page = paginator.page(curr_page)
+        except EmptyPage:
+            page = paginator.page(1)
+
+        return (paginator, page)
+
+
 class Certificate(TimestampMixin, Dictable):
     dict_fields = ("id", "repr")
+    objects: CertificateQuerySet = CertificateQuerySet.as_manager()
     order = models.OneToOneField(
         Order, on_delete=models.CASCADE, related_name="certificate"
     )
@@ -538,7 +676,27 @@ ALL_EVENT_CHOICES = (
 ALL_EVENT_CHOICES_DICT = {c[0]: c[1] for c in ALL_EVENT_CHOICES}
 
 
+class TaggedEventQuerySet(models.QuerySet):
+    def related_to(self, model: BaseModel) -> Self:
+        return self.filter(
+            content_type=ContentType.objects.get_for_model(model.__class__),
+            object_id=model.pk,
+        )
+
+    def bound_to_event(self, binding: AccountBinding) -> Optional["TaggedEvent"]:
+        if binding.bound_to:
+            return (
+                self.related_to(binding.bound_to)
+                .filter(event_type=AccountEventType.BOUND)
+                .first()
+            )
+        else:
+            return None
+
+
 class TaggedEvent(models.Model):
+    objects: TaggedEventQuerySet = TaggedEventQuerySet.as_manager()
+
     created_at = models.DateTimeField(auto_now_add=True)
     triggered_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True

@@ -1,9 +1,11 @@
+import inject
 from django import forms
 from django.db import models, transaction
+from django.http import HttpRequest
+
 from certificat.modules.acme import models as db
 from certificat.settings.dynamic import ApplicationSettings
 from certificat.utils import unprefix_group
-import inject
 
 
 class BindingScopePersonalOnly(models.TextChoices):
@@ -51,13 +53,13 @@ class NewBindingForm(forms.Form):
     def clean(self):
         data = self.cleaned_data
         scope = data.get("scope")
-        if scope == BindingScope.Group:
-            if data.get("group") is None or data.get("group") == "":
+        if scope == BindingScope.Group:  # noqa: SIM102
+            if not data.get("group", "").strip():
                 raise forms.ValidationError("Group name is required")
 
         return data
 
-    def save(self, request) -> db.AccountBinding:
+    def save(self, request: HttpRequest) -> db.AccountBinding:
         with transaction.atomic():
             note = self.cleaned_data["note"]
             name = self.cleaned_data["name"]

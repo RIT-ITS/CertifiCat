@@ -1,0 +1,61 @@
+{% extends "certificat/base.html" %}
+{% load certificat %}
+
+{% block headline %}View Orders{% endblock %}
+
+{% block body %}
+
+<div class="container mt-4">
+    <form action="." id="search_form" method="get">
+        <div class="search mb-3">
+            <div class="input--icon">
+                <i class="fa fa-magnifying-glass icon"></i>
+                <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by SAN, separated by ','. Surround each identifier in '/' to use regular expressions." class="search--box" />
+            </div>
+            <button class="btn btn--secondary search--button">Search</button>
+            {% if request.GET.filter %}
+                <a href="{% url 'ORDERS' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
+            {% endif %}
+        </div>
+    </form>
+    <c-link-table name="orders" centered>
+        <c-slot name="head">
+            <div class="tr">
+                <div class="th">Created</div>
+                <div class="th">Status</div>                        
+                <div class="th">Identifiers</div>
+                <div class="th"><!-- edit --></div>
+            </div>
+        </c-slot>
+        <c-slot name="body">
+            {% for order in orders.page %}
+                <a class="link-row" href="{% url 'order' order.id %}">
+                    <div label="Created" class="td shrink-cell">
+                        {{ order.created_at|date:"Y/m/d" }}
+                    </div>
+                    <div label="Status" class="td shrink-cell">
+                        <c-status :status="order.status" />
+                    </div>
+                    <div label="Identifiers" class="td identifiers">
+                        {{ order.identifiers.all.0.value }}
+                        {% if order.identifiers.all.1 %}
+                            (+{{ order.identifiers.all|slice:"1:"|length }} SANs)
+                        {% endif %}
+                    </div>
+                    <div class="td edit table--row-button shrink-cell" data-text="View">
+                        <span class="fa-solid fa-chevron-right"></span>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No accessible orders.</div></div>
+            {% endfor %}
+        </c-slot>
+    </c-link-table>
+    <div class="row mt-2 center-xs">
+        <c-pagination :page="orders.page" />
+    </div>
+       
+    <div id="pre-footer-spacer"></div>
+</div>
+
+{% endblock %}

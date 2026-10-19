@@ -1,18 +1,21 @@
+import inject
+import pytest
+from acmev2.models import AccountStatus
+from django.contrib.auth.models import Group, Permission
+from django.test import Client
+from django.urls import reverse
+
+from certificat.modules.acme import models as db
+from certificat.modules.html.nav import Sections
+from certificat.modules.perms import Perms
 from certificat.modules.tasks.finalize_order import get_finalizer
 from certificat.settings.dynamic import (
     ACMEFinalizerSettings,
     AlternativeFinalizerSettings,
     ApplicationSettings,
 )
-import inject
-import pytest
-from certificat.modules.html.nav import Sections
-from django.urls import reverse
-from django.test import Client
+
 from ..helpers import gen_user
-from certificat.modules.acme import models as db
-from acmev2.models import AccountStatus
-from django.contrib.auth.models import Group
 
 
 @pytest.mark.django_db
@@ -183,3 +186,96 @@ def test_finalizer_selection(authenticated_web_client: Client, acme_newacct):
     settings.alternative_finalizers = []
     # Test that default finalizer is used when no alt is found
     assert_path_is(get_finalizer(account), settings.finalizer.module)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("action", ["edit_finalizer", "edit_binding", "revoke-account"])
+def test_view_all_accounts_permission(
+    authenticated_web_client: Client, acme_newacct, action
+):
+    viewer = authenticated_web_client.test_user
+    owner = gen_user()
+    binding = db.AccountBinding.generate(owner, "other account", "original note")
+    acme_newacct(with_eab=True, binding=binding, user=owner)
+    binding.refresh_from_db()
+    account = binding.bound_to
+    account.finalizer = "original-finalizer"
+    account.save()
+    account_url = reverse("account", args=[binding.id])
+
+    response = authenticated_web_client.get(reverse(Sections.Accounts.value))
+    assert response.status_code == 200
+    assert binding not in response.context["bindings"]["page"]
+    assert authenticated_web_client.get(account_url).status_code == 403
+
+    app_label, codename = Perms.VIEW_ALL_ACCOUNTS.split(".")
+    viewer.user_permissions.add(
+        Permission.objects.get(content_type__app_label=app_label, codename=codename)
+    )
+
+    response = authenticated_web_client.get(reverse(Sections.Accounts.value))
+    assert response.status_code == 200
+    assert binding in response.context["bindings"]["page"]
+
+    response = authenticated_web_client.get(account_url)
+    assert response.status_code == 200
+    assert response.context["binding"] == binding
+    assert not response.context["can_edit"]
+
+    if action == "edit_finalizer":
+        response = authenticated_web_client.post(
+            reverse("api:edit_finalizer", args=[account.name]),
+            {"id": None},
+            content_type="application/json",
+        )
+    elif action == "edit_binding":
+        response = authenticated_web_client.post(
+            reverse("api:edit_binding", args=[binding.id]),
+            {"name": "changed name", "note": "changed note"},
+            content_type="application/json",
+        )
+    else:
+        response = authenticated_web_client.post(account_url, {"revoke-account": "1"})
+
+    binding.refresh_from_db()
+    account.refresh_from_db()
+    assert binding.name == "other account"
+    assert binding.note == "original note"
+    assert account.finalizer == "original-finalizer"
+    assert account.status == AccountStatus.valid
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_view_all_accounts_listings(authenticated_web_client: Client):
+    viewer = authenticated_web_client.test_user
+    bindings = []
+    for owner in (viewer, gen_user(), gen_user()):
+        for index in range(2):
+            name = f"account-{owner.pk}-{index}"
+            binding = db.AccountBinding.generate(owner, name)
+            binding.bind_to(
+                db.Account.objects.create(
+                    name=name,
+                    status=AccountStatus.valid,
+                    jwk="{}",
+                    jwk_thumbprint=name,
+                )
+            )
+            bindings.append(binding)
+
+    for binding in bindings:
+        # assert that the viewer can only view their own created bindings at first
+        assert bool(binding.accessible_by(viewer)) == (binding.creator_id == viewer.pk)
+
+    app_label, codename = Perms.VIEW_ALL_ACCOUNTS.split(".")
+    viewer.user_permissions.add(
+        Permission.objects.get(content_type__app_label=app_label, codename=codename)
+    )
+    viewer.refresh_from_db()
+    viewer = type(viewer).objects.get(pk=viewer.pk)
+
+    # after adding the view all accounts permission, assert the viewer can
+    # now see all bindings
+    assert all(binding.accessible_by(viewer) for binding in bindings)
+    assert set(db.AccountBinding.objects.by_user(viewer)) == set(bindings)

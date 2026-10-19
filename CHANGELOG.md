@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses modified [Calendar Versioning](https://calver.org/). 
 
+## Unreleased
+
+- Adding postgres support for Huey tasks admin
+- Reorganize views to pull business and query logic to external services
+- Added links to view all recent orders and all certificates
+- Moved to using individual permissions rather than superuser for everything
+- Added owner to account bindings and migrated creators to seed owners
+- Added orders view
+- Adding beta event notifications for certificate creation
+- Added readonly to Lit elements that require backend permissions
+
 ## [2026.8.3] - 2026-08-03
 
 ### Added

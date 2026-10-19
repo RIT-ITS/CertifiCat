@@ -13,6 +13,8 @@ export class EditableTextElement extends LitElement {
     accessor actionButtonDisplay: "button"|"link" = "button"
     @property()
     accessor url!: string;
+    @property({type: Boolean})
+    accessor readonly = false;
     @state()
     accessor editMode = false;
     @state()
@@ -125,6 +127,9 @@ export class EditableTextElement extends LitElement {
     };
 
     protected override render() {
+        if(this.readonly) 
+            return null;
+
         return html` <div class="buttons">${this.renderButtons()}</div> `;
     }
 

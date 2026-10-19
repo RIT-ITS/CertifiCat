@@ -1,7 +1,9 @@
-from acmev2.settings import ACMESettings
-import pytest
 import acme.client
+import pytest
+from acmev2.settings import ACMESettings
+
 from certificat.modules.acme import models as db
+
 from ..conftest import NewAcctRet, gen_acme_client
 
 

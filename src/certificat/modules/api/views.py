@@ -4,7 +4,7 @@ import json
 import inject
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count, DateField, Func
+from django.db.models import Count, DateField, Func, ObjectDoesNotExist
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import dateparse, timezone
@@ -12,8 +12,8 @@ from django.utils.dateformat import format
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_http_methods
 
-from certificat.auth import user_can_edit_pre_authorizations
 from certificat.modules.acme import models as db
+from certificat.modules.perms import Perms
 from certificat.settings.dynamic import ApplicationSettings
 from certificat.utils import unprefix_group
 
@@ -80,7 +80,7 @@ def my_groups(request: HttpRequest):
 @login_required
 @require_http_methods(["POST"])
 def edit_preauthorizations(request: HttpRequest, account_name):
-    if not user_can_edit_pre_authorizations(request.user):
+    if not request.user.has_perm(Perms.EDIT_PREAUTHS):
         return HttpResponse(status=403)
 
     account = get_object_or_404(db.Account, name=account_name)
@@ -127,11 +127,14 @@ def edit_preauthorizations(request: HttpRequest, account_name):
 @login_required
 @require_http_methods(["POST"])
 def edit_finalizer(request: HttpRequest, account_name):
-    if not request.user.is_superuser:
-        return HttpResponse(status=403)
-
     settings = inject.instance(ApplicationSettings)
-    account = get_object_or_404(db.Account, name=account_name)
+    account: db.Account = get_object_or_404(db.Account, name=account_name)
+    try:
+        if not account.binding.editable_by(request.user):
+            return HttpResponse(status=403)
+    except ObjectDoesNotExist:
+        return HttpResponse(status=404)
+
     request_json = json.loads(request.body)
 
     account = get_object_or_404(db.Account, name=account_name)
@@ -148,12 +151,12 @@ def edit_finalizer(request: HttpRequest, account_name):
 @login_required
 @require_http_methods(["POST"])
 def edit_binding(request: HttpRequest, binding_name):
-    binding = get_object_or_404(
+    binding: db.AccountBinding = get_object_or_404(
         db.AccountBinding.objects.prefetch_related("group_scopes"),
         id=binding_name,
     )
 
-    if not binding.accessible_by(request.user):
+    if not binding.editable_by(request.user):
         return HttpResponse(status=403)
 
     request_json = json.loads(request.body)
@@ -185,10 +188,10 @@ def edit_binding(request: HttpRequest, binding_name):
 @login_required
 @require_http_methods(["GET"])
 def order_events(request, order_name):
-    order = get_object_or_404(
+    order: db.Order = get_object_or_404(
         db.Order.objects.select_related("account", "account__binding"), name=order_name
     )
-    if not order.account.binding.accessible_by(request.user):
+    if not order.accessible_by(request.user):
         return HttpResponse(status=403)
 
     tagged_items: dict[int, dict[int, object]] = {}

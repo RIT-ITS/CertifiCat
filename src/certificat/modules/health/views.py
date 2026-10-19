@@ -1,9 +1,10 @@
+import ipaddress
 import logging
+
+import inject
 from django.http import HttpResponse
 
 from certificat.settings.dynamic import ApplicationSettings
-import inject
-import ipaddress
 
 logger = logging.getLogger(__name__)
 

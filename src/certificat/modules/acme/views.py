@@ -111,6 +111,9 @@ def finalize(request, order_id: str):
     return handleACMERequest(request, OrderFinalizationRequestHandler)
 
 
+@csrf_exempt
 def acct_redirect(request, acct_id: str):
+    # TODO: On POST, return not implemented unless there's a "mask_account_update" flag, which will
+    # just return a 200 always without doing anything
     binding = get_object_or_404(db.AccountBinding, bound_to__name=acct_id)
     return redirect("account", binding_id=binding.id)

@@ -99,6 +99,16 @@ class PostgresDatabaseSettings(DatabaseSettings):
             "OPTIONS": self.options,
         }
 
+    def to_peewee(self) -> peewee.PostgresqlDatabase:
+        return peewee.PostgresqlDatabase(
+            self.name,
+            user=self.user,
+            password=self.password,
+            host=self.host,
+            port=self.port,
+            ssl=self.options.get("ssl"),
+        )
+
 
 class SQLiteDatabaseSettings(DatabaseSettings):
     type: SkipJsonSchema[Literal["sqlite"]] = "sqlite"
@@ -720,6 +730,26 @@ class AlternativeFinalizerSettings(BaseModel):
     )
 
 
+class NotificationEventConfig(BaseModel):
+    enabled: bool = Field(
+        True, description="Control whether these services will be sent notifications."
+    )
+    services: list[str] = Field(
+        [], description="A list of Apprise URLs to send notifications."
+    )
+
+
+class NotificationSettings(BaseModel):
+    on_finalization_success: NotificationEventConfig | None = Field(
+        None,
+        description="Triggered on successful finalization, usually resulting in a certificate.",
+    )
+    on_finalization_error: NotificationEventConfig | None = Field(
+        None,
+        description="Triggered on finalization error, usually resulting from an error in the upstream certificate authority.",
+    )
+
+
 class ApplicationSettings(Settings):
     model_config = SettingsConfigDict(
         validate_default=False,
@@ -920,6 +950,10 @@ class ApplicationSettings(Settings):
         ["127.0.0.1/32"], description="Networks allowed to access the health endpoints."
     )
     huey_health_file: SkipJsonSchema[str] = Field("/tmp/huey-ping")
+    notifications: NotificationSettings = Field(
+        NotificationSettings(),
+        description="Subscribe to events and send notifications using the Apprise notification API.",
+    )
 
     @field_validator("web_ui_mountpoint", "web_api_mountpoint", "web_acme_mountpoint")
     @classmethod

@@ -1,19 +1,19 @@
-from typing import Dict, List, Tuple, Optional, Any
+import logging
+from typing import Any
 
+import djangosaml2.backends
+import inject
+from django.conf import settings
+from django.contrib.auth.backends import RemoteUserBackend as BaseRemoteUserBackend
+from django.contrib.auth.models import Group, User
 from django.http import HttpRequest
+
 from certificat.settings.dynamic import (
     ApplicationSettings,
     RemoteAuthSettings,
     SAMLAuthSettings,
 )
 from certificat.utils import coerce_to_list, split_delimited_string, unprefix_group
-import djangosaml2.backends
-from django.contrib.auth.models import Group, User
-import logging
-from django.conf import settings
-from django.contrib.auth.backends import RemoteUserBackend as BaseRemoteUserBackend
-
-import inject
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 
     def _extract_user_identifier_params(
         self, session_info: dict, attributes: dict, attribute_mapping: dict
-    ) -> Tuple[str, Optional[Any]]:
+    ) -> tuple[str, Any | None]:
         """Returns the attribute to perform a user lookup on, and the value to use for it.
         The value could be the name_id, or any other saml attribute from the request.
         """
@@ -126,7 +126,7 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 
 
 def _reconcile_superuser(
-    user: User, admins: List[str] = [], admin_groups: List[str] = []
+    user: User, admins: list[str] = [], admin_groups: list[str] = []
 ):
     normalized_user_group_names = [
         unprefix_group(g.name.lower()) for g in user.groups.all()
@@ -152,7 +152,7 @@ def _reconcile_superuser(
     return user
 
 
-def _prefix_idp_groups(groups: List[str]):
+def _prefix_idp_groups(groups: list[str]):
     saml_settings: SAMLAuthSettings = inject.instance(
         ApplicationSettings
     ).authentication
@@ -160,7 +160,7 @@ def _prefix_idp_groups(groups: List[str]):
     return [f"{saml_settings.group_sync_prefix}{g}" for g in groups]
 
 
-def _reconcile_header_groups(user: User, groups: List[str]):
+def _reconcile_header_groups(user: User, groups: list[str]):
     remote_settings: RemoteAuthSettings = inject.instance(
         ApplicationSettings
     ).authentication
@@ -196,7 +196,7 @@ def _reconcile_header_groups(user: User, groups: List[str]):
     user.groups.add(*Group.objects.filter(name__in=user_groups_to_add))
 
 
-def _reconcile_idp_groups(user: User, attributes: Dict):
+def _reconcile_idp_groups(user: User, attributes: dict):
     # TODO: We support discovery, but these groups are unprefixed. Group
     # mapping should be disabled with discovery or groups should be namespaced
     # somehow by tenant.
@@ -243,8 +243,3 @@ def _reconcile_idp_groups(user: User, attributes: Dict):
     user.groups.remove(*Group.objects.filter(name__in=user_groups_to_remove))
     logger.debug("adding groups: %s", ",".join(user_groups_to_add))
     user.groups.add(*Group.objects.filter(name__in=user_groups_to_add))
-
-
-# Simple permission gates
-def user_can_edit_pre_authorizations(user: User):
-    return user.is_superuser

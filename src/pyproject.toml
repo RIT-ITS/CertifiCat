@@ -23,6 +23,7 @@ dependencies = [
     "acme>=2.11.0",
     "acmev2>=0.2.1",
     "peewee>=4.2.6",
+    "apprise>=1.13.1",
 ]
 
 [dependency-groups]

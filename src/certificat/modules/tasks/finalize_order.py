@@ -8,6 +8,7 @@ from django.utils.module_loading import import_string
 from huey import RetryTask
 from huey.contrib.djhuey import HUEY
 
+from certificat.modules import tasks
 from certificat.modules.acme import models as db
 from certificat.modules.acme.backends import (
     Finalizer,
@@ -61,6 +62,8 @@ def _run_task(order_name: str):
         finalize_response: FinalizeResponse = finalizer.finalize(order, csr)
         if finalize_response.ok():
             db.TaggedEvent.record(db.OrderEventType.FINALIZATION_PASSED, order)
+            tasks.notifications.publish_finalization_success_task(order_name)
+
             # TODO: Move to service?
             order.status = OrderStatus.valid
             order.save()

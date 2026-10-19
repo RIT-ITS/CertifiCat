@@ -18,6 +18,7 @@ urlpatterns = [
     ),
     path("accounts/", views.AccountsView.as_view(), name=Sections.Accounts.value),
     path("order/<order_id>/", views.OrderView.as_view(), name="order"),
+    path("orders/", views.OrdersView.as_view(), name=Sections.Orders.value),
     path("usage/", views.UsageView.as_view(), name=Sections.Usage.value),
     path("usage/edit", views.EditUsageView.as_view(), name="edit-usage"),
     path(

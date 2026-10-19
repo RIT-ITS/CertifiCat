@@ -1,15 +1,16 @@
 from urllib.parse import urljoin
 
 import inject
+
 from .dynamic import ApplicationSettings
 
 dynamic_settings = inject.instance(ApplicationSettings)
 
 __all__ = [
-    "LOGIN_URL",
-    "LOGIN_REDIRECT_URL",
-    "LOGOUT_REDIRECT_URL",
     "AUTHENTICATION_BACKENDS",
+    "LOGIN_REDIRECT_URL",
+    "LOGIN_URL",
+    "LOGOUT_REDIRECT_URL",
 ]
 
 LOGIN_URL = urljoin(dynamic_settings.web_ui_mountpoint, "login/")

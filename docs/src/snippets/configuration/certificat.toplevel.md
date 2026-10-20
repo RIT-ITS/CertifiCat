@@ -196,6 +196,21 @@ Logging levels for CertifiCat components
 
 ---
 
+#### `certificat.notifications` {data-toc-label='notifications' : #certificat.notifications}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+``` json title='default' 
+{
+  "on_finalization_success": null,
+  "on_finalization_error": null
+}
+```
+
+Subscribe to events and send notifications using the Apprise notification API.
+
+[:material-link: View Configuration Section](#certificat.notifications.section)
+
+---
+
 #### `certificat.session_cookie_age` {data-toc-label='session_cookie_age' : #certificat.session_cookie_age}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">28800</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>

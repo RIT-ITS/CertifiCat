@@ -287,6 +287,21 @@ Logging levels for CertifiCat components
 
 ---
 
+#### `ApplicationSettings.notifications` {data-toc-label='notifications' : #ApplicationSettings.notifications}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+``` json title='default' 
+{
+  "on_finalization_success": null,
+  "on_finalization_error": null
+}
+```
+
+Subscribe to events and send notifications using the Apprise notification API.
+
+[:material-shape: View Type Reference](#refs.NotificationSettings)
+
+---
+
 #### `ApplicationSettings.session_cookie_age` {data-toc-label='session_cookie_age' : #ApplicationSettings.session_cookie_age}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">28800</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
@@ -466,6 +481,14 @@ User agent the http-01 challenge validator uses when requesting the challenge do
 
 ---
 
+#### `LocalACMESettings.mask_account_update` {data-toc-label='mask_account_update' : #LocalACMESettings.mask_account_update}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+
+Return 200 success on all account updates. Account update is not implemented in CertifiCat.
+
+---
+
 #### `LocalACMESettings.mask_order_processing_status_ua_match` {data-toc-label='mask_order_processing_status_ua_match' : #LocalACMESettings.mask_order_processing_status_ua_match}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"^cert-manager-clusterissuers.*"</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
@@ -594,6 +617,38 @@ Password for the database connection.
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
 
 Port for the database connection.
+
+---
+
+### NotificationEventConfig {: #refs.NotificationEventConfig}
+#### `NotificationEventConfig.enabled` {data-toc-label='enabled' : #NotificationEventConfig.enabled}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">true</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+
+Control whether these services will be sent notifications.
+
+---
+
+#### `NotificationEventConfig.services` {data-toc-label='services' : #NotificationEventConfig.services}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>
+
+A list of Apprise URLs to send notifications.
+
+---
+
+### NotificationSettings {: #refs.NotificationSettings}
+#### `NotificationSettings.on_finalization_error` {data-toc-label='on_finalization_error' : #NotificationSettings.on_finalization_error}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;[NotificationEventConfig](#refs.NotificationEventConfig)&gt; | null</span></span>
+
+Triggered on finalization error, usually resulting from an error in the upstream certificate authority.
+
+---
+
+#### `NotificationSettings.on_finalization_success` {data-toc-label='on_finalization_success' : #NotificationSettings.on_finalization_success}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;[NotificationEventConfig](#refs.NotificationEventConfig)&gt; | null</span></span>
+
+Triggered on successful finalization, usually resulting in a certificate.
 
 ---
 

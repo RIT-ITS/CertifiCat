@@ -252,7 +252,13 @@ def extract_types(prop: PropertyInfo) -> str:
     elif prop.anyOf():
         type_builder: list[str] = []
         for info in prop.anyOf():
-            type_builder.append(info.get("type"))
+            if "type" in info:
+                type_builder.append(info["type"])
+            if "$ref" in info:
+                type_builder.append(
+                    f"array&lt;[{ref_name(info['$ref'])}]({ref_link(info['$ref'])})&gt;"
+                )
+
         return " | ".join(type_builder)
     else:
         raise Exception(f"Can't generate, type for {prop.name} not handled.")  # noqa: TRY002

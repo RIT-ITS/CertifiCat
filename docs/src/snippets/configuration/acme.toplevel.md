@@ -46,6 +46,14 @@ User agent the http-01 challenge validator uses when requesting the challenge do
 
 ---
 
+#### `acme.mask_account_update` {data-toc-label='mask_account_update' : #acme.mask_account_update}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
+
+Return 200 success on all account updates. Account update is not implemented in CertifiCat.
+
+---
+
 #### `acme.mask_order_processing_status_ua_match` {data-toc-label='mask_order_processing_status_ua_match' : #acme.mask_order_processing_status_ua_match}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"^cert-manager-clusterissuers.*"</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>

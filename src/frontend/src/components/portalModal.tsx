@@ -1,5 +1,5 @@
 import { LitElement, PropertyValues, html, render } from "lit";
-import { customElement, property, query, queryAll } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 
 // This class is an awkward wrapper around the new account form, its purpose is to encapsulate the new account
 // form code in one place, but this is not a good example of using Lit

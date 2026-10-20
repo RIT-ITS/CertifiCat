@@ -446,6 +446,32 @@ pre-authorized-identifiers-manager {
     }
 }
 
+owner-manager {
+    display: block;
+    max-width: 500px;
+
+    .ownermanager--edit,
+    .ownermanager--cancel {
+        margin-left: $spacer;
+    }
+
+    .ownermanager--form {
+        display: flex;
+        gap: $spacer*.5;
+        margin-top: $spacer*.5;
+
+        input {
+            flex: 1;
+            min-width: 0;
+            margin-bottom: 0;
+        }
+
+        button {
+            white-space: nowrap;
+        }
+    }
+}
+
 account-access-manager {
     display: block;
     max-width: 500px;

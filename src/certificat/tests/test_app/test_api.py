@@ -221,6 +221,7 @@ class TestApi:
             )
 
         # account owners may edit
+        web_client.force_login(account_owner)
         resp = _post({"id": "fin1"})
         acct.refresh_from_db()
         assert acct.finalizer == "fin1"

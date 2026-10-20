@@ -978,6 +978,11 @@ class ApplicationSettings(Settings):
 
 
 class LocalACMESettings(ACMESettings):
+    mask_account_update: bool = Field(
+        False,
+        description="Return 200 success on all account updates. Account update is not implemented in CertifiCat.",
+    )
+
     @classmethod
     def get(cls, force_reload=False) -> Self:
         return ConfigFile.load(force_reload=force_reload).acme
@@ -987,7 +992,7 @@ class ConfigFile(BaseSettings):
     model_config = SettingsConfigDict(validate_default=False, from_attributes=True)
 
     certificat: ApplicationSettings
-    acme: LocalACMESettings = Field(default=ACMESettings(eab_required=True))
+    acme: LocalACMESettings = Field(default=LocalACMESettings(eab_required=True))
 
     @classmethod
     def load(cls, force_reload=False) -> Self:

@@ -143,6 +143,68 @@ def test_account_sharing(authenticated_web_client: Client, acme_newacct):
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("role", "expected_status"),
+    [
+        ("owner", 200),
+        ("account_admin", 200),
+        ("superuser", 200),
+        ("creator", 403),
+        ("group_member", 403),
+        ("viewer", 403),
+        ("unrelated", 403),
+    ],
+)
+def test_transfer_ownership_permission(web_client: Client, role, expected_status):
+    creator = gen_user()
+    owner = gen_user()
+    new_owner = gen_user()
+    binding = db.AccountBinding.objects.create(
+        creator=creator,
+        owner=owner,
+        name="account to transfer",
+        hmac_id="transfer-permission-test",
+        hmac_key="transfer-permission-test-key",
+    )
+
+    if role == "owner":
+        user = owner
+    elif role == "creator":
+        user = creator
+    else:
+        user = gen_user(is_superuser=role == "superuser")
+
+    if role == "group_member":
+        group = Group.objects.create(name="shared-account")
+        user.groups.add(group)
+        db.AccountBindingGroupScope.objects.create(binding=binding, group=group)
+        # Group members can edit the account, but cannot transfer ownership.
+        assert binding.editable_by(user)
+    elif role in ("viewer", "account_admin"):
+        permission = (
+            Perms.VIEW_ALL_ACCOUNTS
+            if role == "viewer"
+            else Perms.CHANGE_ALL_ACCOUNTS
+        )
+        app_label, codename = permission.split(".")
+        user.user_permissions.add(
+            Permission.objects.get(content_type__app_label=app_label, codename=codename)
+        )
+
+    web_client.force_login(user)
+    response = web_client.post(
+        reverse("api:edit_binding", args=[binding.id]),
+        {"owner": new_owner.username},
+        content_type="application/json",
+    )
+
+    assert response.status_code == expected_status
+    binding.refresh_from_db()
+    assert binding.owner == (new_owner if expected_status == 200 else owner)
+    assert binding.creator == creator
+
+
+@pytest.mark.django_db
 def test_finalizer_selection(authenticated_web_client: Client, acme_newacct):
     binding = db.AccountBinding.generate(
         authenticated_web_client.test_user, "name", "note"

@@ -14,13 +14,14 @@ from acmev2.handlers import (
     OrderRequestHandler,
 )
 from acmev2.handlers import handle as process_acme_request
-from acmev2.services import IDirectoryService
+from acmev2.services import IDirectoryService, INonceService
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import ApplicationSettings, LocalACMESettings
 
 from . import models as db
 
@@ -112,8 +113,30 @@ def finalize(request, order_id: str):
 
 
 @csrf_exempt
-def acct_redirect(request, acct_id: str):
-    # TODO: On POST, return not implemented unless there's a "mask_account_update" flag, which will
-    # just return a 200 always without doing anything
+def acct_redirect(request: HttpRequest, acct_id: str):
     binding = get_object_or_404(db.AccountBinding, bound_to__name=acct_id)
+    acme_settings = inject.instance(LocalACMESettings)
+
+    if request.method == "POST":
+        if acme_settings.mask_account_update:
+            # TODO: Fold this into the underlying acme module
+            account_url = binding.bound_to.fully_qualified_name()
+            directory_url = urljoin(
+                ApplicationSettings.get().url_root, reverse("directory")
+            )
+            return JsonResponse(
+                {
+                    "status": binding.bound_to.status,
+                    "termsOfServiceAgreed": True,
+                    "orders": f"{account_url}/orders",
+                },
+                status=200,
+                headers={
+                    "Replay-Nonce": inject.instance(INonceService).generate(),
+                    "Link": f'<{directory_url}>; rel="index"',
+                },
+            )
+        else:
+            return HttpResponse(status=405)
+
     return redirect("account", binding_id=binding.id)

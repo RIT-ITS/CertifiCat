@@ -81,7 +81,13 @@
                         <dl class="field-list">
                             <dt>Owner</dt>
                             <dd>
-                                <c-user :user="binding.owner" />
+                                <owner-manager
+                                    {% if not can_transfer %}readonly{% endif %}
+                                    ownerUpdateUrl="{% url 'api:edit_binding' binding.id %}"
+                                    owner="{{ binding.owner.username }}"
+                                    >
+                                    <c-user :user="binding.owner" />
+                                </owner-manager>
                             </dd>
 
                             <dt>Access</dt>

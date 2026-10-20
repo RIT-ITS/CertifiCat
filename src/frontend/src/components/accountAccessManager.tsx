@@ -3,6 +3,7 @@ import { ref, createRef, Ref } from 'lit/directives/ref.js';
 import { customElement, property, state } from "lit/decorators.js";
 import { getCsrfToken, getErrorMessage } from "../util";
 import { Task, TaskStatus } from "@lit/task";
+import { when } from "lit/directives/when.js";
 
 interface Group {
     id: number
@@ -28,7 +29,9 @@ export class AccountAccessManagerElement extends LitElement {
     accessor editMode = false;
     @state()
     accessor saving = false;
-    
+    @state()
+    accessor accessChanged = false;
+
     @state()
     accessor error: string | null = null;
 
@@ -93,6 +96,12 @@ export class AccountAccessManagerElement extends LitElement {
                 this.accessibleBy.delete(existingGroup!);
                 this.accessibleBy = new Set(this.accessibleBy);
             }
+
+            const data = await result.json() as {can_access: boolean};
+
+            if(!data.can_access) {
+                this.accessChanged = true;
+            }
         }
     })
 
@@ -131,8 +140,14 @@ export class AccountAccessManagerElement extends LitElement {
         this.modifyGroupsTask.run(['del' as Operation, groupId])
     }
 
+    private reloadRequired = () => html`
+        <portal-modal header="Reload Required">
+            <p>Your access to this resource has changed. Please reload the page.</p>
+        </portal-modal>`
+
     protected override render() {
         return html`
+            ${when(this.accessChanged, this.reloadRequired)}
             ${this.renderError()}
             <div class="flex">
                 ${this.renderHeader()}

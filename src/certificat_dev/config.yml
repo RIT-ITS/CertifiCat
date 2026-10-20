@@ -1,4 +1,5 @@
 acme:
+  mask_account_update: True
   challenges_available:
     - dns-01
     - http-01

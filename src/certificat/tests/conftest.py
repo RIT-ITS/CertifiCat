@@ -99,6 +99,7 @@ def setup(responses, reload_urls):
         (IAuthorizationService, AuthorizationService()),
         (IChallengeService, ChallengeService()),
         (ICertService, CertService()),
+        (LocalACMESettings, acme_settings),
         (ACMESettings, acme_settings),
         (ApplicationSettings, ApplicationSettings.get(force_reload=True)),
     ]
@@ -194,7 +195,7 @@ def app_settings():
 
 @pytest.fixture
 def acme_settings():
-    return inject.instance(ACMESettings)
+    return inject.instance(LocalACMESettings)
 
 
 @pytest.fixture

@@ -5,6 +5,9 @@ from .dynamic import ApplicationSettings, LocalACMESettings
 
 bindings = [
     (ApplicationSettings, ApplicationSettings.get()),
+    # Supplied for CertifiCat, builds on ACMESettings
+    (LocalACMESettings, LocalACMESettings.get()),
+    # Supplied for acmev2 module
     (ACMESettings, LocalACMESettings.get()),
 ]
 

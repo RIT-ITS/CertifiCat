@@ -25,7 +25,6 @@ from acmev2.services import (
     INonceService,
     IOrderService,
 )
-from acmev2.settings import ACMESettings
 from cryptography.hazmat.primitives import serialization
 from django.core.cache import cache
 from django.db import transaction
@@ -38,7 +37,7 @@ from josepy.jwk import JWK
 from certificat.modules import tasks
 from certificat.modules.acme.util import gen_id
 from certificat.modules.html.nav import Sections
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import ApplicationSettings, LocalACMESettings
 
 from . import models as db
 
@@ -49,7 +48,7 @@ HMACStr = str
 
 class DirectoryService(IDirectoryService):
     app_settings = inject.attr(ApplicationSettings)
-    acme_settings = inject.attr(ACMESettings)
+    acme_settings = inject.attr(LocalACMESettings)
 
     @property
     def external_account_required(self) -> bool:

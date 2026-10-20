@@ -40,6 +40,15 @@ New-PAAccount -ExtAcctKID "{{ binding.hmac_id }}" `
     -PAUserID "{{ binding.hmac_id }}" `
     -PAUserKey "{{ binding.hmac_key }}"</code></pre>
         </c-tab>
+        <c-tab group="clients" id="lego-cli" label="lego (v5+)">
+            <div class="my-3"><a href="https://go-acme.github.io/lego/">How to install the client</a></div>
+            <pre><code data-trim class='language-bash'>lego accounts register \
+    --server="{{ url_root.scheme }}://{{ url_root.netloc }}{% url 'directory' %}" \
+    --eab \
+    --eab.kid="{{ binding.hmac_id }}" \
+    --eab.hmac="{{ binding.hmac_key }}" \
+    --email="{{ request.user.email }}"</code></pre>
+        </c-tab>
     </c-tabs>
 
     <div class="mt-4">

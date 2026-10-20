@@ -310,6 +310,7 @@ class AccountViewContext:
             "can_edit": editable,
             "can_edit_preauthorizations": editable
             and self.request.user.has_perm(Perms.EDIT_PREAUTHS),
+            "can_transfer": self.binding.transferable_by(self.request.user),
             "finalizer_controller": AccountFinalizerController(
                 self.request, self.binding.bound_to
             ),

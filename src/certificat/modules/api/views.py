@@ -2,6 +2,7 @@ import datetime
 import json
 
 import inject
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, DateField, Func, ObjectDoesNotExist
@@ -157,9 +158,27 @@ def edit_binding(request: HttpRequest, binding_name):
     )
 
     if not binding.editable_by(request.user):
-        return HttpResponse(status=403)
+        return JsonResponse(
+            {"error": "The current user does not have access to edit the account."},
+            status=403,
+        )
 
     request_json = json.loads(request.body)
+
+    if "owner" in request_json:
+        if not binding.transferable_by(request.user):
+            return JsonResponse(
+                {"error": "The current user cannot transfer ownership."}, status=403
+            )
+
+        username = request_json["owner"]
+        if not isinstance(username, str) or not username.strip():
+            return JsonResponse({"error": "A username is required."}, status=400)
+        user_model = get_user_model()
+        try:
+            binding.owner = user_model.objects.get(username=username.strip())
+        except user_model.DoesNotExist:
+            return JsonResponse({"error": "Unknown username."}, status=400)
 
     if "name" in request_json:
         binding.name = request_json.get("name")
@@ -182,7 +201,19 @@ def edit_binding(request: HttpRequest, binding_name):
 
     binding.save()
 
-    return HttpResponse(status=200)
+    response = {}
+    if "owner" in request_json:
+        response["owner"] = {
+            "username": binding.owner.username,
+            "first_name": binding.owner.first_name,
+            "last_name": binding.owner.last_name,
+            "email": binding.owner.email,
+        }
+
+    response["can_access"] = binding.editable_by(request.user)
+    response["can_transfer"] = binding.transferable_by(request.user)
+
+    return JsonResponse(response, status=200)
 
 
 @login_required

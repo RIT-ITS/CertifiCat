@@ -3,14 +3,15 @@
 set -euo pipefail
 
 HERE="$(dirname "$(readlink -f "$0")")"
-ROOT="$(realpath ${HERE}/../)"
+ROOT="$(realpath "${HERE}"/../)"
 TAG="certificat:test-runner"
 
 docker buildx build \
     -f "${ROOT}/.devcontainer/Dockerfile" . --tag "${TAG}"
 
 CONFIG_FILE="$(mktemp)"
->$CONFIG_FILE
+# shellcheck disable=SC2188
+>"$CONFIG_FILE"
 # shellcheck disable=SC2086
 chmod 0644 $CONFIG_FILE
     
@@ -99,7 +100,7 @@ wait-for() {
   local cnt=20
   local out=""
   
-  echo -n "Waiting for $1"
+  echo -n "Waiting for $svc"
   until [ "$cnt" -eq 0 ]; do
     sleep 1
     echo -n "."

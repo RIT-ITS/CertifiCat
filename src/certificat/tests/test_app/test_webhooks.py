@@ -1,11 +1,13 @@
-from certificat.webhooks import PreUpstreamChallengeWebhook
+import acme.client
 import inject
 import pytest
-from django.test import Client
-from acmev2.settings import ACMESettings, Challenges
-import acme.client
 import responses
+from acmev2.settings import Challenges
+from django.test import Client
+
 from certificat.modules.acme import models as db
+from certificat.settings.dynamic import LocalACMESettings
+from certificat.webhooks import PreUpstreamChallengeWebhook
 
 
 class TestWebhooks:
@@ -25,7 +27,7 @@ class TestWebhooks:
         acme_client: acme.client.ClientV2,
         acme_neworder,
     ):
-        local_acme_settings = inject.instance(ACMESettings)
+        local_acme_settings = inject.instance(LocalACMESettings)
         local_acme_settings.challenges_available = [
             Challenges.http_01,
             Challenges.dns_01,

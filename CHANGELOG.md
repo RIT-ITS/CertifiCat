@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses modified [Calendar Versioning](https://calver.org/). 
 
-## Unreleased
+## Unreleased / In Development
 
 - Adding postgres support for Huey tasks admin
 - Reorganize views to pull business and query logic to external services
@@ -15,6 +15,8 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 - Added orders view
 - Adding beta event notifications for certificate creation
 - Added readonly to Lit elements that require backend permissions
+- Added lego client instructions (thanks @jxscad-rit)
+- Added the acme.mask_account_update flag to allow CertifiCat to generate valid responses to account updates 
 
 ## [2026.8.3] - 2026-08-03
 

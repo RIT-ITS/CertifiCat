@@ -113,9 +113,8 @@ class AccountBindingQuerySet(models.QuerySet):
         if user.has_perm(Perms.VIEW_ALL_ACCOUNTS):
             return self
 
-        # TODO: Add owner clause when owner is added to the schema
         return self.filter(
-            models.Q(creator=user) | models.Q(group_scopes__group__in=user.groups.all())
+            models.Q(owner=user) | models.Q(group_scopes__group__in=user.groups.all())
         )
 
     def active(self, filter: str | None = None) -> Self:
@@ -123,7 +122,7 @@ class AccountBindingQuerySet(models.QuerySet):
             self.filter(
                 models.Q(bound_to=None) | models.Q(bound_to__status=AccountStatus.valid)
             )
-            .select_related("bound_to", "creator")
+            .select_related("bound_to", "creator", "owner")
             .prefetch_related("group_scopes", "group_scopes__group")
             .order_by("-created_at")
         ).distinct()
@@ -189,6 +188,7 @@ class AccountBinding(TimestampMixin):
             .decode()
             .rstrip("="),
             creator=creator,
+            owner=creator,
             note=note,
             name=name,
         )
@@ -199,21 +199,29 @@ class AccountBinding(TimestampMixin):
     def account_invalid(self) -> bool:
         return self.bound_to and self.bound_to.status != AccountStatus.valid
 
-    def accessible_by(self, user: User):
+    def accessible_by(self, user: User) -> bool:
         if user.has_perm(Perms.VIEW_ALL_ACCOUNTS):
             return True
 
-        return user.id == self.creator_id or self.group_scopes.filter(
-            group__in=user.groups.all()
+        return (
+            user.id == self.owner_id
+            or self.group_scopes.filter(group__in=user.groups.all()).count() > 0
         )
 
-    def editable_by(self, user: User):
+    def editable_by(self, user: User) -> bool:
         if user.has_perm(Perms.CHANGE_ALL_ACCOUNTS):
             return True
 
-        return user.id == self.creator_id or self.group_scopes.filter(
-            group__in=user.groups.all()
+        return (
+            user.id == self.owner_id
+            or self.group_scopes.filter(group__in=user.groups.all()).count() > 0
         )
+
+    def transferable_by(self, user: User):
+        if user.has_perm(Perms.CHANGE_ALL_ACCOUNTS):
+            return True
+
+        return user.id == self.owner_id
 
     def bind_to(self, account: Account):
         self.bound_to = account
@@ -242,9 +250,9 @@ class OrderQuerySet(models.QuerySet):
             return self
 
         return self.filter(
-            models.Q(account__binding__creator=user)
+            models.Q(account__binding__owner=user)
             | models.Q(account__binding__group_scopes__group__in=user.groups.all())
-        )
+        ).distinct()
 
     def recent(self, max: int = 10) -> Self:
         return (

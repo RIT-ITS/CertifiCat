@@ -2,13 +2,12 @@ import logging
 import os
 
 import inject
-from acmev2.settings import ACMESettings
 from django.apps import AppConfig
 from django.db.models.signals import class_prepared
 
 from certificat import __version__
 from certificat.settings import bindings as settings_bindings
-from certificat.settings.dynamic import ApplicationSettings
+from certificat.settings.dynamic import ApplicationSettings, LocalACMESettings
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +63,7 @@ class CertificatConfig(AppConfig):
 
         certificat.modules.tasks.deferred_task_setup()
 
-        acme_settings = inject.instance(ACMESettings)
+        acme_settings = inject.instance(LocalACMESettings)
         app_settings = inject.instance(ApplicationSettings)
 
         if (

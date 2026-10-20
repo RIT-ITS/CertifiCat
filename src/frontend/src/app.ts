@@ -8,6 +8,7 @@ import "./components/profileMenu";
 import "./components/newAccountFormManager";
 import "./components/editableText";
 import "./components/accountAccessManager";
+import "./components/ownerManager";
 import "./components/confirmButton";
 import "./components/fadeOnLoad";
 import "./components/activityGraph";
@@ -15,6 +16,7 @@ import "./components/orderHistory";
 import "./components/modal";
 import "./components/preAuthorizedIdentifiersManager";
 import "./components/finalizerManager";
+import "./components/portalModal";
 
 import "./vendor";
 

@@ -3,6 +3,7 @@ import secrets
 import string
 
 import dns.resolver
+from dns.nameserver import Do53Nameserver
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,17 @@ def gen_id(length=10) -> str:
     return "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
     )
+
+
+def create_resolver(nameservers: list[str]) -> dns.resolver.Resolver:
+    """Resolver for nameservers formatted ip or ip:port, the system ones if empty."""
+    resolver = dns.resolver.Resolver()
+    if nameservers:
+        resolver.nameservers = [
+            Do53Nameserver(ip, int(port) if port else 53)
+            for ip, _, port in (n.partition(":") for n in nameservers)
+        ]
+    return resolver
 
 
 class DNSTXTValidator:

@@ -452,14 +452,28 @@ class WebhookSettings(BaseModel):
     timeout: int = Field(5, description="Request timeout for the endpoint URL.")
 
 
+class ACMEFinalizerDNS01ProviderSettings(BaseModel):
+    name: str = Field(
+        description="Lexicon DNS provider name, for example route53. See https://dns-lexicon.github.io/dns-lexicon/providers_options.html"
+    )
+    options: dict[str, str] = Field(
+        {},
+        description="Every lexicon option the provider needs, including credentials, for example auth_access_key and auth_access_secret for route53.",
+    )
+
+
 class ACMEFinalizerDNS01ChallengeSettings(BaseModel):
+    provider: ACMEFinalizerDNS01ProviderSettings = Field(
+        None,
+        description="DNS provider used to create and delete challenge TXT records. When set, DNS-01 challenges are answered and verified.",
+    )
     perform_verification: bool = Field(
         False,
         description="Verify DNS TXT records for challenges before submitting the order.",
     )
     verification_nameservers: list[str] = Field(
         ["1.1.1.1"],
-        description="A list of servers in the format ip or ip:port. The resolver will use these nameservers when verifying challenges. If left blank the system nameservers will be used.",
+        description="A list of servers in the format ip or ip:port. The resolver will use these nameservers when verifying challenges, and to find the DNS zone when a provider is set. If left blank the system nameservers will be used.",
     )
     verification_timeout: int = Field(
         60,

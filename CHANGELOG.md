@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses modified [Calendar Versioning](https://calver.org/). 
 
+## [Unreleased]
+
+### Added
+
+- ACME finalizer `challenges.dns_01.provider` setting to create and delete DNS-01 challenge TXT records through a [lexicon](https://github.com/dns-lexicon/dns-lexicon) DNS provider
+
+### Fixed
+
+- ACME finalizer DNS-01 verification now checks every token when a wildcard and its base domain share a record name
+
 ## [2026.8.3] - 2026-08-03
 
 ### Added

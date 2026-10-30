@@ -18,6 +18,7 @@ from certificat.modules.acme import models as db
 from certificat.settings.dynamic import (
     ACMEFinalizerChallengeSettings,
     ACMEFinalizerDNS01ChallengeSettings,
+    ACMEFinalizerDNS01ProviderSettings,
     ACMEFinalizerSettings,
     ApplicationSettings,
     WebhookSettings,
@@ -594,6 +595,75 @@ class TestACMEFinalizer:
 
         assert order.status == OrderStatus.invalid
         assert order.last_finalization_error() is not None
+
+    def _use_dns_provider(self, verification_timeout: int):
+        settings = ACMEFinalizerSettings.get()
+        settings.challenges = ACMEFinalizerChallengeSettings(
+            dns_01=ACMEFinalizerDNS01ChallengeSettings(
+                provider=ACMEFinalizerDNS01ProviderSettings(name="route53"),
+                verification_nameservers=[f"127.0.0.1:{self.dns_server_port}"],
+                verification_timeout=verification_timeout,
+            )
+        )
+        return settings.challenges.dns_01.provider
+
+    @pytest.mark.slow
+    @pytest.mark.django_db
+    def test_dns_provider_records(self, pebble_starter, dns_server: DNSServer, mocker):
+        pebble_starter()
+        provider = self._use_dns_provider(verification_timeout=5)
+
+        def create(_provider, records, _nameservers):
+            for name, value in records:
+                dns_server.add_record(Zone(name, "TXT", value))
+
+        create_mock = mocker.patch(
+            "certificat.modules.acme.backends.acme.create_txt_records",
+            side_effect=create,
+        )
+        delete_mock = mocker.patch(
+            "certificat.modules.acme.backends.acme.delete_txt_records"
+        )
+
+        domain = "acme.localhost"
+        new_order: NewOrderRet = self.acme_neworder(
+            self.acme_client, self.acme_acct, cn=domain, sans=[domain]
+        )
+
+        order = self._get_processed_order(new_order=new_order)
+
+        assert order.status == OrderStatus.valid
+        records = create_mock.call_args.args[1]
+        assert [name for name, _ in records] == [f"_acme-challenge.{domain}"]
+        delete_mock.assert_called_once_with(provider, records, mocker.ANY)
+
+    @pytest.mark.slow
+    @pytest.mark.django_db
+    def test_dns_provider_records_deleted_on_failure(
+        self, pebble_starter, dns_server: DNSServer, mocker
+    ):
+        pebble_starter()
+        provider = self._use_dns_provider(verification_timeout=1)
+
+        # Nothing is published, so verification times out and the order fails
+        create_mock = mocker.patch(
+            "certificat.modules.acme.backends.acme.create_txt_records"
+        )
+        delete_mock = mocker.patch(
+            "certificat.modules.acme.backends.acme.delete_txt_records"
+        )
+
+        domain = "acme.localhost"
+        new_order: NewOrderRet = self.acme_neworder(
+            self.acme_client, self.acme_acct, cn=domain, sans=[domain]
+        )
+
+        order = self._get_processed_order(expect_failure=True, new_order=new_order)
+
+        assert order.status == OrderStatus.invalid
+        delete_mock.assert_called_once_with(
+            provider, create_mock.call_args.args[1], mocker.ANY
+        )
 
     @pytest.mark.slow
     @pytest.mark.django_db

@@ -35,7 +35,7 @@ def create_txt_records(
     for name, value in records:
         logger.info("Creating DNS-01 challenge record %s", name)
         with Client(_lexicon_config(settings, name, nameservers)) as operations:
-            if not operations.create_record("TXT", name, value):
+            if not operations.create_record(rtype="TXT", name=name, content=value):
                 raise RuntimeError(f"DNS provider failed to create TXT record {name}")
 
 

@@ -36,8 +36,8 @@ def test_create_txt_records(operations):
 
     create_txt_records(PROVIDER, RECORDS, NAMESERVERS)
 
-    assert [c.args for c in operations.create_record.call_args_list] == [
-        ("TXT", name, value) for name, value in RECORDS
+    assert [c.kwargs for c in operations.create_record.call_args_list] == [
+        {"rtype": "TXT", "name": name, "content": value} for name, value in RECORDS
     ]
 
 

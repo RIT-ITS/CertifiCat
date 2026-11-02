@@ -3,7 +3,7 @@ import os
 import re
 import textwrap
 from collections.abc import Mapping
-from typing import ClassVar, Literal, Self
+from typing import Any, ClassVar, Literal, Self
 
 import inject
 import peewee
@@ -456,7 +456,9 @@ class ACMEFinalizerDNS01ProviderSettings(BaseModel):
     name: str = Field(
         description="Lexicon DNS provider name, for example route53. See https://dns-lexicon.github.io/dns-lexicon/providers_options.html"
     )
-    options: dict[str, str] = Field(
+    # Passed to lexicon untouched, matching its dict[str, Any] config. Each provider owns
+    # its option types, some boolean, so YAML values must keep the type they were given.
+    options: dict[str, Any] = Field(
         {},
         description="Every lexicon option the provider needs, including credentials, for example auth_access_key and auth_access_secret for route53.",
     )

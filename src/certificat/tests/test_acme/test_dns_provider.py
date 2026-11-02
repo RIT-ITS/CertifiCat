@@ -52,6 +52,18 @@ def test_zone_from_soa_lookup(client, operations):
     assert config.resolve("lexicon:route53:auth_access_key") == "access-key"
 
 
+def test_provider_options_keep_yaml_types(client, operations):
+    operations.create_record.return_value = True
+    provider = ACMEFinalizerDNS01ProviderSettings(
+        name="namecheap", options={"auth_sandbox": False}
+    )
+
+    create_txt_records(provider, RECORDS[:1], NAMESERVERS)
+
+    config = client.call_args.args[0]
+    assert config.resolve("lexicon:namecheap:auth_sandbox") is False
+
+
 def test_create_txt_records_failure(operations):
     operations.create_record.return_value = False
 

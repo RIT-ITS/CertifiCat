@@ -10,6 +10,15 @@ certificat:
     account_kid: "atTXZtcIpapuQnvikq...jkH1EagEJJoi7Ae"
     account_hmac_key: "Uaf92GO53kY8DJRw...eoYvyJLUUDoLiF"
     account_email: "contact@acme.edu"
+    # Optional, for upstreams that require answering DNS-01 challenges
+    challenges:
+      dns_01:
+        provider:
+          name: "route53"
+          options:
+            auth_access_key: "AKIAIOSFODNN7EXAMPLE"
+            auth_access_secret: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+        verification_nameservers: ["8.8.8.8", "1.1.1.1"]
 ```
 #### `certificat.finalizer.account_email` {data-toc-label='account_email*' : #certificat.finalizer[acme].account_email}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](../convention#required 'Required value')</span><span class="mdx-badge__text">required</span></span>

@@ -16,7 +16,6 @@ from acmev2.models.challenge import ChallengeType
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.utils import timezone
-from dns.nameserver import Do53Nameserver
 
 from certificat.modules.acme import models as db
 from certificat.modules.acme.backends import (
@@ -24,7 +23,11 @@ from certificat.modules.acme.backends import (
     FinalizeResponse,
     StopFinalization,
 )
-from certificat.modules.acme.util import DNSTXTValidator
+from certificat.modules.acme.backends.dns_provider import (
+    create_txt_records,
+    delete_txt_records,
+)
+from certificat.modules.acme.util import DNSTXTValidator, create_resolver
 from certificat.settings.dynamic import ACMEFinalizerSettings
 from certificat.webhooks import PreUpstreamChallengeWebhook
 
@@ -132,6 +135,23 @@ def ensure_acme_account_registered(
         )
 
 
+def challenge_txt_records(
+    client: CertifiCatACMEClient, upstream_order: acme.messages.OrderResource
+) -> list[tuple[str, str]]:
+    """Returns (record name, TXT value) pairs for the upstream DNS-01 challenges. A
+    list is used because a wildcard and its base domain share one record name.
+    """
+    return [
+        (
+            challenge_body.chall.validation_domain_name(authz.body.identifier.value),
+            challenge_body.chall.validation(client.net.key),
+        )
+        for authz in upstream_order.authorizations
+        for challenge_body in authz.body.challenges
+        if challenge_body.get("typ") == ChallengeType.dns_01
+    ]
+
+
 class ACMEFinalizer(Finalizer):
     settings: ACMEFinalizerSettings
 
@@ -155,21 +175,8 @@ class ACMEFinalizer(Finalizer):
         """Verifies DNS records set for the challenge domains. This never returns False, it raises
         a StopFinalization error on failure.
         """
-        verification_tokens: dict[str, str] = {}
-
         logger.debug("Checking DNS propagation")
-        authz_list: list[acme.messages.AuthorizationResource] = (
-            upstream_order.authorizations
-        )
-        for authz in authz_list:
-            challenge_list: list[acme.messages.ChallengeBody] = authz.body.challenges
-            for challenge_body in challenge_list:
-                if challenge_body.get("typ") == ChallengeType.dns_01:
-                    verification_tokens[
-                        challenge_body.chall.validation_domain_name(
-                            authz.body.identifier.value
-                        )
-                    ] = challenge_body.chall.validation(client.net.key)
+        verification_tokens = challenge_txt_records(client, upstream_order)
 
         timeout = timezone.now() + datetime.timedelta(
             seconds=self.settings.challenges.dns_01.verification_timeout
@@ -180,17 +187,13 @@ class ACMEFinalizer(Finalizer):
         if self.settings.challenges.dns_01.verification_nameservers:
             for nameserver in self.settings.challenges.dns_01.verification_nameservers:
                 logger.info("Creating DNS validator with nameserver: %s", nameserver)
-                resolver = dns.resolver.Resolver()
-                ip, _, port = nameserver.partition(":")
-                resolver.nameservers = [Do53Nameserver(ip, int(port) if port else 53)]
-
-                resolvers.append(resolver)
+                resolvers.append(create_resolver([nameserver]))
         else:
             # If a nameserver is not specified (not recommended) then we use a default resolver
             resolvers.append(dns.resolver.Resolver())
 
         validators = [
-            DNSTXTValidator(resolvers, k, v) for k, v in verification_tokens.items()
+            DNSTXTValidator(resolvers, k, v) for k, v in verification_tokens
         ]
 
         logger.info(
@@ -218,8 +221,12 @@ class ACMEFinalizer(Finalizer):
         logger.info("Timeout reached verifying domains.")
         raise StopFinalization("Timeout reached verifying DNS challenges.")
 
+    def uses_dns_01(self) -> bool:
+        dns_01 = self.settings.challenges.dns_01
+        return dns_01.perform_verification or dns_01.provider is not None
+
     def preferred_challenge(self):
-        if self.settings.challenges.dns_01.perform_verification:
+        if self.uses_dns_01():
             return acme.challenges.DNS01
 
         return acme.challenges.HTTP01
@@ -236,6 +243,9 @@ class ACMEFinalizer(Finalizer):
             self.settings.account_hmac_key,
         )
 
+        dns_provider = self.settings.challenges.dns_01.provider
+        nameservers = self.settings.challenges.dns_01.verification_nameservers
+        txt_records: list[tuple[str, str]] = []
         try:
             # This block has automatic retry already built-in, so any exceptions will
             # result in a StopFinalization error that will prevent retry
@@ -259,10 +269,15 @@ class ACMEFinalizer(Finalizer):
                         if isinstance(c.chall, self.preferred_challenge()):
                             preferred_challenges.append(c)
 
+                if dns_provider:
+                    # Assigned before creating so the finally block also removes
+                    # records from a partially failed create
+                    txt_records = challenge_txt_records(client, new_order)
+                    create_txt_records(dns_provider, txt_records, nameservers)
+
                 self.execute_challenge_webhook(client, new_order)
-                if (
-                    self.settings.challenges.dns_01.perform_verification
-                    and not self.check_dns_propagation(client, new_order)
+                if self.uses_dns_01() and not self.check_dns_propagation(
+                    client, new_order
                 ):
                     raise StopFinalization("Unable to verify DNS challenges")
 
@@ -300,3 +315,6 @@ class ACMEFinalizer(Finalizer):
             raise StopFinalization(
                 str(exc) or "No exception given by upstream"
             ) from exc
+        finally:
+            if txt_records:
+                delete_txt_records(dns_provider, txt_records, nameservers)

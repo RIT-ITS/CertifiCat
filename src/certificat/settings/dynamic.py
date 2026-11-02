@@ -465,7 +465,7 @@ class ACMEFinalizerDNS01ProviderSettings(BaseModel):
 class ACMEFinalizerDNS01ChallengeSettings(BaseModel):
     provider: ACMEFinalizerDNS01ProviderSettings = Field(
         None,
-        description="DNS provider used to create and delete challenge TXT records. When set, DNS-01 challenges are answered and verified.",
+        description="DNS provider used to create and delete challenge TXT records. When set, DNS-01 challenges are answered and verified. Mutually exclusive with skip_answering_challenges, which skips creating the records.",
     )
     perform_verification: bool = Field(
         False,

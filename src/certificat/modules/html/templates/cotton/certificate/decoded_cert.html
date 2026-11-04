@@ -9,6 +9,19 @@
     <dt>Serial Number</dt>
     <dd>{{ cert.serial_number|hex|upper }}</dd>
 
+    <dt>Public Key</dt>
+    <dd class="p0">
+        <dl class="indented-list mt-3 ml-2">
+            {% for key, value in cert|pubkey_info %}
+            <dt>{{ key }}</dt>
+            <dd>
+                {{ value }}
+            </dd>
+            {% endfor %}
+        </dl>
+    </dd>
+    
+
     <dt>Signature</dt>
     <dd>
         {{ cert.signature_hash_algorithm.name }}<br />
@@ -32,7 +45,7 @@
 
     <dt>Extensions</dt>
     <dd class="p0">
-        <dl class="indented-list mt-2">
+        <dl class="indented-list mt-3 ml-2">
         {% for ext in cert.extensions %}
             {{ ext|render_x509_extension }}
         {% endfor %}

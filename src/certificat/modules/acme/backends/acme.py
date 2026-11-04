@@ -124,12 +124,13 @@ def ensure_acme_account_registered(
                 "The ACME account has already been bound. Regenerate the ACME EAB credentials and restart the server with new account information."
             )
 
-        db.ACMEFinalizerBinding.objects.create(
-            directory=client.directory_url,
-            account_id=account_id,
-            key_id=key_id,
-            private_key=pem_private_key.decode(),
-        )
+        if not db.ACMEFinalizerBinding.objects.filter(key_id=key_id).exists():
+            db.ACMEFinalizerBinding.objects.create(
+                directory=client.directory_url,
+                account_id=account_id,
+                key_id=key_id,
+                private_key=pem_private_key.decode(),
+            )
 
 
 class ACMEFinalizer(Finalizer):
@@ -276,7 +277,7 @@ class ACMEFinalizer(Finalizer):
 
             new_order = client.poll_and_finalize(
                 new_order,
-                datetime.datetime.now()  # noqa: DTZ005 : This is necessary for the acme api
+                datetime.datetime.now()
                 + datetime.timedelta(seconds=self.settings.finalization_timeout),
             )
             db.Certificate.objects.create(order=order, chain=new_order.fullchain_pem)

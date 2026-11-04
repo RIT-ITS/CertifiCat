@@ -21,7 +21,7 @@ dependencies = [
     "django-import-export>=4.3.7",
     "psycopg[binary]>=3.3.3",
     "acme>=2.11.0",
-    "acmev2>=0.2.1",
+    "acmev2>=0.3.0",
     "peewee>=4.2.6",
     "apprise>=1.13.1",
 ]

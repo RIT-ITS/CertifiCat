@@ -3,13 +3,14 @@ import hashlib
 import hmac
 import json
 import typing as t
+import uuid
 from datetime import datetime, timedelta
 from math import floor
-import uuid
-from django.utils import timezone
+
+import acme.messages
 import josepy
 import requests
-import acme.messages
+from django.utils import timezone
 
 
 def hmac_data(key: bytes, data: bytes) -> bytes:
@@ -57,7 +58,7 @@ class Webhook:
 
         return response
 
-    def verify(self, data: bytes, headers: t.Dict[str, str]) -> t.Any:
+    def verify(self, data: bytes, headers: dict[str, str]) -> t.Any:
         data = data if isinstance(data, str) else data.decode()
         headers = {k.lower(): v for (k, v) in headers.items()}
         msg_id = headers.get("webhook-id")
@@ -93,7 +94,7 @@ class Webhook:
         now = datetime.now(tz=timezone.UTC)
         try:
             timestamp = datetime.fromtimestamp(float(timestamp_header), tz=timezone.UTC)
-        except Exception:
+        except:  # noqa: E722
             raise WebhookVerificationError("Invalid Signature Headers")
 
         if timestamp < (now - webhook_tolerance):

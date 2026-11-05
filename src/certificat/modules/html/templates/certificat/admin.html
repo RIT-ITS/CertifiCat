@@ -1,0 +1,115 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Administration{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    <div class="row">
+        <div class="col-xs-12 col-lg-4">
+            <h5 class="icon"><i class="fa-solid fa-screwdriver-wrench"></i>Manage</h5>
+            <div class="mb-1"></div>
+            <c-link-table name="admin-links" no_collapse>
+                <c-slot name="body">
+                    {% if perms.auth.view_user %}
+                        <a class="link-row" id="admin-link-users" href="{% url 'admin-users' %}">
+                            <div class="td">
+                                <b class="bold">Users</b>
+                                <p class="subtext">Find users and see their permissions.</p>
+                            </div>
+                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
+                        </a>
+                    {% endif %}
+                    {% if perms.auth.view_user %}
+                        <a class="link-row" id="admin-link-groups" href="{% url 'admin-groups' %}">
+                            <div class="td">
+                                <b class="bold">Groups</b>
+                                <p class="subtext">View groups and their permissions.</p>
+                            </div>
+                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
+                        </a>
+                    {% endif %}
+                    {% if perms.acme.change_termsofservice %}
+                        <a class="link-row" id="admin-link-tos" href="{% url 'edit-tos' %}">
+                            <div class="td">
+                                <b class="bold">Terms of Service</b>
+                                <p class="subtext">Edit the terms users accept when creating an account.</p>
+                            </div>
+                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
+                        </a>
+                    {% endif %}
+                    {% if perms.acme.change_usage %}
+                        <a class="link-row" id="admin-link-usage" href="{% url 'edit-usage' %}">
+                            <div class="td">
+                                <b class="bold">Usage</b>
+                                <p class="subtext">Edit the ACME client usage instructions.</p>
+                            </div>
+                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
+                        </a>
+                    {% endif %}
+                    {% if request.user.is_staff %}
+                        <a class="link-row" id="admin-link-backend" href="{% url 'admin:index' %}">
+                            <div class="td">
+                                <b class="bold">Django Admin</b>
+                                <p class="subtext">
+                                    Low level access to the database. Here be dragons.
+                                </p>
+                            </div>
+                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
+                        </a>
+                    {% endif %}
+                </c-slot>
+            </c-link-table>
+        </div>
+
+        <div class="col-xs-12 col-lg-8">
+            <h5 class="icon"><i class="fa-solid fa-list-check"></i>Setup Checklist</h5>
+            <div class="mb-1"></div>
+            <c-table name="setup-checklist" no_collapse>
+                <c-slot name="body">
+                    {% for item in checklist %}
+                        <tr>
+                            <td class="shrink-cell">
+                                {% if item.done %}
+                                    <i class="fa-solid fa-circle-check fa-fw checklist--done" title="Done"></i>
+                                {% elif item.optional %}
+                                    <i class="fa-regular fa-circle fa-fw" title="Optional"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-exclamation fa-fw checklist--notdone" title="Not done"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <b class="bold">{{ item.title }}</b>{% if item.optional %} <span class="subtext">(optional)</span>{% endif %}
+                                <p class="subtext">{{ item.current_description }}</p>
+                            </td>
+                            <td class="shrink-cell">
+                                {% if item.link %}
+                                    <a class="btn btn--secondary btn--outline btn--sm" href="{{ item.link }}">{{ item.link_text }}</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </c-slot>
+            </c-table>
+
+            <h5 class="icon mt-5"><i class="fa-solid fa-heart-pulse"></i>Health</h5>
+            <div class="mb-1"></div>
+            <c-table name="health-checks" no_collapse>
+                <c-slot name="body">
+                    {% for check in health_checks %}
+                        <tr>
+                            <td class="shrink-cell"><b class="bold">{{ check.name }}</b></td>
+                            <td class="shrink-cell">
+                                <span class="badge badge--outlined {% if check.status == 'ok' %}badge--success{% elif check.status == 'warning' %}badge--warning{% else %}badge--error{% endif %}">{{ check.status }}</span>
+                            </td>
+                            <td>{{ check.detail }}</td>
+                        </tr>
+                    {% endfor %}
+                </c-slot>
+            </c-table>
+        </div>
+    </div>
+    <div id="pre-footer-spacer"></div>
+</c-layouts.base>
+
+{% endblock %}

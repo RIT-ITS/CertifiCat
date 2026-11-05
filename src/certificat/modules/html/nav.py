@@ -5,6 +5,8 @@ from enum import Enum
 from django.http import HttpRequest
 from django.urls import reverse
 
+from certificat.modules.management import can_access_management
+
 
 class Sections(str, Enum):
     Dashboard = "DASHBOARD"
@@ -13,7 +15,7 @@ class Sections(str, Enum):
     Orders = "ORDERS"
     Certificates = "CERTIFICATES"
     TOS = "TOS"
-    Admin = "admin:index"
+    Admin = "ADMIN"
 
 
 class NavItem:
@@ -43,8 +45,8 @@ class NavItem:
         return reverse(self.section.value)
 
 
-def is_admin_test(request: HttpRequest):
-    return request.user.is_superuser
+def can_access_management_test(request: HttpRequest):
+    return can_access_management(request.user)
 
 
 class Navigation:
@@ -54,7 +56,7 @@ class Navigation:
         NavItem(Sections.Orders, "Orders"),
         NavItem(Sections.Certificates, "Certificates"),
         NavItem(Sections.Usage, "Usage"),
-        NavItem(Sections.Admin, "Admin", is_admin_test),
+        NavItem(Sections.Admin, "Admin", can_access_management_test),
     ]
     indexed_top_level_nav = {n.section: n for n in top_level_nav}  # noqa: RUF012
 

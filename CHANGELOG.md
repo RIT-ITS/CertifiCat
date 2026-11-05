@@ -7,6 +7,17 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 ## Unreleased / In Development
 
+- **Breaking:** groups synced from SAML or remote auth are no longer prefixed (e.g. `SAML/admins` is now `admins`) and map directly to Django groups. Migration `acme.0020_remove_group_prefixes` renames existing groups, merging users, permissions and account access into an existing group of the same name
+- **Breaking:** the identity provider now owns all group membership. On login, a user's Django groups are replaced with exactly the groups sent by SAML or the remote groups header, so memberships assigned by hand are removed
+- Deprecated the `group_sync_prefix` authentication setting (now ignored) and `certificat.utils.PREFIXED_GROUP_REGEX` / `unprefix_group`
+- Added an administration page at `/admin/` with links to management tools, a setup checklist and health checks (task worker and stuck orders). It is visible to superusers and anyone with permission to view users or edit the terms of service or usage page
+- **Breaking:** moved the Django admin from `/admin/` to `/admin/backend/`
+- Added group management at `/admin/groups/`. Groups can be searched and viewed by users with `auth.view_user`; superusers can choose each group's permissions from checkboxes grouped by function (Users, Accounts & Orders, Documentation)
+- Added user management at `/admin/users/`. Users with `auth.view_user` can list, search and view user profiles, including each permission and the groups that grant it. Permissions are only granted through groups, not directly to users, and permissions assigned directly to a user in the Django admin are not shown
+- Fixed administrators removed from the `administrators` / `administrators_groups` settings keeping access to the Django admin (`is_staff`) after losing superuser
+- Fixed list pages returning a server error when the `page` query parameter isn't a number
+- The task worker heartbeat now records its last check-in in the database so the web UI can report worker health
+- Fixed `EDIT_PREAUTHS` and `EDIT_TOS` permission names, which did not match the Django permission codenames and so were never granted to non-superusers
 - Adding postgres support for Huey tasks admin
 - Reorganize views to pull business and query logic to external services
 - Added links to view all recent orders and all certificates

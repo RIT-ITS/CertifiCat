@@ -231,14 +231,6 @@ The name (or translated name) of the group attribute in the returned SAML assert
 
 ---
 
-#### `certificat.authentication.group_sync_prefix` {data-toc-label='group_sync_prefix' : #certificat.authentication[saml].group_sync_prefix}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"SAML/"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
-
-New groups synced from SAML will be prefixed with this identifier. Generally leave this setting as the default.
-
----
-
 #### `certificat.authentication.idp.local` {data-toc-label='idp.local' : #certificat.authentication[saml].idp.local}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">[]</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;string&gt;</span></span>

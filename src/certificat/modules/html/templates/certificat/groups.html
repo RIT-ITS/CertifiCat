@@ -1,0 +1,61 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Manage Groups{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    <form action="." id="search_form" method="get">
+        <div class="search mb-3">
+            <div class="input--icon">
+                <i class="fa fa-magnifying-glass icon"></i>
+                <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by group name" class="search--box" />
+            </div>
+            <button class="btn btn--secondary search--button">Search</button>
+            {% if request.GET.filter %}
+                <a href="{% url 'admin-groups' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
+            {% endif %}
+        </div>
+    </form>
+
+    <c-link-table name="groups">
+        <c-slot name="head">
+            <div class="tr">
+                <div class="th">Group</div>
+                <div class="th">Members</div>
+                <div class="th">Permissions</div>
+                <div class="th"><!-- edit --></div>
+            </div>
+        </c-slot>
+        <c-slot name="body">
+            {% for group in groups.page %}
+                <a class="link-row" href="{% url 'admin-group' group.id %}">
+                    <div class="td">
+                        <b class="bold">{{ group.name }}</b>
+                    </div>
+                    <div class="td shrink-cell">
+                        {{ group.member_count }}
+                    </div>
+                    <div class="td shrink-cell">
+                        {% if group.perm_count %}
+                            <span class="badge badge--outlined badge--info">{{ group.perm_count }} granted</span>
+                        {% else %}
+                            <span class="subtext">&mdash;</span>
+                        {% endif %}
+                    </div>
+                    <div class="td edit large table--row-button shrink-cell" data-text="View">
+                        <span class="fa-solid fa-chevron-right"></span>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No groups found.</div></div>
+            {% endfor %}
+        </c-slot>
+    </c-link-table>
+
+    <div class="row mt-2 centered">
+        <c-pagination :page="groups.page" />
+    </div>
+</c-layouts.base>
+
+{% endblock %}

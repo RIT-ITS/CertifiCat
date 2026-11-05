@@ -1,0 +1,46 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Group Detail{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    <dl class="field-list">
+        <dt>Name</dt>
+        <dd><b class="bold">{{ group.name }}</b></dd>
+
+        <dt>Members</dt>
+        <dd>
+            {% for member in members %}
+                <a href="{% url 'admin-user' member.id %}">{{ member.get_full_name|default:member.username }}</a>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                <span class="subtext">No members</span>
+            {% endfor %}
+            {% if member_count > members|length %}
+                <div class="subtext">Showing {{ members|length }} of {{ member_count }} members.</div>
+            {% endif %}
+            <div class="subtext mt-2">Membership is managed by your identity provider and updated each time a user logs in.</div>
+        </dd>
+    </dl>
+
+    <div class="mt-4">
+        <h5 class="icon"><i class="fa-solid fa-lock"></i>Permissions</h5>
+        <div class="divider mb-1"></div>
+        <p class="mb-3">Every member of this group receives the permissions selected below.</p>
+
+        <form action="{% url 'admin-group' group.id %}" method="POST" id="group-permissions-form">
+            {% csrf_token %}
+            <c-permissions :categories="perms_by_category" :editable="can_edit" />
+
+            {% if can_edit %}
+                <button class="btn btn--primary mt-5" type="submit">Update Permissions</button>
+            {% else %}
+                <div class="subtext">Only administrators can change group permissions.</div>
+            {% endif %}
+        </form>
+    </div>
+
+    <div id="pre-footer-spacer"></div>
+</c-layouts.base>
+
+{% endblock %}

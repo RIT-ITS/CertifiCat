@@ -43,7 +43,12 @@ urlpatterns = [
     ),
     path("login/", views.LocalLoginView.as_view(), name="login"),
     path("logout/", views.LocalLogoutView.as_view(), name="logout"),
-    path("admin/", admin_site.urls, name=Sections.Admin.value),
+    path("admin/", views.ManagementView.as_view(), name=Sections.Admin.value),
+    path("admin/users/", views.UsersView.as_view(), name="admin-users"),
+    path("admin/users/<int:user_id>/", views.UserView.as_view(), name="admin-user"),
+    path("admin/groups/", views.GroupsView.as_view(), name="admin-groups"),
+    path("admin/groups/<int:group_id>/", views.GroupView.as_view(), name="admin-group"),
+    path("admin/backend/", admin_site.urls),
     path("saml2/", include("djangosaml2.urls")),
     path("remote/login/", views.remote_login_redirect, name="remote-login-redirect"),
     # These are for testing and a convenience endpoint for monitoring

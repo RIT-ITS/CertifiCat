@@ -13,6 +13,7 @@ from acmev2.models import (
 )
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.models import Group, User
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.contenttypes.models import ContentType
 from django.forms import Form
@@ -34,14 +35,26 @@ from certificat.modules.acme.models import (
     TermsOfService,
     Usage,
 )
+from certificat.modules.groups import (
+    can_edit_groups,
+    group_perms_by_category,
+    search_groups,
+    set_group_perms,
+)
 from certificat.modules.html.forms import (
     NewBindingForm,
     TermsOfServiceEditForm,
     UsageEditForm,
 )
-from certificat.modules.perms import Perms
+from certificat.modules.management import (
+    can_access_management,
+    health_checks,
+    setup_checklist,
+)
+from certificat.modules.perms import MANAGEABLE_PERMS_BY_VALUE, Perms
+from certificat.modules.users import search_users, user_perms_by_category
 from certificat.settings.dynamic import ApplicationSettings, RemoteAuthSettings
-from certificat.utils import unprefix_group
+from certificat.utils import paginate
 
 from .nav import BreadCrumb, BreadCrumbs, Sections, build_breadcrumbs
 
@@ -298,7 +311,7 @@ class AccountViewContext:
         return self.initial | {
             "access_group_json": json.dumps(
                 [
-                    {"id": g.group.id, "name": unprefix_group(g.group.name)}
+                    {"id": g.group.id, "name": g.group.name}
                     for g in sorted(
                         self.binding.group_scopes.all(), key=lambda gs: gs.group.name
                     )
@@ -629,6 +642,127 @@ class CertificateView(ViewBase):
         )
 
         return render(request, "certificat/certificate.html", context)
+
+
+class AdminViewBase(ViewBase):
+    """Base for the pages under /admin/. Requires permission to view users
+    unless a subclass says otherwise."""
+
+    section = Sections.Admin
+    required_perm = Perms.VIEW_USERS
+
+    def test_func(self):
+        return self.request.user.has_perm(self.required_perm)
+
+    def admin_breadcrumbs(self, *crumbs) -> BreadCrumbs:
+        return build_breadcrumbs(("Admin", reverse(Sections.Admin.value)), *crumbs)
+
+
+class ManagementView(AdminViewBase):
+    def test_func(self):
+        return can_access_management(self.request.user)
+
+    def get_breadcrumbs(self, **kwargs):
+        return build_breadcrumbs("Admin")
+
+    def get(self, request: HttpRequest):
+        context = self.get_context_data(
+            checklist=setup_checklist(request.user, self.settings),
+            health_checks=health_checks(),
+        )
+        return render(request, "certificat/admin.html", context)
+
+
+class UsersView(AdminViewBase):
+    def get_breadcrumbs(self, **kwargs):
+        return self.admin_breadcrumbs("Users")
+
+    def get(self, request: HttpRequest):
+        users_paginator, users_page = paginate(
+            search_users(request.GET.get("filter")),
+            request.GET.get("page", 1),
+        )
+        context = self.get_context_data(
+            users={"paginator": users_paginator, "page": users_page}
+        )
+        return render(request, "certificat/users.html", context)
+
+
+class UserView(AdminViewBase):
+    def get_breadcrumbs(self, **kwargs):
+        return self.admin_breadcrumbs(("Users", reverse("admin-users")), "Profile")
+
+    def get(self, request: HttpRequest, user_id: int):
+        profile = get_object_or_404(User, pk=user_id)
+        context = self.get_context_data(
+            profile=profile,
+            groups=profile.groups.order_by("name"),
+            perms_by_category=user_perms_by_category(profile),
+        )
+        return render(request, "certificat/user.html", context)
+
+
+class GroupsView(AdminViewBase):
+    def get_breadcrumbs(self, **kwargs):
+        return self.admin_breadcrumbs("Groups")
+
+    def get(self, request: HttpRequest):
+        groups_paginator, groups_page = paginate(
+            search_groups(request.GET.get("filter")),
+            request.GET.get("page", 1),
+        )
+        context = self.get_context_data(
+            groups={"paginator": groups_paginator, "page": groups_page}
+        )
+        return render(request, "certificat/groups.html", context)
+
+
+class GroupView(AdminViewBase):
+    MAX_MEMBERS_SHOWN = 50
+
+    def get_breadcrumbs(self, **kwargs):
+        return self.admin_breadcrumbs(("Groups", reverse("admin-groups")), "Group")
+
+    def get(self, request: HttpRequest, group_id: int):
+        group = get_object_or_404(Group, pk=group_id)
+        members = group.user_set.order_by("username")
+
+        context = self.get_context_data(
+            group=group,
+            members=members[: self.MAX_MEMBERS_SHOWN],
+            member_count=members.count(),
+            perms_by_category=group_perms_by_category(group),
+            can_edit=can_edit_groups(request.user),
+        )
+        return render(request, "certificat/group.html", context)
+
+    def post(self, request: HttpRequest, group_id: int):
+        if not can_edit_groups(request.user):
+            return self.handle_no_permission()
+
+        group = get_object_or_404(Group, pk=group_id)
+
+        selected_values = set(request.POST.getlist("perms"))
+        if not selected_values <= MANAGEABLE_PERMS_BY_VALUE.keys():
+            return HttpResponse(status=400)
+
+        added, removed = set_group_perms(
+            group, {Perms(value) for value in selected_values}
+        )
+
+        if added or removed:
+            messages.success(request, "Group permissions updated.")
+            logger.info(
+                "User %s updated permissions for group %s, added: %s, removed: %s",
+                request.user.username,
+                group.name,
+                ",".join(sorted(added)) or "none",
+                ",".join(sorted(removed)) or "none",
+            )
+        else:
+            messages.info(request, "No permission changes to save.")
+
+        return HttpResponseRedirect(reverse("admin-group", args=[group.id]))
 
 
 class LocalLoginView(LoginView):

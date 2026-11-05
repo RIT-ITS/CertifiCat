@@ -11,7 +11,6 @@ from certificat.tests.helpers import gen_user
 import pytest
 from certificat.auth import (
     _reconcile_idp_groups,
-    _prefix_idp_groups,
     _reconcile_superuser,
 )
 from django.contrib.auth.models import Group, User
@@ -54,26 +53,30 @@ def test_reconcile_groups():
     new_groups = ["group1", "group2"]
     _reconcile_idp_groups(user, {saml_auth_settings.group_attribute: new_groups})
 
-    assert set([g.name for g in user.groups.all()]) == set(
-        _prefix_idp_groups(new_groups)
-    )
+    # group names map directly, without a prefix
+    assert set([g.name for g in user.groups.all()]) == set(new_groups)
 
     # user loses access to a group, ensure it's removed
     new_groups = ["group1"]
     _reconcile_idp_groups(user, {saml_auth_settings.group_attribute: new_groups})
 
-    assert set([g.name for g in user.groups.all()]) == set(
-        _prefix_idp_groups(new_groups)
-    )
+    assert set([g.name for g in user.groups.all()]) == set(new_groups)
 
-    # user gets access to a non-saml group, don't remove it
+    # the IdP owns all group membership, groups assigned by hand are removed
     unmanaged_group, _ = Group.objects.get_or_create(name="unmanaged")
     user.groups.add(unmanaged_group)
     new_groups = ["group1", "group3"]
     _reconcile_idp_groups(user, {saml_auth_settings.group_attribute: new_groups})
-    assert set([g.name for g in user.groups.all()]) == set(
-        _prefix_idp_groups(new_groups)
-    ) | {unmanaged_group.name}
+    assert set([g.name for g in user.groups.all()]) == set(new_groups)
+
+    # an IdP group with the same name as an existing group joins that group
+    existing_group, _ = Group.objects.get_or_create(name="existing")
+    _reconcile_idp_groups(user, {saml_auth_settings.group_attribute: ["existing", ""]})
+    assert list(user.groups.all()) == [existing_group]
+
+    # no groups in the assertion removes all groups
+    _reconcile_idp_groups(user, {})
+    assert user.groups.count() == 0
 
 
 @dataclass
@@ -130,20 +133,30 @@ def test_reconcile_superuser():
             expected_admin=False,
             initial_groups=["nonadmin-group", "another-nonadmin-group"],
         ),
-        # ensure prefixed admin group works
+        # ensure admin groups match case-insensitively
         case(
             admins=["admin-usr"],
             admin_groups=["admin-group"],
             user=user,
             expected_admin=True,
-            initial_groups=["SAML/nonadmin-group", "SAML/admin-group"],
+            initial_groups=["nonadmin-group", "Admin-Group"],
+        ),
+        # prefixes are no longer stripped from group names
+        case(
+            admins=[],
+            admin_groups=["admin-group"],
+            user=user,
+            expected_admin=False,
+            initial_groups=["SAML/admin-group"],
         ),
     ]
 
     for idx, case in enumerate(test_cases):
         # reset user between test cases
         user.groups.clear()
+        # Configured administrators are always both superuser and staff
         user.is_superuser = case.initial_superuser
+        user.is_staff = case.initial_superuser
         user.save()
         user.refresh_from_db()
 
@@ -154,3 +167,5 @@ def test_reconcile_superuser():
         user = _reconcile_superuser(user, case.admins, case.admin_groups)
 
         assert user.is_superuser == case.expected_admin, f"Case {idx + 1} failed."
+        # Demoted administrators also lose access to the Django admin
+        assert user.is_staff == case.expected_admin, f"Case {idx + 1} failed."

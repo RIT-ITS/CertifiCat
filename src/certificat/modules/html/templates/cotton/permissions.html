@@ -1,0 +1,35 @@
+<c-vars categories editable="" name="perms" />
+{% comment %}
+Permission checklist grouped by category.
+
+categories: dict of PermCategory -> list[PermissionEntry]
+editable:   render enabled checkboxes submitted under `name`, otherwise read-only
+name:       form field name for the checkboxes
+
+Entries with via_groups list the groups that grant the permission.
+{% endcomment %}
+<div class="permissions">
+    {% for category, entries in categories.items %}
+        <fieldset {% if not forloop.last %}class="mb-3"{% endif %}>
+            <legend>{{ category }}</legend>
+            {% for entry in entries %}
+                <label>
+                    <input type="checkbox" class="align-start {% if not editable %}disabled-replacement{% endif %}" {% if editable %}name="{{ name }}"{% else %}disabled{% endif %} value="{{ entry.perm.value }}" {% if entry.granted %}checked{% endif %} />
+
+                    <span>
+                        <b class="bold">{{ entry.name }}</b>
+                        <span class="subtext">&mdash; {{ entry.description }}</span>
+                        {% if entry.via_groups %}
+                            <div class="permission-sources block mb-2 subtext">
+                                <b>granted by:</b>
+                                {% for group in entry.via_groups %}
+                                    <a href="{% url 'admin-group' group.id %}" title="Granted by group {{ group.name }}">{{ group.name }}</a>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </span>
+                </label>
+            {% endfor %}
+        </fieldset>
+    {% endfor %}
+</div>

@@ -1,0 +1,59 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}User Profile{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    {% if profile.is_superuser %}
+        <div class="mb-4">
+            <c-message type="info">
+                This user is a superuser and has every permission regardless of what is assigned below.
+            </c-message>
+        </div>
+    {% endif %}
+
+    <dl class="field-list">
+        <dt>User</dt>
+        <dd>
+            <c-user :user="profile" emailIsLink />
+        </dd>
+
+        <dt>Username</dt>
+        <dd>{{ profile.username }}</dd>
+
+        <dt>Status</dt>
+        <dd>
+            {% if profile.is_active %}Active{% else %}Inactive{% endif %}{% if profile.is_superuser %}, superuser{% endif %}
+        </dd>
+
+        <dt>Joined</dt>
+        <dd>{{ profile.date_joined }}</dd>
+
+        <dt>Last Login</dt>
+        <dd>{{ profile.last_login|default:"Never" }}</dd>
+
+        <dt>Groups</dt>
+        <dd>
+            {% for group in groups %}
+                <a href="{% url 'admin-group' group.id %}">{{ group.name }}</a>{% if not forloop.last %}<br />{% endif %}
+            {% empty %}
+                <span class="subtext">No groups</span>
+            {% endfor %}
+        </dd>
+    </dl>
+
+    <div class="mt-4">
+        <h5 class="icon"><i class="fa-solid fa-lock"></i>Permissions</h5>
+        <div class="divider mb-1"></div>
+        <p class="mb-3">
+            Permissions are granted through groups. To change them, edit a group's permissions or change the user's group membership in your identity provider.
+        </p>
+       
+        <c-permissions :categories="perms_by_category" />
+    </div>
+
+    <div id="pre-footer-spacer"></div>
+</c-layouts.base>
+
+{% endblock %}

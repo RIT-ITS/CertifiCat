@@ -27,7 +27,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core.paginator import EmptyPage, Paginator
+from django.core.paginator import Page, Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.utils import timezone
@@ -47,7 +47,7 @@ from certificat.modules.acme.pydantic import (
 from certificat.modules.html.contextvars import request_context
 from certificat.modules.perms import Perms
 from certificat.settings.dynamic import ApplicationSettings
-from certificat.utils import unprefix_group
+from certificat.utils import paginate
 
 
 class Dictable:
@@ -135,16 +135,9 @@ class AccountBindingQuerySet(models.QuerySet):
         return queryset
 
     def paginated(
-        self, curr_page: int = 1, per_page: int = 20, order_by="-created_at"
-    ) -> Self:
-        paginator = Paginator(self.order_by(order_by), per_page)
-
-        try:
-            page = paginator.page(curr_page)
-        except EmptyPage:
-            page = paginator.page(1)
-
-        return (paginator, page)
+        self, curr_page: int | str = 1, per_page: int = 20, order_by="-created_at"
+    ) -> tuple[Paginator, Page]:
+        return paginate(self.order_by(order_by), curr_page, per_page)
 
 
 class AccountBinding(TimestampMixin):
@@ -236,9 +229,6 @@ class AccountBindingGroupScope(TimestampMixin):
     )
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
-    def friendly_name(self):
-        return unprefix_group(self.group.name)
-
     class Meta:
         unique_together = ("binding", "group")
         ordering = ("group__name",)
@@ -289,16 +279,9 @@ class OrderQuerySet(models.QuerySet):
         return self
 
     def paginated(
-        self, curr_page: int = 1, per_page: int = 10, order_by="-created_at"
-    ) -> Self:
-        paginator = Paginator(self.order_by(order_by), per_page)
-
-        try:
-            page = paginator.page(curr_page)
-        except EmptyPage:
-            page = paginator.page(1)
-
-        return (paginator, page)
+        self, curr_page: int | str = 1, per_page: int = 10, order_by="-created_at"
+    ) -> tuple[Paginator, Page]:
+        return paginate(self.order_by(order_by), curr_page, per_page)
 
 
 class Order(TimestampMixin, Dictable):
@@ -369,16 +352,9 @@ class CertificateQuerySet(models.QuerySet):
         return self
 
     def paginated(
-        self, curr_page: int = 1, per_page: int = 20, order_by="-created_at"
-    ) -> Self:
-        paginator = Paginator(self.order_by(order_by), per_page)
-
-        try:
-            page = paginator.page(curr_page)
-        except EmptyPage:
-            page = paginator.page(1)
-
-        return (paginator, page)
+        self, curr_page: int | str = 1, per_page: int = 20, order_by="-created_at"
+    ) -> tuple[Paginator, Page]:
+        return paginate(self.order_by(order_by), curr_page, per_page)
 
 
 class Certificate(TimestampMixin, Dictable):

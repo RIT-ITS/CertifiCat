@@ -1,12 +1,34 @@
 import re
-from typing import Callable
+import warnings
+from collections.abc import Callable
 
+from django.core.paginator import Page, Paginator
+from django.db.models import QuerySet
 
+# Deprecated: groups synced from an identity provider are no longer prefixed
+# (e.g. "SAML/admins"); they map directly to Django group names. Migration
+# acme.0020_remove_group_prefixes renames existing groups. Kept only for
+# third-party code and will be removed in a future release.
 PREFIXED_GROUP_REGEX = re.compile(r"(?:\w+\/)?(?P<group>.+)")
 
 
 def unprefix_group(group: str) -> str:
+    """Deprecated: group names are no longer prefixed, use the name directly."""
+    warnings.warn(
+        "unprefix_group is deprecated, group names are no longer prefixed.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     return PREFIXED_GROUP_REGEX.match(group).group("group")
+
+
+def paginate(
+    queryset: QuerySet, page: int | str | None = 1, per_page: int = 20
+) -> tuple[Paginator, Page]:
+    """Returns the paginator and requested page. A page number that isn't a
+    number shows the first page, and one past the end shows the last page."""
+    paginator = Paginator(queryset, per_page)
+    return paginator, paginator.get_page(page)
 
 
 def coerce_to_list(obj):

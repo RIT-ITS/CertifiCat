@@ -5,7 +5,6 @@ from django.http import HttpRequest
 
 from certificat.modules.acme import models as db
 from certificat.settings.dynamic import ApplicationSettings
-from certificat.utils import unprefix_group
 
 
 class BindingScopePersonalOnly(models.TextChoices):
@@ -42,9 +41,7 @@ class NewBindingForm(forms.Form):
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        user_groups_choices = [
-            (g.id, unprefix_group(g.name)) for g in user.groups.order_by("name")
-        ]
+        user_groups_choices = [(g.id, g.name) for g in user.groups.order_by("name")]
         self.fields["group"].choices = user_groups_choices
 
         if len(user_groups_choices) == 0:

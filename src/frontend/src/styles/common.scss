@@ -865,3 +865,41 @@ ul.orderstatus {
         background-color: var(--primary-color);
     }
 }
+
+/* Draws a read-only checkbox as a check or x icon. The checkbox stays in the
+   html so screen readers still announce it as checked or not. appearance: none
+   (rather than hiding the input) is what lets every browser, including
+   Firefox, render ::before on a checkbox. */
+input[type=checkbox].disabled-replacement {
+    appearance: none;
+    pointer-events: none;
+    opacity: 1;
+    background-image: none;
+    background-color: transparent;
+
+    &::before {
+        font-family: "Font Awesome 6 Free";
+        font-size: 1.15rem;
+        margin-left: .25rem;
+        font-weight: 900;
+    }
+
+    &:checked::before {
+        content: "\f058"; /* circle-check */
+        color: var(--green-accent-color);
+    }
+
+    &:not(:checked)::before {
+        content: "\f057"; /* circle-xmark */
+        color: var(--gray-color--500);
+    }
+}
+
+/* Checklist styles */
+.checklist--notdone {
+    color: var(--orange-accent-color);
+}
+
+.checklist--done {
+    color: var(--green-accent-color);
+}

@@ -4,10 +4,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inject
+from django.db import close_old_connections
 from huey import crontab
 from huey.contrib.djhuey import db_task, periodic_task, task
 from huey.contrib.djhuey.stats.models import HueyEvent
 
+from certificat.modules.management import record_task_worker_heartbeat
 from certificat.settings.dynamic import ApplicationSettings
 
 from . import (
@@ -37,6 +39,16 @@ def ping(pong_text: str) -> str:
 # stops at the minute level and ignores seconds.
 @periodic_task(crontab(minute="*"))
 def heartbeat(task=None):
+    # Never let a database problem stop the ping loop below, the container
+    # health check depends on it.
+    try:
+        close_old_connections()
+        record_task_worker_heartbeat()
+    except Exception:
+        logger.exception("Unable to record task worker heartbeat")
+    finally:
+        close_old_connections()
+
     cutoff = time.time() + 60
     while time.time() < cutoff:
         start = time.time()

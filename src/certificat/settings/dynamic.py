@@ -335,6 +335,7 @@ class RemoteAuthSettings(BaseModel):
     )
     group_sync_prefix: SkipJsonSchema[str] = Field(
         "REMOTE/",
+        deprecated="Groups are no longer prefixed and map directly to Django group names. This field is ignored and will be removed in a future version.",
         description="New groups synced from remote auth will be prefixed with this identifier.",
     )
 
@@ -415,6 +416,7 @@ class SAMLAuthSettings(BaseModel):
     )
     group_sync_prefix: str = Field(
         "SAML/",
+        deprecated="Groups are no longer prefixed and map directly to Django group names. This field is ignored and will be removed in a future version.",
         description="New groups synced from SAML will be prefixed with this identifier. Generally leave this setting as the default.",
     )
 
@@ -452,6 +454,9 @@ class SAMLAuthSettings(BaseModel):
 class FinalizerSettings(BaseModel):
     type: SkipJsonSchema[Literal["none"]] = "none"
     module: str
+    # Whether the finalizer is supported for production use, shown on the
+    # admin setup checklist. Not configurable.
+    production_ready: ClassVar[bool] = False
 
 
 class WebhookSettings(BaseModel):
@@ -490,6 +495,7 @@ class ACMEFinalizerChallengeSettings(BaseModel):
 class ACMEFinalizerSettings(FinalizerSettings):
     type: SkipJsonSchema[Literal["acme"]] = "acme"
     module: SkipJsonSchema[str] = "certificat.modules.acme.backends.acme.ACMEFinalizer"
+    production_ready: ClassVar[bool] = True
 
     @classmethod
     def get(cls) -> Self:
@@ -545,6 +551,7 @@ class CERTINextACMEFinalizerSettings(FinalizerSettings):
     module: SkipJsonSchema[str] = (
         "certificat.modules.acme.backends.certinext_acme.CERTINextACMEFinalizer"
     )
+    production_ready: ClassVar[bool] = True
 
     @classmethod
     def get(cls) -> Self:

@@ -13,7 +13,7 @@ from certificat.settings.dynamic import (
     RemoteAuthSettings,
     SAMLAuthSettings,
 )
-from certificat.utils import coerce_to_list, split_delimited_string, unprefix_group
+from certificat.utils import coerce_to_list, split_delimited_string
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class RemoteUserBackend(BaseRemoteUserBackend):
                         )
 
         if remote_auth_settings.groups_header:
-            _reconcile_header_groups(
+            _sync_user_groups(
                 user,
                 split_delimited_string(
                     request.META.get(remote_auth_settings.groups_header, ""),
@@ -126,11 +126,14 @@ class Saml2Backend(djangosaml2.backends.Saml2Backend):
 
 
 def _reconcile_superuser(
-    user: User, admins: list[str] = [], admin_groups: list[str] = []
+    user: User, admins: list[str] | None = None, admin_groups: list[str] | None = None
 ):
-    normalized_user_group_names = [
-        unprefix_group(g.name.lower()) for g in user.groups.all()
-    ]
+    """Grants superuser and Django admin access to configured administrators,
+    and takes both away from anyone who is no longer one."""
+    admins = admins or []
+    admin_groups = admin_groups or []
+
+    normalized_user_group_names = [g.name.lower() for g in user.groups.all()]
     user_in_admin_group = False
     for name in admin_groups:
         if name.lower() in normalized_user_group_names:
@@ -146,100 +149,49 @@ def _reconcile_superuser(
         user.is_superuser = True
         user.save()
     elif user.is_superuser:
+        logger.debug(
+            "user %s is no longer an administrator, removing superuser access",
+            user.username,
+        )
+        user.is_staff = False
         user.is_superuser = False
         user.save()
 
     return user
 
 
-def _prefix_idp_groups(groups: list[str]):
-    saml_settings: SAMLAuthSettings = inject.instance(
-        ApplicationSettings
-    ).authentication
+def _sync_user_groups(user: User, group_names: list[str]):
+    """Makes the user's Django groups exactly match the groups sent by the
+    identity provider. Group names map directly to Django group names, and
+    groups that don't exist yet are created. Any group membership not sent by
+    the identity provider is removed, including memberships assigned by hand.
+    """
+    new_group_names = {g for g in group_names if g}
 
-    return [f"{saml_settings.group_sync_prefix}{g}" for g in groups]
-
-
-def _reconcile_header_groups(user: User, groups: list[str]):
-    remote_settings: RemoteAuthSettings = inject.instance(
-        ApplicationSettings
-    ).authentication
-
-    current_user_remote_group_names = set(
-        user.groups.filter(
-            name__startswith=remote_settings.group_sync_prefix
-        ).values_list("name", flat=True)
+    existing_group_names = set(
+        Group.objects.filter(name__in=new_group_names).values_list("name", flat=True)
     )
-
-    new_remote_group_names = set(
-        [f"{remote_settings.group_sync_prefix}{g}" for g in groups]
-    )
-
-    # Remote groups existing in the Django database
-    existing_remote_groups_lookup = {
-        g.name: g for g in Group.objects.filter(name__in=new_remote_group_names)
-    }
-
-    # These groups need to be added to the database
-    group_names_to_add = new_remote_group_names - existing_remote_groups_lookup.keys()
-    # These groups need to be added to the user
-    user_groups_to_add = new_remote_group_names - current_user_remote_group_names
-    # These groups need to be removed from the user
-    user_groups_to_remove = current_user_remote_group_names - new_remote_group_names
-
-    for group_name in group_names_to_add:
+    for group_name in new_group_names - existing_group_names:
         Group.objects.get_or_create(name=group_name)
 
-    logger.debug("removing groups: %s", ",".join(user_groups_to_remove))
-    user.groups.remove(*Group.objects.filter(name__in=user_groups_to_remove))
-    logger.debug("adding groups: %s", ",".join(user_groups_to_add))
-    user.groups.add(*Group.objects.filter(name__in=user_groups_to_add))
+    current_group_names = set(user.groups.values_list("name", flat=True))
+    logger.debug("removing groups: %s", ",".join(current_group_names - new_group_names))
+    logger.debug("adding groups: %s", ",".join(new_group_names - current_group_names))
+    user.groups.set(Group.objects.filter(name__in=new_group_names))
 
 
 def _reconcile_idp_groups(user: User, attributes: dict):
-    # TODO: We support discovery, but these groups are unprefixed. Group
-    # mapping should be disabled with discovery or groups should be namespaced
-    # somehow by tenant.
-
-    # Gets a list of the current user's groups that begin with the
-    # SAML_GROUP_PREFIX, so we don't update any groups set outside this.
+    # TODO: We support discovery, but groups aren't namespaced by tenant.
+    # Group mapping should be disabled with discovery or groups should be
+    # namespaced somehow by tenant.
 
     # TODO: assert the authentication type is saml...
     saml_settings: SAMLAuthSettings = inject.instance(
         ApplicationSettings
     ).authentication
 
-    non_empty_saml_groups = [
-        g for g in attributes.get(saml_settings.group_attribute, []) if g
-    ]
-    new_saml_group_names = set(_prefix_idp_groups(non_empty_saml_groups))
-
+    saml_groups = attributes.get(saml_settings.group_attribute, [])
     logger.debug(
-        "prefixed saml groups from assertion: %s", ",".join(new_saml_group_names)
+        "saml groups from assertion: %s", ",".join(g for g in saml_groups if g)
     )
-
-    current_user_saml_group_names = set(
-        user.groups.filter(
-            name__startswith=saml_settings.group_sync_prefix
-        ).values_list("name", flat=True)
-    )
-
-    # SAML groups existing in the Django database
-    existing_saml_groups_lookup = {
-        g.name: g for g in Group.objects.filter(name__in=new_saml_group_names)
-    }
-
-    # These groups need to be added to the database
-    group_names_to_add = new_saml_group_names - existing_saml_groups_lookup.keys()
-    # These groups need to be added to the user
-    user_groups_to_add = new_saml_group_names - current_user_saml_group_names
-    # These groups need to be removed from the user
-    user_groups_to_remove = current_user_saml_group_names - new_saml_group_names
-
-    for group_name in group_names_to_add:
-        Group.objects.get_or_create(name=group_name)
-
-    logger.debug("removing groups: %s", ",".join(user_groups_to_remove))
-    user.groups.remove(*Group.objects.filter(name__in=user_groups_to_remove))
-    logger.debug("adding groups: %s", ",".join(user_groups_to_add))
-    user.groups.add(*Group.objects.filter(name__in=user_groups_to_add))
+    _sync_user_groups(user, saml_groups)

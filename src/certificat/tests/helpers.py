@@ -17,7 +17,10 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
+from django.test import Client
+
+from certificat.modules.perms import Perms
 
 
 class HelperGlobals:
@@ -191,3 +194,21 @@ def select_http01_challenges(order: messages.OrderResource):
                 http_challenges.append(i)
 
     return http_challenges
+
+
+PERMS_GROUP_PREFIX = "perms-"
+
+
+def client_with_perms(*perms: Perms, **user_kwargs) -> Client:
+    """Returns a client logged in as a new user. Permissions are granted the
+    same way the app grants them, through a group (named PERMS_GROUP_PREFIX
+    plus the username) that the user belongs to."""
+    user = gen_user(**user_kwargs)
+    if perms:
+        group = Group.objects.create(name=f"{PERMS_GROUP_PREFIX}{user.username}")
+        group.permissions.add(*(perm.get_permission() for perm in perms))
+        user.groups.add(group)
+    client = Client(enforce_csrf_checks=False)
+    client.force_login(user)
+    client.test_user = user
+    return client

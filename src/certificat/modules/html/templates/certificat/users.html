@@ -1,0 +1,65 @@
+{% extends "certificat/base.html" %}
+
+{% block headline %}Manage Users{% endblock %}
+
+{% block body %}
+
+<c-layouts.base>
+    <form action="." id="search_form" method="get">
+        <div class="search mb-3">
+            <div class="input--icon">
+                <i class="fa fa-magnifying-glass icon"></i>
+                <input type="text" autocomplete="off" autofocus value="{{ request.GET.filter }}" name="filter" placeholder="Search by username, name or email" class="search--box" />
+            </div>
+            <button class="btn btn--secondary search--button">Search</button>
+            {% if request.GET.filter %}
+                <a href="{% url 'admin-users' %}" class="btn btn--secondary btn--outline"><i class="fa-solid fa-xmark"></i></a>
+            {% endif %}
+        </div>
+    </form>
+
+    <c-link-table name="users">
+        <c-slot name="head">
+            <div class="tr">
+                <div class="th">User</div>
+                <div class="th">Username</div>
+                <div class="th">Last Login</div>
+                <div class="th">Status</div>
+                <div class="th"><!-- edit --></div>
+            </div>
+        </c-slot>
+        <c-slot name="body">
+            {% for u in users.page %}
+                <a class="link-row" href="{% url 'admin-user' u.id %}">
+                    <div class="td">
+                        <c-user :user="u" />
+                    </div>
+                    <div class="td shrink-cell">
+                        {{ u.username }}
+                    </div>
+                    <div class="td shrink-cell">
+                        {{ u.last_login|date:"DATE_FORMAT"|default:"Never" }}
+                    </div>
+                    <div class="td shrink-cell">
+                        {% if not u.is_active %}
+                            <span class="badge badge--outlined badge--dark">inactive</span>
+                        {% elif u.is_superuser %}
+                            <span class="badge badge--outlined badge--warning">superuser</span>
+                        {% endif %}
+                    </div>
+                    <div class="td edit large table--row-button shrink-cell" data-text="View">
+                        <span class="fa-solid fa-chevron-right"></span>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="tr"><div class='td' colspan="100%" class="centered no-records-found">No users found.</div></div>
+            {% endfor %}
+        </c-slot>
+    </c-link-table>
+
+    <div class="row mt-2 centered">
+        <c-pagination :page="users.page" />
+    </div>
+</c-layouts.base>
+
+{% endblock %}

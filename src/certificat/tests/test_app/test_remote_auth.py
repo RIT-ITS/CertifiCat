@@ -259,7 +259,5 @@ class TestRemoteAuth:
 
             user = User.objects.get(username=username)
 
-            assert sorted([g.name for g in user.groups.all()]) == sorted(
-                [f"{auth_settings.group_sync_prefix}{g}" for g in groups]
-            )
+            assert sorted([g.name for g in user.groups.all()]) == sorted(groups)
             web_client.logout()

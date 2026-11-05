@@ -57,7 +57,7 @@
                     </div>
                     <div class="td access">
                         {% for scope in binding.group_scopes.all %}
-                            {{ scope.friendly_name }}{% if not forloop.last %}<br />{% endif %}
+                            {{ scope.group.name }}{% if not forloop.last %}<br />{% endif %}
                         {% empty %}
                             <c-user :user="binding.creator" />
                         {% endfor %}

@@ -172,7 +172,7 @@
                 </div>
             </c-tab>
             {% if not account_invalid and can_edit %}
-                <c-tab group="main" id="management" label="Revocation" :default="{% if tab == "management" %}True{% endif %}">
+                <c-tab group="main" id="management" label="Management" :default="{% if tab == "management" %}True{% endif %}">
                     <div class="container wrap">
                         <div class="container mt-4">
                             <form action="{% url 'account' binding.id %}" method="POST">

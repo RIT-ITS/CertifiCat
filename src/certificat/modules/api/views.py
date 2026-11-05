@@ -16,7 +16,6 @@ from django.views.decorators.http import require_http_methods
 from certificat.modules.acme import models as db
 from certificat.modules.perms import Perms
 from certificat.settings.dynamic import ApplicationSettings
-from certificat.utils import unprefix_group
 
 
 class TruncDayNaive(Func):
@@ -71,9 +70,6 @@ def cert_activity(request: HttpRequest):
 @require_http_methods(["GET"])
 def my_groups(request: HttpRequest):
     groups = request.user.groups.all().order_by("name").values("id", "name")
-    # remove namespace prefixes from group names
-    for group in groups:
-        group["name"] = unprefix_group(group["name"])
 
     return JsonResponse(list(groups), safe=False)
 

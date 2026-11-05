@@ -922,14 +922,6 @@ The name (or translated name) of the group attribute in the returned SAML assert
 
 ---
 
-#### `SAMLAuthSettings.group_sync_prefix` {data-toc-label='group_sync_prefix' : #SAMLAuthSettings.group_sync_prefix}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"SAML/"</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
-
-New groups synced from SAML will be prefixed with this identifier. Generally leave this setting as the default.
-
----
-
 #### `SAMLAuthSettings.session_cookie` {data-toc-label='session_cookie' : #SAMLAuthSettings.session_cookie}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"snickerdoodle"</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>

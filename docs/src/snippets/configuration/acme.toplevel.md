@@ -38,8 +38,16 @@ Whether all accounts are required to use external account binding or not.
 
 ---
 
+#### `acme.http_01_challenge_timeout` {data-toc-label='http_01_challenge_timeout' : #acme.http_01_challenge_timeout}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">10</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">number</span></span>
+
+Connect and read timeout, in seconds, for each request the http-01 challenge validator makes
+
+---
+
 #### `acme.http_01_challenge_user_agent` {data-toc-label='http_01_challenge_user_agent' : #acme.http_01_challenge_user_agent}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"python-acmev2/0.2.1"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"python-acmev2/0.3.0"</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 User agent the http-01 challenge validator uses when requesting the challenge document from the client server

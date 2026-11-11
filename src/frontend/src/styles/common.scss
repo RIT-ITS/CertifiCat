@@ -346,6 +346,12 @@ finalizer-manager {
             font-weight: bold;
             margin-bottom: 0;
         }
+        margin-right: $spacer*.5;
+    }
+
+    .finalizermanager--calltoaction {
+        margin-top: $spacer;
+        font-weight: bold;
     }
 
     li {
@@ -358,7 +364,7 @@ finalizer-manager {
             color: var(--body-text-color);
             outline-offset: -1px;
             transition: background-color 100ms ease-in-out 0s;
-            padding: $spacer*.25;
+            padding: $spacer*.5;
 
             > div {
                 flex: 1;
@@ -826,10 +832,6 @@ ul.orderstatus {
             }
         }
     }
-
-    .orderstatus--description {
-
-    }
 }
 
 #footer > div {
@@ -903,3 +905,35 @@ input[type=checkbox].disabled-replacement {
 .checklist--done {
     color: var(--green-accent-color);
 }
+
+/* side menu used as an alternative to the top menu */
+.sidemenu {
+    .sidemenu--header {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    > li {
+        ul {
+            border-left: 1px solid var(--gray-color--300);
+            margin: $spacer*.5;
+            padding-left: $spacer*.5;
+
+            li {
+                padding: $spacer*.05;
+                font-weight: bold;
+                a {
+                    &:hover {
+                        background-color: var(--gray-color--200);
+                    }
+                    padding: $spacer*.35;
+                    display: block;
+                    .subtext {
+                        font-weight: normal;
+                    }
+                }
+            }
+        }
+    }
+}
+/* end side menu */

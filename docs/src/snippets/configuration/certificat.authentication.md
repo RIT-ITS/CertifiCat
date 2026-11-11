@@ -224,7 +224,7 @@ The debug setting for the Django SAML plugin. This increases log verbosity.
 ---
 
 #### `certificat.authentication.group_attribute` {data-toc-label='group_attribute' : #certificat.authentication[saml].group_attribute}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"memberof"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"memberOf"</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The name (or translated name) of the group attribute in the returned SAML assertion

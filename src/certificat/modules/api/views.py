@@ -5,7 +5,7 @@ import inject
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count, DateField, Func, ObjectDoesNotExist
+from django.db.models import Count, DateField, Func
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import dateparse, timezone
@@ -14,7 +14,12 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_http_methods
 
 from certificat.modules.acme import models as db
-from certificat.modules.perms import Perms
+from certificat.modules.perms import (
+    AccountGateContext,
+    Gates,
+    PermissionGate,
+    normalize_gate_error,
+)
 from certificat.settings.dynamic import ApplicationSettings
 
 
@@ -75,12 +80,16 @@ def my_groups(request: HttpRequest):
 
 
 @login_required
+@normalize_gate_error
 @require_http_methods(["POST"])
 def edit_preauthorizations(request: HttpRequest, account_name):
-    if not request.user.has_perm(Perms.EDIT_PREAUTHS):
-        return HttpResponse(status=403)
-
     account = get_object_or_404(db.Account, name=account_name)
+
+    PermissionGate.throw_if_fails(request.user, Gates.EDIT_PREAUTHS)
+    PermissionGate.throw_if_fails(
+        request.user, Gates.EDIT_ACCOUNT, AccountGateContext(account.binding)
+    )
+
     request_json = json.loads(request.body)
 
     def normalize_identifiers(identifiers: list[str]):
@@ -122,15 +131,14 @@ def edit_preauthorizations(request: HttpRequest, account_name):
 
 
 @login_required
+@normalize_gate_error
 @require_http_methods(["POST"])
 def edit_finalizer(request: HttpRequest, account_name):
     settings = inject.instance(ApplicationSettings)
     account: db.Account = get_object_or_404(db.Account, name=account_name)
-    try:
-        if not account.binding.editable_by(request.user):
-            return HttpResponse(status=403)
-    except ObjectDoesNotExist:
-        return HttpResponse(status=404)
+    PermissionGate.throw_if_fails(
+        request.user, Gates.EDIT_ACCOUNT, AccountGateContext(account.binding)
+    )
 
     request_json = json.loads(request.body)
 
@@ -146,11 +154,16 @@ def edit_finalizer(request: HttpRequest, account_name):
 
 
 @login_required
+@normalize_gate_error
 @require_http_methods(["POST"])
 def edit_binding(request: HttpRequest, binding_name):
     binding: db.AccountBinding = get_object_or_404(
         db.AccountBinding.objects.prefetch_related("group_scopes"),
         id=binding_name,
+    )
+
+    PermissionGate.throw_if_fails(
+        request.user, Gates.EDIT_ACCOUNT, AccountGateContext(binding)
     )
 
     if not binding.editable_by(request.user):
@@ -162,10 +175,9 @@ def edit_binding(request: HttpRequest, binding_name):
     request_json = json.loads(request.body)
 
     if "owner" in request_json:
-        if not binding.transferable_by(request.user):
-            return JsonResponse(
-                {"error": "The current user cannot transfer ownership."}, status=403
-            )
+        PermissionGate.throw_if_fails(
+            request.user, Gates.TRANSFERRABLE_BY, AccountGateContext(binding)
+        )
 
         username = request_json["owner"]
         if not isinstance(username, str) or not username.strip():

@@ -265,7 +265,7 @@ class OrderQuerySet(models.QuerySet):
             for identifier in query.split(","):
                 identifier = identifier.strip()
                 if identifier.startswith("/") and identifier.endswith("/"):
-                    #TODO: Fix this query returning multiple of the same records
+                    # TODO: Fix this query returning multiple of the same records
                     query_filter |= models.Q(
                         identifiers__value__iregex=identifier[1:-1]
                     )

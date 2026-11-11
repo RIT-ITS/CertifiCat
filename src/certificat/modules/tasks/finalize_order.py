@@ -133,6 +133,7 @@ def finalize_order_task(order_name: str, task=None):
 
                 order_service = inject.instance(IOrderService)
                 order_service.update_status(db.to_pydantic(order), OrderStatus.invalid)
+                tasks.notifications.publish_finalization_error_task(order_name)
                 db.TaggedEvent.record(
                     db.OrderEventType.FINALIZATION_FAILED,
                     order,

@@ -136,20 +136,22 @@ export class FinalizerManagerElement extends LitElement {
 
         const orderedFinalizers = new Map(finalizerKeys.map(key => [key, this.finalizers.get(key)!]));
 
-        return html`<ul>
-            ${map(
-                orderedFinalizers.entries(),
-                ([id, finalizer]) => id != this.selectedFinalizer ? html`<li>
-                    <a @click="${() => this.modifyFinalizerTask.run([id])}">
-                        <div class="finalizermanager--option">
-                            <h4>${finalizer.name}</h4>
-                            ${finalizer.description}
-                        </div>
-                        <span><i class="fa-solid fa-chevron-right"></i></span>
-                    </a>
-                </li>` : null
-            )}
-        </ul>`
+        return html`
+            <div class='finalizermanager--calltoaction'>Select a Different Finalizer</div>
+            <ul>
+                ${map(
+                    orderedFinalizers.entries(),
+                    ([id, finalizer]) => id != this.selectedFinalizer ? html`<li>
+                        <a @click="${() => this.modifyFinalizerTask.run([id])}">
+                            <div class="finalizermanager--option">
+                                <h4>${finalizer.name}</h4>
+                                ${finalizer.description}
+                            </div>
+                            <span><i class="fa-solid fa-chevron-right"></i></span>
+                        </a>
+                    </li>` : null
+                )}
+            </ul>`
 
     }
 

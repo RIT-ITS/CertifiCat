@@ -23,9 +23,21 @@ nav:
   - "Home": index.md
   - "Getting Started": 
     - "Evaluation Example": "getting-started/local.md"
-    - "Production Example": "getting-started/production.md"
+    - "SAML Evaluation Example": "getting-started/saml.md"
+    - "Production Deployment": "getting-started/production.md"
   - "Features":
     - "Overview": "features/index.md"
+    - "Authentication": "features/authentication.md"
+    - "External Account Binding": "features/external-account-binding.md"
+    - "ACME Challenges": "features/supported-challenges.md"
+    - "Finalizers": "features/finalizers-stub.md"
+    - "Notifications": "features/notifications.md"
+  - "Finalizers":
+    - "Overview": "finalizers/index.md"
+    - "Local": "finalizers/local.md"
+    - "ACME": "finalizers/acme.md"
+    - "CERTInext ACME": "finalizers/certinext-acme.md"
+    - "Alternative Finalizers": "finalizers/multiple.md"
   - "Configuration":
     - "Settings": "configuration/index.md"
   #- "Convention": "configuration/convention.md"

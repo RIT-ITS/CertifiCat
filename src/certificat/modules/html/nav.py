@@ -5,7 +5,7 @@ from enum import Enum
 from django.http import HttpRequest
 from django.urls import reverse
 
-from certificat.modules.management import can_access_management
+from certificat.modules.perms import Gates, PermissionGate
 
 
 class Sections(str, Enum):
@@ -46,7 +46,7 @@ class NavItem:
 
 
 def can_access_management_test(request: HttpRequest):
-    return can_access_management(request.user)
+    return PermissionGate.evaluate(request.user, Gates.CAN_ACCESS_MANAGEMENT)
 
 
 class Navigation:

@@ -2,14 +2,14 @@ import time
 
 import pytest
 from acmev2.models import AccountStatus, OrderStatus
-from django.contrib.auth.models import Group, Permission
-from django.test import Client
+from django.contrib.auth.models import AnonymousUser, Group, Permission
+from django.test import Client, RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 
 from certificat.modules import management
 from certificat.modules.acme import models as db
-from certificat.modules.html.nav import Sections
+from certificat.modules.html.nav import Navigation, Sections
 from certificat.modules.management import HealthStatus
 from certificat.modules.perms import Perms
 from certificat.settings.dynamic import (
@@ -43,51 +43,80 @@ def test_anonymous_redirected(web_client: Client):
     assert web_client.get(reverse(Sections.Admin.value)).status_code == 302
 
 
+def admin_nav_visible(user) -> bool:
+    request = RequestFactory().get("/")
+    request.user = user
+    return Navigation.indexed_top_level_nav[Sections.Admin].test_func(request)
+
+
+def menu_entries(menu: management.ManagementMenu) -> dict[str, list[str]]:
+    """Flattens the menu to {category: [link destinations]}, leaving out
+    categories the user has no links in."""
+    return {
+        c.name: [link.destination for link in c.links]
+        for c in menu.categories_with_entries()
+    }
+
+
 @pytest.mark.django_db
 def test_requires_power_user(authenticated_web_client: Client):
-    admin_url = reverse(Sections.Admin.value)
-    assert authenticated_web_client.get(admin_url).status_code == 403
+    assert (
+        authenticated_web_client.get(reverse(Sections.Admin.value)).status_code == 403
+    )
 
-    response = authenticated_web_client.get(reverse(Sections.Dashboard.value))
-    assert f'href="{admin_url}"' not in response.content.decode()
+    user = authenticated_web_client.get(
+        reverse(Sections.Dashboard.value)
+    ).wsgi_request.user
+    assert not admin_nav_visible(user)
+    assert menu_entries(management.build_menu(user)) == {}
+    assert not admin_nav_visible(AnonymousUser())
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "perm, visible, hidden",
+    "perms, expected",
     [
         (
-            Perms.VIEW_USERS,
-            ["admin-link-users"],
-            ["admin-link-tos", "admin-link-backend"],
+            [Perms.VIEW_USERS],
+            {"Users": ["admin-users", "admin-groups"]},
         ),
         (
-            Perms.EDIT_TOS,
-            ["admin-link-tos"],
-            ["admin-link-users", "admin-link-backend"],
+            [Perms.EDIT_TOS],
+            {"Documentation": ["edit-tos"]},
         ),
         (
-            Perms.EDIT_USAGE,
-            ["admin-link-usage"],
-            ["admin-link-users", "admin-link-tos"],
+            [Perms.EDIT_USAGE],
+            {"Documentation": ["edit-usage"]},
+        ),
+        (
+            [Perms.EDIT_TOS, Perms.EDIT_USAGE],
+            {"Documentation": ["edit-tos", "edit-usage"]},
         ),
     ],
 )
-def test_links_follow_permissions(perm, visible, hidden):
-    client = client_with_perms(perm)
-    admin_url = reverse(Sections.Admin.value)
+def test_menu_follows_permissions(perms, expected):
+    client = client_with_perms(*perms)
+    user = client.test_user
+    expected = {
+        category: [reverse(name) for name in names]
+        for category, names in expected.items()
+    }
 
-    response = client.get(admin_url)
+    menu = management.build_menu(user)
+    assert menu_entries(menu) == expected
+    # Empty categories are kept but not rendered
+    assert [c.name for c in menu.categories] == [
+        "Users",
+        "Documentation",
+        "Low-level Admin",
+    ]
+
+    response = client.get(reverse(Sections.Admin.value))
     assert response.status_code == 200
-    content = response.content.decode()
-    for link in visible:
-        assert f'id="{link}"' in content
-    for link in hidden:
-        assert f'id="{link}"' not in content
+    assert response.context["menu"] == menu
 
     # The nav links to the management page
-    response = client.get(reverse(Sections.Dashboard.value))
-    assert f'href="{admin_url}"' in response.content.decode()
+    assert admin_nav_visible(user)
 
 
 @pytest.fixture
@@ -100,10 +129,34 @@ def staff_client() -> Client:
 def test_superuser_sees_everything(staff_client: Client):
     response = staff_client.get(reverse(Sections.Admin.value))
     assert response.status_code == 200
-    content = response.content.decode()
-    for link in ("users", "tos", "usage", "backend"):
-        assert f'id="admin-link-{link}"' in content
-    assert f'href="{reverse("admin:index")}"' in content
+    assert menu_entries(response.context["menu"]) == {
+        "Users": [reverse("admin-users"), reverse("admin-groups")],
+        "Documentation": [reverse("edit-tos"), reverse("edit-usage")],
+        "Low-level Admin": [reverse("admin:index")],
+    }
+    assert admin_nav_visible(staff_client.test_user)
+
+
+@pytest.mark.django_db
+def test_backend_link_requires_staff():
+    # Superusers without staff can't reach the Django admin, so it isn't offered
+    superuser = gen_user(is_superuser=True)
+    assert "Low-level Admin" not in menu_entries(management.build_menu(superuser))
+
+    # Staff alone can reach the management page, which only offers the backend
+    staff = gen_user(is_staff=True)
+    assert admin_nav_visible(staff)
+    menu = management.build_menu(staff)
+    assert menu_entries(menu) == {"Low-level Admin": [reverse("admin:index")]}
+    (backend,) = menu.categories_with_entries()[0].links
+    assert backend.name == "Django Backend"
+    assert backend.subtext
+
+    client = Client()
+    client.force_login(staff)
+    response = client.get(reverse(Sections.Admin.value))
+    assert response.status_code == 200
+    assert response.context["menu"] == menu
 
 
 @pytest.mark.django_db

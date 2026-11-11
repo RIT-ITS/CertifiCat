@@ -77,6 +77,8 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
             return _badge_for_type(page, files)
         elif type == "badge":
             return _badge(*arg_list)
+        elif type == "nowrap_key":
+            return _nowrap_key(arg_list, page, files)
         elif type == "default":
             if args == "none":
                 return _badge_for_default_none(page, files)
@@ -302,6 +304,12 @@ def _badge_for_config(args: list[str], page: Page, files: Files):
             icon=f"[:{icon}:]({href} 'Config Key')",
             text=f"[{config_name}]({config_href})",
         )
+
+
+# Create badge for type
+def _nowrap_key(args: list[str], page: Page, files: Files):
+    val = args[0]
+    return f"<span style='white-space:nowrap'>`{val}`</span>"
 
 
 # Create badge for customization flag

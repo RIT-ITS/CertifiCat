@@ -57,23 +57,107 @@ Skip answering authorization challenges. This may be used if the upstream ACME s
 
 ---
 
+#### `certificat.finalizer.webhooks.post_answer_challenges` {data-toc-label='webhooks.post_answer_challenges' : #certificat.finalizer[acme].webhooks.post_answer_challenges}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">[WebhookSettings](#refs.WebhookSettings) | null</span></span>
+
+
+
+Triggered after challenges have been answered. Requires a 20X status code returned or else the order will fail.
+
+```json title="Example payload"
+{
+    "type": "order.post-answer-challenges",
+    "timestamp": "2026-11-06T21:10:26.227000+00:00",
+    "data": {
+        "order": { "id": "<upstream order ID>" },
+        "authorizations": [
+            {
+                "id": "<upstream authorization ID>",
+                "identifier": "dns:www.acme.edu",
+                "challenges": [
+                    { "type": "http-01", "validation": "<key authorization>" },
+                    { "type": "dns-01", "validation": "<TXT record value>" }
+                ]
+            }
+        ]
+    }
+}
+```
+
+
+
+Any error response with an "error" field will raise your webhook's custom message
+
+``` json title="Example error response"
+{
+    "error": "There was an error updating DNS."
+}
+```
+
+
+
+---
+
+#### `certificat.finalizer.webhooks.pre_answer_challenges` {data-toc-label='webhooks.pre_answer_challenges' : #certificat.finalizer[acme].webhooks.pre_answer_challenges}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">[WebhookSettings](#refs.WebhookSettings) | null</span></span>
+
+
+
+Triggered after challenges are received from the upstream server but before they are answered. Requires a 20X status code returned or else the order will fail.
+
+```json title="Example payload"
+{
+    "type": "order.pre-answer-challenges",
+    "timestamp": "2026-11-06T21:10:26.227000+00:00",
+    "data": {
+        "order": { "id": "<upstream order ID>" },
+        "authorizations": [
+            {
+                "id": "<upstream authorization ID>",
+                "identifier": "dns:www.acme.edu",
+                "challenges": [
+                    { "type": "http-01", "validation": "<key authorization>" },
+                    { "type": "dns-01", "validation": "<TXT record value>" }
+                ]
+            }
+        ]
+    }
+}
+```
+
+
+`data.authorizations.challenges` lists each challenge type the upstream server offers for the authorization. For a `dns-01` challenge, publish the `validation` value as a TXT record at `_acme-challenge.<domain>`, where `<domain>` is the identifier without the `dns:` prefix.
+
+
+Any error response with an "error" field will raise your webhook's custom message
+
+``` json title="Example error response"
+{
+    "error": "There was an error updating DNS."
+}
+```
+
+
+
+---
+
 ### `certificat.finalizer.type: certinext-acme` {data-toc-label='certinext-acme' : #certificat.finalizer[certinext-acme]}
 ``` yaml
 certificat:
   finalizer: 
     type: "certinext-acme"
-      # This binding should use a single-domain non-UCC profile
-      single_domain_binding:
-        directory: "https://acme-us.certinext.io/v1/directory"
-        account_kid: "atTXZtcIpapuQnvikq...jkH1EagEJJoi7Ae"
-        account_hmac_key: "Uaf92GO53kY8DJRw...eoYvyJLUUDoLiF"
-        account_email: "contact@acme.edu"
-      # This binding should use a UCC profile
-      multi_domain_binding:
-        directory: "https://acme-us.certinext.io/v1/directory"
-        account_kid: "1emo4ehgTQyT9R...MPY6IjOL5EHm4PSmNL"
-        account_hmac_key: "vYELs8X22sXymmQh6...e59l6IeAaSL0G4"
-        account_email: "contact@acme.edu"
+    # This binding should use a single-domain non-UCC profile
+    single_domain_binding:
+      directory: "https://acme-us.certinext.io/v1/directory"
+      account_kid: "atTXZtcIpapuQnvikq...jkH1EagEJJoi7Ae"
+      account_hmac_key: "Uaf92GO53kY8DJRw...eoYvyJLUUDoLiF"
+      account_email: "contact@acme.edu"
+    # This binding should use a UCC profile
+    multi_domain_binding:
+      directory: "https://acme-us.certinext.io/v1/directory"
+      account_kid: "1emo4ehgTQyT9R...MPY6IjOL5EHm4PSmNL"
+      account_hmac_key: "vYELs8X22sXymmQh6...e59l6IeAaSL0G4"
+      account_email: "contact@acme.edu"
 ```
 #### `certificat.finalizer.multi_domain_binding.account_email` {data-toc-label='multi_domain_binding.account_email*' : #certificat.finalizer[certinext-acme].multi_domain_binding.account_email}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
@@ -123,8 +207,9 @@ External account binding HMAC key.
 ---
 
 #### `certificat.finalizer.multi_domain_binding.account_kid` {data-toc-label='multi_domain_binding.account_kid' : #certificat.finalizer[certinext-acme].multi_domain_binding.account_kid}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"External account binding key identifier."</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+
+External account binding key identifier.
 
 ---
 
@@ -136,16 +221,9 @@ External account binding HMAC key.
 ---
 
 #### `certificat.finalizer.single_domain_binding.account_kid` {data-toc-label='single_domain_binding.account_kid' : #certificat.finalizer[certinext-acme].single_domain_binding.account_kid}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"External account binding key identifier."</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
 
----
-
-#### `certificat.finalizer.skip_answering_challenges` {data-toc-label='skip_answering_challenges' : #certificat.finalizer[certinext-acme].skip_answering_challenges}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
-
-Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.
+External account binding key identifier.
 
 ---
 

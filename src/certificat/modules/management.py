@@ -2,7 +2,7 @@
 
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import timedelta
 from enum import StrEnum
 
@@ -12,9 +12,10 @@ from django.urls import reverse
 from django.utils import timezone
 
 from certificat.modules.acme import models as db
-from certificat.modules.groups import can_edit_groups
-from certificat.modules.perms import Perms, manageable_permissions
+from certificat.modules.perms import manageable_permissions
 from certificat.settings.dynamic import ApplicationSettings
+
+from .perms import Gates, PermissionGate, UserPermissionGate
 
 logger = logging.getLogger(__name__)
 
@@ -34,15 +35,56 @@ def record_task_worker_heartbeat():
     )
 
 
-def can_access_management(user: User) -> bool:
-    return user.is_superuser or any(
-        user.has_perm(p)
-        for p in (
-            Perms.VIEW_USERS,
-            Perms.EDIT_TOS,
-            Perms.EDIT_USAGE,
+@dataclass
+class ProtectedLink:
+    name: str
+    destination: str
+    subtext: str = ""
+
+
+@dataclass
+class MenuCategory:
+    name: str
+    links: list[ProtectedLink] = field(default_factory=list)
+
+
+@dataclass
+class ManagementMenu:
+    """A menu with categories, sub-elements, and permission-based rendering."""
+
+    categories: list[MenuCategory]
+
+    def categories_with_entries(self):
+        return [c for c in self.categories if len(c.links) > 0]
+
+
+def build_menu(user: User):
+    acct_category = MenuCategory("Users")
+    gate = UserPermissionGate(user)
+
+    if gate.evaluate(Gates.VIEW_USERS):
+        acct_category.links.append(ProtectedLink("Users", reverse("admin-users")))
+    if gate.evaluate(Gates.VIEW_GROUPS):
+        acct_category.links.append(ProtectedLink("Groups", reverse("admin-groups")))
+
+    docs_category = MenuCategory("Documentation")
+    if gate.evaluate(Gates.EDIT_TOS):
+        docs_category.links.append(
+            ProtectedLink("Terms of Service", reverse("edit-tos"))
         )
-    )
+
+    if gate.evaluate(Gates.EDIT_USAGE):
+        docs_category.links.append(ProtectedLink("Usage", reverse("edit-usage")))
+
+    low_level_category = MenuCategory("Low-level Admin")
+    if user.is_staff:
+        low_level_category.links.append(
+            ProtectedLink(
+                "Django Backend", reverse("admin:index"), subtext="Here be dragons"
+            )
+        )
+
+    return ManagementMenu([acct_category, docs_category, low_level_category])
 
 
 @dataclass
@@ -64,9 +106,14 @@ class ChecklistItem:
 
 
 def setup_checklist(user: User, settings: ApplicationSettings) -> list[ChecklistItem]:
-    tos_link = reverse("edit-tos") if user.has_perm(Perms.EDIT_TOS) else None
-    usage_link = reverse("edit-usage") if user.has_perm(Perms.EDIT_USAGE) else None
-    groups_link = reverse("admin-groups") if can_edit_groups(user) else None
+    gate = UserPermissionGate(user)
+    tos_link = reverse("edit-tos") if gate.evaluate(Gates.EDIT_TOS) else None
+    usage_link = reverse("edit-usage") if gate.evaluate(Gates.EDIT_USAGE) else None
+    groups_link = (
+        reverse("admin-groups")
+        if PermissionGate.evaluate(user, Gates.EDIT_GROUPS)
+        else None
+    )
 
     delegated = User.objects.filter(
         is_superuser=False,

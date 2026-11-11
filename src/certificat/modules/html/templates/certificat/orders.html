@@ -31,7 +31,7 @@
             {% for order in orders.page %}
                 <a class="link-row" href="{% url 'order' order.id %}">
                     <div label="Created" class="td shrink-cell">
-                        {{ order.created_at|date:"Y/m/d" }}
+                        {{ order.created_at }}
                     </div>
                     <div label="Status" class="td shrink-cell">
                         <c-status :status="order.status" />

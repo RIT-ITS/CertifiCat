@@ -1,136 +1,180 @@
-# Production Example
+# Production Deployment
 
-The CertifiCat service is composed of two distinct parts:
+This page describes how to deploy CertifiCat with a container engine, SAML authentication, and an upstream ACME certificate authority.
 
-- An ACME and HTML frontend.
-- An asynchronous task queue for background and periodic tasks.
+## Architecture
 
-CertifiCat also has dependencies on Redis and a database engine such as MySQL/MariaDB or Postgres.
+CertifiCat has two runtime components, both provided by the same container image:
+
+- **Web server.** Serves the web interface and the ACME API through nginx and gunicorn on port `80`.
+- **Task worker.** Validates challenges, submits orders to the certificate authority, and runs periodic housekeeping.
+
+Both components need these external services:
+
+- **Database.** MySQL/MariaDB or PostgreSQL.
+- **Redis.** Task queue and cache.
 
 ## Prerequisites
 
-### Container Engine
+### Container engine
 
-CertifiCat is distributed as a container image. All examples are given using the Docker CLI, but any compatible container engine can be used.
+CertifiCat is distributed as the `ghcr.io/rit-its/certificat` image. The examples use the Docker CLI, but any compatible container engine works.
 
-### Redis Server
+### Database
 
-Redis is used to queue background tasks and as a general-purpose key-value cache. You must generate a password for your Redis connection. Redis is configured through the [certificat.redis](../configuration/index.md#certificat.redis.section) section of the configuration document.
+Create a database and a user that can modify its schema. CertifiCat runs migrations at startup. Configure the connection in [certificat.db](../configuration/index.md#certificat.db.section). Set `type` to `mysql` for MySQL/MariaDB or `postgresql` for PostgreSQL.
 
-### Database and User
+### Redis
 
-In this example we'll be using MySQL. Create a database and a user that has access to modify the schema. The database is configured through the [certificat.db](../configuration/index.md#certificat.db.section) section of the configuration document.
+Create a Redis instance protected by a password. Configure the connection in [certificat.redis](../configuration/index.md#certificat.redis.section).
+
+### TLS-terminating reverse proxy
+
+The container serves plain HTTP on port `80`. Place a reverse proxy or load balancer in front of it to terminate TLS. The proxy must:
+
+- Forward the original `Host` header.
+- Set `X-Forwarded-For` and `X-Forwarded-Proto`.
+
+### Upstream certificate authority
+
+CertifiCat forwards certificate requests to an upstream certificate authority through a [finalizer](../finalizers/index.md). Most deployments use the [ACME finalizer](../finalizers/acme.md). From your certificate authority, collect:
+
+- The ACME directory URL.
+- An external account binding key ID and HMAC key, if required.
+
+### SAML identity provider
+
+You need the identity provider's metadata and the name of the attribute that carries group membership. Generate a key pair for the CertifiCat service provider:
+
+``` bash
+openssl req -x509 -newkey rsa:3072 -nodes -days 3650 \
+  -subj "/CN=acme.edu" \
+  -keyout sp.key -out sp.crt
+```
 
 ## Configuration
 
-### Determine Base Url
+### Choose the base URL
 
-This is the base domain for the application. For the purposes of this example we will use `https://acme.edu`.
+The base URL, [certificat.url_root](../configuration/index.md#certificat.url_root), is the public HTTPS address of CertifiCat. This guide uses `https://acme.edu`. The ACME directory is served at `<url_root>/directory`.
+
 !!! warning
-    If your base URL changes your existing ACME accounts will become unusable. This is due to [request URL integrity](https://datatracker.ietf.org/doc/html/rfc8555#section-6.4).
+    If the base URL changes, existing ACME accounts become unusable. This is due to [request URL integrity](https://datatracker.ietf.org/doc/html/rfc8555#section-6.4).
 
-### Configure Authentication
+### Choose administrators
 
-CertifiCat prefers and best supports SAML authentication. That will be covered more in-depth on the features documentation.
+Administrators are granted on sign-in from the identity provider's data. Set one or both of these options:
 
-### Create Configuration File
+- [administrators](../configuration/index.md#certificat.authentication[saml].administrators): usernames that receive administrator privileges.
+- [administrators_groups](../configuration/index.md#certificat.authentication[saml].administrators_groups): groups whose members receive administrator privileges.
+
+Users removed from these lists lose administrator privileges at their next sign-in.
+
+### Create the configuration file
+
+Generate a secret key:
+
+``` bash
+tr -dc 'a-zA-Z0-9!@#$%^&*(-_=+)' < /dev/urandom | head -c 50; echo
+```
+
+Create `config.yml`:
 
 ```yaml title="config.yml"
-certificat: 
-  # Django SECRET_KEY. This should be set to a unique, unpredictable value.
-  secret_key: "a-long-generated-secret-key"
-  # The url root is used to generate absolute urls to the application.
+certificat:
+  secret_key: "<generated secret key>"
   url_root: "https://acme.edu"
 
-  # The database instance is supplied as an external dependency
-  db: 
-    type: "mysql"
-    name: # Database to use after a connection is established
-    user: # User for the database connection
-    password: # Password for the database connection
-    host: # Host for the database connection
+  db:
+    type: "mysql"            # or "postgresql"
+    name: "certificat"
+    user: "certificat"
+    password: "<database password>"
+    host: "db.acme.edu"
 
-  # The Redis instance is supplied as an external dependency
-  redis: 
-    host: # Host for the redis connection
-    password: # Password for the Redis connection
+  redis:
+    host: "redis.acme.edu"
+    password: "<redis password>"
 
-  # This is how a user authenticates to the website
   authentication:
     type: "saml"
-    # A list of user principals who will automatically be given administrator privileges on login.
-    administrators: []
-    # A dictionary mapping of src:[target] where attributes are mapped 
-    # from SAML responses to Django properties. 
-    # The name (or translated name) of the group attribute in the returned SAML assertion
-    group_attribute: "memberof"
+    administrators_groups:
+      - "certificat-admins"
+    group_attribute: "memberOf"
     attribute_mapping:
       mail: [username, email]
       uid: [username]
       eduPersonPrincipalName: [username]
       givenName: [first_name]
       sn: [last_name]
-    sp: 
-      # SAML service entity id. It should be unique and a URI.
+    sp:
       entity_id: "https://acme.edu/saml2"
-      # The SP name
       name: "CertifiCat"
-      # The location of the PEM-formatted private key file
       key_file: "/etc/certificat/sp.key"
-      # The location of the PEM-formatted public key file
       cert_file: "/etc/certificat/sp.crt"
-    idp: 
-      # A list of local metadata files. 
-      local: 
+    idp:
+      local:
         - "/etc/certificat/idp-metadata.xml"
 
-  # The finalizer is responsible for forwarding the client's CSR 
-  # and returning a certificate. This ACME finalizer is general-purpose
-  # and can be used with most upstreams in the absence of a separate API.
   finalizer:
     type: "acme"
-    # The URL of your upstream provider's directory
-    directory: https://certificates.io/acme
-    account_email: "noreply@acme.edu"
-    # This is necessary if your upstream requires external account binding
-    account_hmac_key: "your-provided-hmac-key"
-    # This is necessary if your upstream requires external account binding
-    account_kid: "your-provided-account-kid"
-    
+    directory: "https://ca.example.com/acme/directory"
+    account_email: "pki-team@my-institution.edu"
+    account_kid: "<EAB key ID>"
+    account_hmac_key: "<EAB HMAC key>"
 ```
 
-## Starting CertifiCat
+The [configuration reference](../configuration/index.md) documents every option.
 
-Create a `config` folder with the necessary configuration files. 
+## Start CertifiCat
 
-``` bash
+Place the configuration and key files in a `config` folder:
+
+``` text
 config/
-  | config.yml         <-- CertifiCat config
-  | sp.key             <-- CertifiCat SAML private key
-  | sp.crt             <-- CertifiCat SAML public key
-  | idp-metadata.xml   <-- SAML IdP metadata
+  config.yml         <-- CertifiCat configuration
+  sp.key             <-- SAML service provider private key
+  sp.crt             <-- SAML service provider certificate
+  idp-metadata.xml   <-- SAML identity provider metadata
 ```
-
-Start a CertifiCat container with the `CERTIFICAT__CONFIG` environment variable set and the `config` folder mounted.
 
 !!! note
-    Ensure the container's `certificat` user has access to all mounted files. By default private keys are only readable by the generating user. Short-term grant read permission to the `102` user id, long-term employ user namespacing.
+    The container runs as the `certificat` user (UID `102`). That user must be able to read every mounted file. Private keys are often readable only by the user who created them. Use user namespace remapping, or for testing only, run `sudo chown 102 ./config/*`.
+
+Start the container with `CERTIFICAT__CONFIG` set to the configuration file's path:
 
 ``` bash
-# To resolve the above note: sudo chown 102 ./config/*
-# This is a hack, do not use this in production without understanding
-# the implications.
-
-docker run -v `pwd`/config:/etc/certificat:z \
+docker run --detach \
+    -v "$(pwd)/config:/etc/certificat:z" \
     -e CERTIFICAT__CONFIG=/etc/certificat/config.yml \
-    -p 80:80 \
-    -it ghcr.io/rit-its/certificat:latest start
+    -p 8080:80 \
+    ghcr.io/rit-its/certificat:latest start
 ```
 
-This will run all database migrations and start both the front-end and task runner. At this point you should have a complete CertifiCat environment ready to issue certificates.
+The `start` command runs database migrations, then starts both the web server and the task worker.
 
-## Next Steps
+### Container commands
 
-Authentication will not work until metadata is exchanged with your SAML IdP. To view CertifiCat metadata, open your browser to [http://localhost/saml2/metadata/](http://localhost/saml2/metadata/). Note that identifiers and callbacks reference the `https://acme.edu` base URL that were configured earlier.
+| Command | Description |
+|---|---|
+| `start` | Run migrations, then start the web server and task worker. |
+| `start_server` | Run migrations, then start only the web server. |
+| `start_huey` | Start only the task worker. |
+| `migrate` | Run database migrations and exit. |
+| `manage <args>` | Run a Django management command, for example `manage huey_healthcheck`. |
+| `shell` | Open a shell in the container. |
 
-[Consult the configuration section](../../configuration) for more examples and troubleshooting.
+To scale the web server and task worker independently, run one container with `start_server` and one or more with `start_huey`, all using the same configuration. `examples/postgres.yaml` shows this layout.
+
+## Register with the identity provider
+
+CertifiCat publishes its SAML service provider metadata at `https://acme.edu/saml2/metadata/`. Register this metadata with your identity provider and release the attributes named in `attribute_mapping` and `group_attribute`.
+
+Sign-in fails until the identity provider trusts CertifiCat. To troubleshoot, set [certificat.authentication.debug](../configuration/index.md#certificat.authentication[saml].debug) to `true` and review the container logs.
+
+## Verify the deployment
+
+1. Sign in as an administrator and open `https://acme.edu/admin/`.
+2. Under **Health**, confirm that the task worker has reported in. It reports once a minute.
+3. Work through the **Setup Checklist**:
+4. Create an account at `https://acme.edu/accounts/` and request a certificate with Certbot, as in the [evaluation walkthrough](local.md#3-create-an-acme-account).

@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import BaseModel
 
 
@@ -16,8 +14,8 @@ class Organization(BaseModel):
 
 
 class Certificate(BaseModel):
-    domain: Optional[str] = None
-    additionalDomains: List[str] = []
+    domain: str | None = None
+    additionalDomains: list[str] = []
     # Never making this True
     autoSecureWww: bool = False
 
@@ -53,7 +51,7 @@ class GenerateOrderResponse(BaseModel):
     domain: str
     createdAt: str
     resolvedProductCode: str
-    additionalDomains: List[str] = []
+    additionalDomains: list[str] = []
 
 
 class TrackOrderResponse(BaseModel):

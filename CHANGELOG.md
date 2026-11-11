@@ -7,6 +7,12 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 ## Unreleased / In Development
 
+- Centralized and reworked permissions to make permissions apply more consistantly and to separate logical operations from implementation.
+- Hundreds of documentation updates to attempt to bring parity to documentation and features.
+- Consolidated and reworked ACME finalizer to make the finalizer flow more straightforward.
+- Trimmed down the CERTINextACMEFinalizer to reuse code from the ACME finalizer where appropriate.
+- Added `order.post-answer-challenges` webhook.
+- **Breaking:** Changed `type` key and configuration for ACME finalizer webhook.
 - **Breaking:** groups synced from SAML or remote auth are no longer prefixed (e.g. `SAML/admins` is now `admins`) and map directly to Django groups. Migration `acme.0020_remove_group_prefixes` renames existing groups, merging users, permissions and account access into an existing group of the same name
 - **Breaking:** the identity provider now owns all group membership. On login, a user's Django groups are replaced with exactly the groups sent by SAML or the remote groups header, so memberships assigned by hand are removed
 - Deprecated the `group_sync_prefix` authentication setting (now ignored) and `certificat.utils.PREFIXED_GROUP_REGEX` / `unprefix_group`
@@ -27,7 +33,7 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 - Adding beta event notifications for certificate creation
 - Added readonly to Lit elements that require backend permissions
 - Added lego client instructions (thanks @jxscad-rit)
-- Added the acme.mask_account_update flag to allow CertifiCat to generate valid responses to account updates 
+- Added the acme.mask_account_update flag to allow CertifiCat to generate valid responses to account updates
 
 ## [2026.8.3] - 2026-08-03
 

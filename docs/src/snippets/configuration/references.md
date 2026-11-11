@@ -45,6 +45,106 @@ Skip answering authorization challenges. This may be used if the upstream ACME s
 
 ---
 
+#### `ACMEFinalizerSettings.webhooks` {data-toc-label='webhooks' : #ACMEFinalizerSettings.webhooks}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">object</span></span>
+``` json title='default' 
+{
+  "pre_answer_challenges": null,
+  "post_answer_challenges": null
+}
+```
+
+Settings for webhooks triggered by events and state changes in the finalizer.
+
+[:material-shape: View Type Reference](#refs.ACMEFinalizerWebhookSettings)
+
+---
+
+### ACMEFinalizerWebhookSettings {: #refs.ACMEFinalizerWebhookSettings}
+#### `ACMEFinalizerWebhookSettings.post_answer_challenges` {data-toc-label='post_answer_challenges' : #ACMEFinalizerWebhookSettings.post_answer_challenges}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">[WebhookSettings](#refs.WebhookSettings) | null</span></span>
+
+
+
+Triggered after challenges have been answered. Requires a 20X status code returned or else the order will fail.
+
+```json title="Example payload"
+{
+    "type": "order.post-answer-challenges",
+    "timestamp": "2026-11-06T21:10:26.227000+00:00",
+    "data": {
+        "order": { "id": "<upstream order ID>" },
+        "authorizations": [
+            {
+                "id": "<upstream authorization ID>",
+                "identifier": "dns:www.acme.edu",
+                "challenges": [
+                    { "type": "http-01", "validation": "<key authorization>" },
+                    { "type": "dns-01", "validation": "<TXT record value>" }
+                ]
+            }
+        ]
+    }
+}
+```
+
+
+
+Any error response with an "error" field will raise your webhook's custom message
+
+``` json title="Example error response"
+{
+    "error": "There was an error updating DNS."
+}
+```
+
+
+
+---
+
+#### `ACMEFinalizerWebhookSettings.pre_answer_challenges` {data-toc-label='pre_answer_challenges' : #ACMEFinalizerWebhookSettings.pre_answer_challenges}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">[WebhookSettings](#refs.WebhookSettings) | null</span></span>
+
+
+
+Triggered after challenges are received from the upstream server but before they are answered. Requires a 20X status code returned or else the order will fail.
+
+```json title="Example payload"
+{
+    "type": "order.pre-answer-challenges",
+    "timestamp": "2026-11-06T21:10:26.227000+00:00",
+    "data": {
+        "order": { "id": "<upstream order ID>" },
+        "authorizations": [
+            {
+                "id": "<upstream authorization ID>",
+                "identifier": "dns:www.acme.edu",
+                "challenges": [
+                    { "type": "http-01", "validation": "<key authorization>" },
+                    { "type": "dns-01", "validation": "<TXT record value>" }
+                ]
+            }
+        ]
+    }
+}
+```
+
+
+`data.authorizations.challenges` lists each challenge type the upstream server offers for the authorization. For a `dns-01` challenge, publish the `validation` value as a TXT record at `_acme-challenge.<domain>`, where `<domain>` is the identifier without the `dns:` prefix.
+
+
+Any error response with an "error" field will raise your webhook's custom message
+
+``` json title="Example error response"
+{
+    "error": "There was an error updating DNS."
+}
+```
+
+
+
+---
+
 ### AlternativeFinalizerSettings {: #refs.AlternativeFinalizerSettings}
 #### `AlternativeFinalizerSettings.description` {data-toc-label='description*' : #AlternativeFinalizerSettings.description}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
@@ -384,14 +484,6 @@ How long to poll the upstream server before finalization is canceled.
 
 ---
 
-#### `CERTINextACMEFinalizerSettings.skip_answering_challenges` {data-toc-label='skip_answering_challenges' : #CERTINextACMEFinalizerSettings.skip_answering_challenges}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">false</span></span>
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">boolean</span></span>
-
-Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.
-
----
-
 ### CERTINextExternalAccountBinding {: #refs.CERTINextExternalAccountBinding}
 #### `CERTINextExternalAccountBinding.account_email` {data-toc-label='account_email*' : #CERTINextExternalAccountBinding.account_email}
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
@@ -417,8 +509,9 @@ External account binding HMAC key.
 ---
 
 #### `CERTINextExternalAccountBinding.account_kid` {data-toc-label='account_kid' : #CERTINextExternalAccountBinding.account_kid}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"External account binding key identifier."</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+
+External account binding key identifier.
 
 ---
 
@@ -473,8 +566,16 @@ Whether all accounts are required to use external account binding or not.
 
 ---
 
+#### `LocalACMESettings.http_01_challenge_timeout` {data-toc-label='http_01_challenge_timeout' : #LocalACMESettings.http_01_challenge_timeout}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">10</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">number</span></span>
+
+Connect and read timeout, in seconds, for each request the http-01 challenge validator makes
+
+---
+
 #### `LocalACMESettings.http_01_challenge_user_agent` {data-toc-label='http_01_challenge_user_agent' : #LocalACMESettings.http_01_challenge_user_agent}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"python-acmev2/0.2.1"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"python-acmev2/0.3.0"</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 User agent the http-01 challenge validator uses when requesting the challenge document from the client server
@@ -639,14 +740,14 @@ A list of Apprise URLs to send notifications.
 
 ### NotificationSettings {: #refs.NotificationSettings}
 #### `NotificationSettings.on_finalization_error` {data-toc-label='on_finalization_error' : #NotificationSettings.on_finalization_error}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;[NotificationEventConfig](#refs.NotificationEventConfig)&gt; | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">[NotificationEventConfig](#refs.NotificationEventConfig) | null</span></span>
 
 Triggered on finalization error, usually resulting from an error in the upstream certificate authority.
 
 ---
 
 #### `NotificationSettings.on_finalization_success` {data-toc-label='on_finalization_success' : #NotificationSettings.on_finalization_success}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">array&lt;[NotificationEventConfig](#refs.NotificationEventConfig)&gt; | null</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">[NotificationEventConfig](#refs.NotificationEventConfig) | null</span></span>
 
 Triggered on successful finalization, usually resulting in a certificate.
 
@@ -915,7 +1016,7 @@ The debug setting for the Django SAML plugin. This increases log verbosity.
 ---
 
 #### `SAMLAuthSettings.group_attribute` {data-toc-label='group_attribute' : #SAMLAuthSettings.group_attribute}
-<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"memberof"</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">"memberOf"</span></span>
 <span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
 
 The name (or translated name) of the group attribute in the returned SAML assertion
@@ -1086,5 +1187,30 @@ Global CSS injected into a style tag rendered on every page. For example the fol
           }
     ```
 
+
+---
+
+### WebhookSettings {: #refs.WebhookSettings}
+#### `WebhookSettings.endpoint` {data-toc-label='endpoint*' : #WebhookSettings.endpoint}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+
+URL to send the webhook request.
+
+---
+
+#### `WebhookSettings.secret` {data-toc-label='secret*' : #WebhookSettings.secret}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-alert:](/convention 'Required value')</span><span class="mdx-badge__text">required</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">string</span></span>
+
+Shared secret used to sign webhooks, following [Standard Webhooks](https://www.standardwebhooks.com/). `whsec_` followed by base64-encoded bytes, decoding to between 24 and 64 bytes.
+
+---
+
+#### `WebhookSettings.timeout` {data-toc-label='timeout' : #WebhookSettings.timeout}
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-water:](/convention 'Default value')</span><span class="mdx-badge__text">5</span></span>
+<span class="mdx-badge" title=""><span class="mdx-badge__icon">[:material-shape:](/convention 'Type')</span><span class="mdx-badge__text">integer</span></span>
+
+Connect and read timeout, in seconds, for the webhook request.
 
 ---

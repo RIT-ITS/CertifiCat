@@ -155,7 +155,7 @@ def test_set_group_perms_reports_changes(group: Group):
 def test_admin_page_links_groups(group: Group):
     client = client_with_perms(Perms.VIEW_USERS)
     response = client.get(reverse("ADMIN"))
-    assert 'id="admin-link-groups"' in response.content.decode()
+    assert reverse("admin-groups") in response.content.decode()
 
     # User profiles link to their groups
     member = gen_user()

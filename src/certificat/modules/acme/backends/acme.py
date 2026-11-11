@@ -26,29 +26,145 @@ from certificat.modules.acme.backends import (
 )
 from certificat.modules.acme.util import DNSTXTValidator
 from certificat.settings.dynamic import ACMEFinalizerSettings
-from certificat.webhooks import PreUpstreamChallengeWebhook
+from certificat.webhooks import (
+    PostAnswerChallengesWebhook,
+    PreAnswerChallengesWebhook,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class CertifiCatACMEClient(acme.client.ClientV2):
     directory_url: str = None
+    settings: ACMEFinalizerSettings
+
+    def preferred_challenge(self):
+        if self.settings.challenges.dns_01 is not None:
+            return acme.challenges.DNS01
+
+        return acme.challenges.HTTP01
+
+    def gather_preferred_challenges(
+        self, upstream_order: acme.messages.OrderResource
+    ) -> list[acme.messages.ChallengeBody]:
+        authz_list: list[acme.messages.AuthorizationResource] = (
+            upstream_order.authorizations
+        )
+        preferred_challenges: list[acme.messages.ChallengeBody] = []
+        for authz in authz_list:
+            # Choosing challenge.
+            challenges: list[acme.messages.ChallengeBody] = authz.body.challenges
+            for c in challenges:
+                # Find the preferred/supported challenge.
+                if isinstance(c.chall, self.preferred_challenge()):
+                    preferred_challenges.append(c)
+
+        return preferred_challenges
+
+    def check_dns_propagation(
+        self, upstream_order: acme.messages.OrderResource
+    ) -> bool:
+        """Verifies DNS records set for the challenge domains. This never returns False, it raises
+        a StopFinalization error on failure.
+        """
+        verification_tokens: dict[str, str] = {}
+
+        logger.debug("Checking DNS propagation")
+        authz_list: list[acme.messages.AuthorizationResource] = (
+            upstream_order.authorizations
+        )
+        for authz in authz_list:
+            challenge_list: list[acme.messages.ChallengeBody] = authz.body.challenges
+            for challenge_body in challenge_list:
+                if challenge_body.get("typ") == ChallengeType.dns_01:
+                    verification_tokens[
+                        challenge_body.chall.validation_domain_name(
+                            authz.body.identifier.value
+                        )
+                    ] = challenge_body.chall.validation(self.net.key)
+
+        timeout = timezone.now() + datetime.timedelta(
+            seconds=self.settings.challenges.dns_01.verification_timeout
+        )
+
+        # Every resolver must have the record in their cache before we can continue
+        resolvers: list[dns.resolver.Resolver] = []
+        if self.settings.challenges.dns_01.verification_nameservers:
+            for nameserver in self.settings.challenges.dns_01.verification_nameservers:
+                logger.info("Creating DNS validator with nameserver: %s", nameserver)
+                resolver = dns.resolver.Resolver()
+                ip, _, port = nameserver.partition(":")
+                resolver.nameservers = [Do53Nameserver(ip, int(port) if port else 53)]
+
+                resolvers.append(resolver)
+        else:
+            # If a nameserver is not specified (not recommended) then we use a default resolver
+            resolvers.append(dns.resolver.Resolver())
+
+        validators = [
+            DNSTXTValidator(resolvers, k, v) for k, v in verification_tokens.items()
+        ]
+
+        logger.info(
+            "Validating the following domains->token pairs: "
+            + json.dumps(verification_tokens)
+        )
+
+        loop = asyncio.new_event_loop()
+        try:
+            while timezone.now() < timeout:
+                tasks = [
+                    loop.create_task(v.validate())
+                    for v in validators
+                    if not v.validated
+                ]
+                if len(tasks) == 0:
+                    logger.info("All domains verified successfully")
+                    return True
+
+                loop.run_until_complete(asyncio.wait(tasks, timeout=15))
+                time.sleep(2)
+        finally:
+            loop.close()
+
+        logger.info("Timeout reached verifying domains.")
+        raise StopFinalization("Timeout reached verifying DNS challenges.")
+
+    def answer_preferred_chalenges(self, order: acme.messages.OrderResource):
+        preferred_challenges: list[acme.messages.ChallengeBody] = (
+            self.gather_preferred_challenges(order)
+        )
+
+        if (
+            self.settings.challenges.dns_01.perform_verification
+            and not self.check_dns_propagation(order)
+        ):
+            raise StopFinalization("Unable to verify DNS challenges")
+
+        # This may not be necessary for acme upstreams we integrate with
+        for chall in preferred_challenges:
+            response, _ = chall.response_and_validation(self.net.key)
+            # I think there's a bit of a race condition here, the response could say it's been validated
+            # It may be useful to swallow this error or have a toggle to swallow it
+            if not chall.validated:
+                self.answer_challenge(chall, response)
 
 
-def create_acme_client(directory_url: str, user_agent: str) -> CertifiCatACMEClient:
+def create_acme_client(settings: ACMEFinalizerSettings) -> CertifiCatACMEClient:
     try:
-        directory = requests.get(directory_url, timeout=5).json()
+        directory = requests.get(settings.directory, timeout=5).json()
     except Exception as exc:
         # hide ugly timeout/retry error since these messages are presented to the user
         raise Exception(  # noqa: TRY002
-            f"Error reading ACME directory at '{directory_url}'"
+            f"Error reading ACME directory at '{settings.directory}'"
         ) from exc
 
-    net = acme.client.ClientNetwork(user_agent=user_agent)
+    net = acme.client.ClientNetwork(user_agent=settings.client_user_agent)
     client = CertifiCatACMEClient(
         acme.client.messages.Directory.from_json(directory), net=net
     )
-    client.directory_url = directory_url
+    client.settings = settings
+    client.directory_url = settings.directory
 
     return client
 
@@ -139,96 +255,41 @@ class ACMEFinalizer(Finalizer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def execute_challenge_webhook(
+    def execute_pre_answer_challenge_webhook(
         self, client: CertifiCatACMEClient, upstream_order: acme.messages.OrderResource
     ) -> None:
-        webhook_settings = self.settings.challenges.challenge_webhook
+        webhook_settings = self.settings.webhooks.pre_answer_challenges
         if not webhook_settings:
             return
 
-        logger.info("Executing PreNewOrderWebhook webhook")
-        webhook = PreUpstreamChallengeWebhook(webhook_settings.secret)
-        webhook.publish(webhook_settings.endpoint, client.net.key, upstream_order)
+        logger.info("Executing PreAnswerChallenges webhook")
+        webhook = PreAnswerChallengesWebhook(webhook_settings.secret)
+        webhook.publish(
+            str(webhook_settings.endpoint),
+            client.net.key,
+            upstream_order,
+            timeout=webhook_settings.timeout,
+        )
 
-    def check_dns_propagation(
+    def execute_post_answer_challenge_webhook(
         self, client: CertifiCatACMEClient, upstream_order: acme.messages.OrderResource
-    ) -> bool:
-        """Verifies DNS records set for the challenge domains. This never returns False, it raises
-        a StopFinalization error on failure.
-        """
-        verification_tokens: dict[str, str] = {}
+    ) -> None:
+        webhook_settings = self.settings.webhooks.post_answer_challenges
+        if not webhook_settings:
+            return
 
-        logger.debug("Checking DNS propagation")
-        authz_list: list[acme.messages.AuthorizationResource] = (
-            upstream_order.authorizations
+        logger.info("Executing PostAnswerChallenges webhook")
+        webhook = PostAnswerChallengesWebhook(webhook_settings.secret)
+        webhook.publish(
+            str(webhook_settings.endpoint),
+            client.net.key,
+            upstream_order,
+            timeout=webhook_settings.timeout,
         )
-        for authz in authz_list:
-            challenge_list: list[acme.messages.ChallengeBody] = authz.body.challenges
-            for challenge_body in challenge_list:
-                if challenge_body.get("typ") == ChallengeType.dns_01:
-                    verification_tokens[
-                        challenge_body.chall.validation_domain_name(
-                            authz.body.identifier.value
-                        )
-                    ] = challenge_body.chall.validation(client.net.key)
-
-        timeout = timezone.now() + datetime.timedelta(
-            seconds=self.settings.challenges.dns_01.verification_timeout
-        )
-
-        # Every resolver must have the record in their cache before we can continue
-        resolvers: list[dns.resolver.Resolver] = []
-        if self.settings.challenges.dns_01.verification_nameservers:
-            for nameserver in self.settings.challenges.dns_01.verification_nameservers:
-                logger.info("Creating DNS validator with nameserver: %s", nameserver)
-                resolver = dns.resolver.Resolver()
-                ip, _, port = nameserver.partition(":")
-                resolver.nameservers = [Do53Nameserver(ip, int(port) if port else 53)]
-
-                resolvers.append(resolver)
-        else:
-            # If a nameserver is not specified (not recommended) then we use a default resolver
-            resolvers.append(dns.resolver.Resolver())
-
-        validators = [
-            DNSTXTValidator(resolvers, k, v) for k, v in verification_tokens.items()
-        ]
-
-        logger.info(
-            "Validating the following domains->token pairs: "
-            + json.dumps(verification_tokens)
-        )
-
-        loop = asyncio.new_event_loop()
-        try:
-            while timezone.now() < timeout:
-                tasks = [
-                    loop.create_task(v.validate())
-                    for v in validators
-                    if not v.validated
-                ]
-                if len(tasks) == 0:
-                    logger.info("All domains verified successfully")
-                    return True
-
-                loop.run_until_complete(asyncio.wait(tasks, timeout=15))
-                time.sleep(2)
-        finally:
-            loop.close()
-
-        logger.info("Timeout reached verifying domains.")
-        raise StopFinalization("Timeout reached verifying DNS challenges.")
-
-    def preferred_challenge(self):
-        if self.settings.challenges.dns_01.perform_verification:
-            return acme.challenges.DNS01
-
-        return acme.challenges.HTTP01
 
     def finalize(self, order: db.Order, pem_csr: str):
-        client = create_acme_client(
-            self.settings.directory, self.settings.client_user_agent
-        )
+        client = create_acme_client(self.settings)
+
         # This could fail and may retrigger a retry
         ensure_acme_account_registered(
             client,
@@ -240,40 +301,17 @@ class ACMEFinalizer(Finalizer):
         try:
             # This block has automatic retry already built-in, so any exceptions will
             # result in a StopFinalization error that will prevent retry
-
             new_order = client.new_order(pem_csr.encode())
 
-            # This may all be unnecessary. The test server requires answering challenges,
+            # This check may be unnecessary. The test server requires answering challenges,
             # other servers may pre-validate the authorizations and skip this step.
             if not self.settings.skip_answering_challenges:
-                authz_list: list[acme.messages.AuthorizationResource] = (
-                    new_order.authorizations
-                )
-                preferred_challenges: list[acme.messages.ChallengeBody] = []
-                for authz in authz_list:
-                    # Choosing challenge.
-                    challenges: list[acme.messages.ChallengeBody] = (
-                        authz.body.challenges
-                    )
-                    for c in challenges:
-                        # Find the preferred/supported challenge.
-                        if isinstance(c.chall, self.preferred_challenge()):
-                            preferred_challenges.append(c)
-
-                self.execute_challenge_webhook(client, new_order)
-                if (
-                    self.settings.challenges.dns_01.perform_verification
-                    and not self.check_dns_propagation(client, new_order)
-                ):
-                    raise StopFinalization("Unable to verify DNS challenges")
-
-                # This may not be necessary for acme upstreams we integrate with
-                for chall in preferred_challenges:
-                    response, _ = chall.response_and_validation(client.net.key)
-                    # I think there's a bit of a race condition here, the response could say it's been validated
-                    # It may be useful to swallow this error or have a toggle to swallow it
-                    if not chall.validated:
-                        client.answer_challenge(chall, response)
+                try:
+                    self.execute_pre_answer_challenge_webhook(client, new_order)
+                    client.answer_preferred_chalenges(new_order)
+                finally:
+                    # Always allow cleanup webhook to run
+                    self.execute_post_answer_challenge_webhook(client, new_order)
 
             new_order = client.poll_and_finalize(
                 new_order,
@@ -281,7 +319,6 @@ class ACMEFinalizer(Finalizer):
                 + datetime.timedelta(seconds=self.settings.finalization_timeout),
             )
             db.Certificate.objects.create(order=order, chain=new_order.fullchain_pem)
-
             return FinalizeResponse(bundle=new_order.fullchain_pem)
         except acme.errors.TimeoutError as exc:
             raise StopFinalization(

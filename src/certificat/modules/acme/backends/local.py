@@ -11,6 +11,12 @@ from certificat.settings.dynamic import LocalFinalizerSettings
 
 
 class LocalFinalizer(Finalizer):
+    """Signs certificates with the CA key pair from the configuration file.
+
+    This is for evaluation and debugging only. Certificates it issues must
+    never be used by production services.
+    """
+
     settings: LocalFinalizerSettings
 
     def finalize(self, order: db.Order, pem_csr: str):
@@ -23,7 +29,7 @@ class LocalFinalizer(Finalizer):
         builder = (
             x509.CertificateBuilder()
             .subject_name(csr.subject)
-            .issuer_name(ca_cert.issuer)
+            .issuer_name(ca_cert.subject)
             .public_key(csr.public_key())
             .serial_number(x509.random_serial_number())
             .not_valid_before(datetime.now(timezone.utc))

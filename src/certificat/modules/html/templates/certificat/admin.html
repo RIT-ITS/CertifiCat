@@ -6,63 +6,29 @@
 
 <c-layouts.base>
     <div class="row">
-        <div class="col-xs-12 col-lg-4">
-            <h5 class="icon"><i class="fa-solid fa-screwdriver-wrench"></i>Manage</h5>
-            <div class="mb-1"></div>
-            <c-link-table name="admin-links" no_collapse>
-                <c-slot name="body">
-                    {% if perms.auth.view_user %}
-                        <a class="link-row" id="admin-link-users" href="{% url 'admin-users' %}">
-                            <div class="td">
-                                <b class="bold">Users</b>
-                                <p class="subtext">Find users and see their permissions.</p>
-                            </div>
-                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
-                        </a>
-                    {% endif %}
-                    {% if perms.auth.view_user %}
-                        <a class="link-row" id="admin-link-groups" href="{% url 'admin-groups' %}">
-                            <div class="td">
-                                <b class="bold">Groups</b>
-                                <p class="subtext">View groups and their permissions.</p>
-                            </div>
-                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
-                        </a>
-                    {% endif %}
-                    {% if perms.acme.change_termsofservice %}
-                        <a class="link-row" id="admin-link-tos" href="{% url 'edit-tos' %}">
-                            <div class="td">
-                                <b class="bold">Terms of Service</b>
-                                <p class="subtext">Edit the terms users accept when creating an account.</p>
-                            </div>
-                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
-                        </a>
-                    {% endif %}
-                    {% if perms.acme.change_usage %}
-                        <a class="link-row" id="admin-link-usage" href="{% url 'edit-usage' %}">
-                            <div class="td">
-                                <b class="bold">Usage</b>
-                                <p class="subtext">Edit the ACME client usage instructions.</p>
-                            </div>
-                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
-                        </a>
-                    {% endif %}
-                    {% if request.user.is_staff %}
-                        <a class="link-row" id="admin-link-backend" href="{% url 'admin:index' %}">
-                            <div class="td">
-                                <b class="bold">Django Admin</b>
-                                <p class="subtext">
-                                    Low level access to the database. Here be dragons.
-                                </p>
-                            </div>
-                            <div class="td edit table--row-button shrink-cell"><span class="fa-solid fa-chevron-right"></span></div>
-                        </a>
-                    {% endif %}
-                </c-slot>
-            </c-link-table>
+        <div class="col-xs-12 col-lg-3">
+            <ul class="sidemenu">
+                {% for category in menu.categories_with_entries %}
+                    <li>
+                        <div class="sidemenu--header">{{ category.name }}</div>
+                        <ul>
+                            {% for link in category.links %}
+                                <li>
+                                    <a href="{{ link.destination }}">
+                                        {{ link.name }}
+                                        {% if link.subtext %}
+                                            <p class="subtext">{{ link.subtext }}</p>
+                                        {% endif %}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
 
-        <div class="col-xs-12 col-lg-8">
+        <div class="col-xs-12 col-lg-9">
             <h5 class="icon"><i class="fa-solid fa-list-check"></i>Setup Checklist</h5>
             <div class="mb-1"></div>
             <c-table name="setup-checklist" no_collapse>

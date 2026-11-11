@@ -1,8 +1,14 @@
+from datetime import datetime, timedelta, timezone
+
 import acme.client
 import inject
 import pytest
 from acme import errors
 from acmev2.models import OrderStatus
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.x509.oid import NameOID
 from django.contrib.contenttypes.models import ContentType
 
 from certificat.modules.acme import models as db
@@ -12,14 +18,44 @@ from ..conftest import NewOrderRet
 from ..helpers import do_challenge, finalize_order
 
 
+def _gen_intermediate_ca() -> tuple[str, str]:
+    now = datetime.now(timezone.utc)
+    root_key = ec.generate_private_key(ec.SECP256R1())
+    ca_key = ec.generate_private_key(ec.SECP256R1())
+    ca_cert = (
+        x509.CertificateBuilder()
+        .subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Test Intermediate")])
+        )
+        .issuer_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Test Root")]))
+        .public_key(ca_key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(now)
+        .not_valid_after(now + timedelta(days=1))
+        .add_extension(x509.BasicConstraints(ca=True, path_length=0), critical=True)
+        .sign(root_key, hashes.SHA256())
+    )
+    key_pem = ca_key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    ).decode()
+    return key_pem, ca_cert.public_bytes(serialization.Encoding.PEM).decode()
+
+
 @pytest.mark.django_db
 def test_finalize_local(
     acme_client: acme.client.ClientV2,
     acme_neworder,
     mocker,
+    monkeypatch,
 ):
     settings = inject.instance(ApplicationSettings)
     settings.finalizer.type = "local"
+    # Use an intermediate CA so the CA's subject and issuer differ
+    ca_key_pem, ca_cert_pem = _gen_intermediate_ca()
+    monkeypatch.setattr(settings.finalizer, "key", ca_key_pem)
+    monkeypatch.setattr(settings.finalizer, "cert", ca_cert_pem)
 
     new_order: NewOrderRet = acme_neworder()
 
@@ -29,6 +65,13 @@ def test_finalize_local(
 
     assert finalized_order.body.status.name == "valid"
     assert len(finalized_order.fullchain_pem) > 0
+
+    leaf, ca = x509.load_pem_x509_certificates(finalized_order.fullchain_pem.encode())
+    configured_ca = x509.load_pem_x509_certificate(ca_cert_pem.encode())
+    assert ca == configured_ca
+    # The leaf must be issued by the configured CA, not the CA's own issuer
+    assert leaf.issuer == configured_ca.subject
+    leaf.verify_directly_issued_by(configured_ca)
 
 
 @pytest.mark.django_db

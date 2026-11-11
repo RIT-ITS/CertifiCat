@@ -256,7 +256,7 @@ def extract_types(prop: PropertyInfo) -> str:
                 type_builder.append(info["type"])
             if "$ref" in info:
                 type_builder.append(
-                    f"array&lt;[{ref_name(info['$ref'])}]({ref_link(info['$ref'])})&gt;"
+                    f"[{ref_name(info['$ref'])}]({ref_link(info['$ref'])})"
                 )
 
         return " | ".join(type_builder)

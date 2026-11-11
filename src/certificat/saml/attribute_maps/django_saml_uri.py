@@ -10,7 +10,7 @@ SCHAC = "urn:oid:1.3.6.1.4.1.25178.1.2."
 MAP = {
     "identifier": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
     "fro": {
-        "1.2.840.113556.1.2.102": "memberof",
+        "urn:oid:1.2.840.113556.1.2.102": "memberOf",
         EDUPERSON_OID + "2": "eduPersonNickname",
         EDUPERSON_OID + "9": "eduPersonScopedAffiliation",
         EDUPERSON_OID + "11": "eduPersonAssurance",

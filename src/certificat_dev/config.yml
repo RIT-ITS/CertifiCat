@@ -206,6 +206,7 @@ certificat:
   authentication:
     type: saml
     debug: True
+    group_sync_prefix: "deprecated/"
     administrators:
       - admusr
     attribute_mapping:
@@ -214,7 +215,7 @@ certificat:
       eduPersonPrincipalName: [username]
       givenName: [first_name]
       sn: [last_name]
-    group_attribute: groups
+    group_attribute: '1.2.840.113556.1.2.102'
     #discovery:
     #  service: "https://service.seamlessaccess.org/ds"
     sp:
@@ -235,6 +236,11 @@ certificat:
   #     username: admin
   #     password: super-secret
   #     email: noreply@localhost
+
+  notifications:
+    on_finalization_success:
+      services:
+        - "stdout://"
 
   logging:
     certificat_level: DEBUG

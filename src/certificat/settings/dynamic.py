@@ -411,7 +411,7 @@ class SAMLAuthSettings(BaseModel):
     )
 
     group_attribute: str = Field(
-        "memberof",
+        "memberOf",
         description="The name (or translated name) of the group attribute in the returned SAML assertion",
     )
     group_sync_prefix: str = Field(
@@ -461,10 +461,20 @@ class FinalizerSettings(BaseModel):
 
 class WebhookSettings(BaseModel):
     secret: str = Field(
-        description="Shared secret used to generate webhook signatures. This should be between 24 and 64 bytes."
+        description="Shared secret used to sign webhooks, following [Standard Webhooks](https://www.standardwebhooks.com/). `whsec_` followed by base64-encoded bytes, decoding to between 24 and 64 bytes."
     )
     endpoint: HttpUrl = Field(description="URL to send the webhook request.")
-    timeout: int = Field(5, description="Request timeout for the endpoint URL.")
+    timeout: int = Field(
+        5, description="Connect and read timeout, in seconds, for the webhook request."
+    )
+
+    @field_validator("secret")
+    @classmethod
+    def validate_secret(cls, value: str) -> str:
+        from certificat.webhooks import decode_secret
+
+        decode_secret(value)
+        return value
 
 
 class ACMEFinalizerDNS01ChallengeSettings(BaseModel):
@@ -486,9 +496,61 @@ class ACMEFinalizerChallengeSettings(BaseModel):
     dns_01: ACMEFinalizerDNS01ChallengeSettings = Field(
         ACMEFinalizerDNS01ChallengeSettings()
     )
-    challenge_webhook: WebhookSettings = Field(
+
+
+WEBHOOK_ERROR_DESC = textwrap.dedent("""
+    Any error response with an "error" field will raise your webhook's custom message
+
+    ``` json title="Example error response"
+    {
+        "error": "There was an error updating DNS."
+    }
+    ```
+""")
+
+FINALIZER_WEBHOOK_DESC = textwrap.dedent("""
+    Triggered {when}. Requires a 20X status code returned or else the order will fail.
+    
+    ```json title="Example payload"
+    {{
+        "type": "{event_type}",
+        "timestamp": "2026-11-06T21:10:26.227000+00:00",
+        "data": {{
+            "order": {{ "id": "<upstream order ID>" }},
+            "authorizations": [
+                {{
+                    "id": "<upstream authorization ID>",
+                    "identifier": "dns:www.acme.edu",
+                    "challenges": [
+                        {{ "type": "http-01", "validation": "<key authorization>" }},
+                        {{ "type": "dns-01", "validation": "<TXT record value>" }}
+                    ]
+                }}
+            ]
+        }}
+    }}
+    ```
+""")
+
+
+class ACMEFinalizerWebhookSettings(BaseModel):
+    pre_answer_challenges: WebhookSettings | None = Field(
         None,
-        description="Triggered after challenges are received from the upstream server but before they are answered. Requires a 20X status code returned or else the order will fail.",
+        description=textwrap.dedent(f"""
+            {FINALIZER_WEBHOOK_DESC.format(when="after challenges are received from the upstream server but before they are answered", event_type="order.pre-answer-challenges")}
+
+`data.authorizations.challenges` lists each challenge type the upstream server offers for the authorization. For a `dns-01` challenge, publish the `validation` value as a TXT record at `_acme-challenge.<domain>`, where `<domain>` is the identifier without the `dns:` prefix.
+
+            {WEBHOOK_ERROR_DESC}
+            """),
+    )
+    post_answer_challenges: WebhookSettings | None = Field(
+        None,
+        description=textwrap.dedent(f"""
+            {FINALIZER_WEBHOOK_DESC.format(when="after challenges have been answered", event_type="order.post-answer-challenges")}
+
+            {WEBHOOK_ERROR_DESC}
+            """),
     )
 
 
@@ -532,12 +594,19 @@ class ACMEFinalizerSettings(FinalizerSettings):
         ACMEFinalizerChallengeSettings()
     )
 
+    webhooks: ACMEFinalizerWebhookSettings = Field(
+        ACMEFinalizerWebhookSettings(),
+        description="Settings for webhooks triggered by events and state changes in the finalizer.",
+    )
+
 
 class CERTINextExternalAccountBinding(BaseModel):
     directory: HttpUrl = Field(
         description="Path to the ACME API endpoint. This usually ends with /directory."
     )
-    account_kid: str = Field("External account binding key identifier.")
+    account_kid: str = Field(
+        None, description="External account binding key identifier."
+    )
     account_hmac_key: str = Field(
         None, description="External account binding HMAC key."
     )
@@ -564,11 +633,6 @@ class CERTINextACMEFinalizerSettings(FinalizerSettings):
     )
     multi_domain_binding: CERTINextExternalAccountBinding = Field(
         description="ACME credentials used when creating a multi-domain certificate."
-    )
-
-    skip_answering_challenges: bool = Field(
-        False,
-        description="Skip answering authorization challenges. This may be used if the upstream ACME server supports pre-authorization.",
     )
 
     finalization_timeout: int = Field(

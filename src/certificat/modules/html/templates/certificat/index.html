@@ -18,12 +18,12 @@
                 {% for order in recent_orders %}
                     <a class="link-row" href="{% url 'order' order.id %}">
                         <div label="Created" class="td shrink-cell">
-                            {{ order.created_at|date:"Y/m/d" }}
+                            {{ order.created_at }}
                         </div>
                         <div label="Status" class="td shrink-cell">
                             <c-status :status="order.status" />
                         </div>
-                        <div label="Identifiers" class="td identifiers">
+                        <div label="Identifiers" class="td identifiers break-anywhere">
                             {{ order.identifiers.all.0.value }}
                             {% if order.identifiers.all.1 %}
                                 (+{{ order.identifiers.all|slice:"1:"|length }} SANs)
@@ -49,9 +49,9 @@
                 {% for cert in recent_certificates %}
                     <a class="link-row" href="{% url 'certificate' cert.id %}">
                         <div label="Created" class="td shrink-cell">
-                            {{ cert.created_at|date:"Y/m/d" }}
+                            {{ cert.created_at }}
                         </div>
-                        <div label="SANs" class="td sans">
+                        <div label="SANs" class="td sans break-anywhere">
                             {{ cert.metadata.sans.0 }}
                             {% if cert.metadata.sans.1 %}
                                 (+{{ cert.metadata.sans|slice:"1:"|length }} SANs)

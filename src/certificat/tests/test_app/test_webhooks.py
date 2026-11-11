@@ -1,13 +1,23 @@
+import base64
+import time
+from unittest import mock
+
 import acme.client
 import inject
 import pytest
 import responses
 from acmev2.settings import Challenges
 from django.test import Client
+from pydantic import ValidationError
 
 from certificat.modules.acme import models as db
-from certificat.settings.dynamic import LocalACMESettings
-from certificat.webhooks import PreUpstreamChallengeWebhook
+from certificat.settings.dynamic import LocalACMESettings, WebhookSettings
+from certificat.webhooks import (
+    PreAnswerChallengesWebhook,
+    Webhook,
+    WebhookVerificationError,
+    decode_secret,
+)
 
 
 class TestWebhooks:
@@ -36,8 +46,8 @@ class TestWebhooks:
         new_order = acme_neworder()
 
         order = db.Order.objects.get(name=new_order.response.uri.split("/")[-1])
-        secret = "s*cret"
-        webhook = PreUpstreamChallengeWebhook(secret)
+        secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
+        webhook = PreAnswerChallengesWebhook(secret)
 
         webhook_endpoint = "https://webhook.localhost/pre-neworder"
 
@@ -46,7 +56,7 @@ class TestWebhooks:
 
         def webhook_callback(arg):
             nonlocal verified
-            webhook = PreUpstreamChallengeWebhook(secret)
+            webhook = PreAnswerChallengesWebhook(secret)
             verified = webhook.verify(arg.body.encode(), arg.headers) is not None
 
             # reflect the body back, this doesn't have to happen
@@ -68,3 +78,60 @@ class TestWebhooks:
         assert len(challenges) == 2
         # Both have the validation key
         assert len([c for c in challenges if "validation" in c]) == 2
+
+
+SPEC_SECRET = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
+
+
+class TestWebhookSigning:
+    def test_matches_standard_webhooks_vector(self):
+        # Test vector from the Standard Webhooks reference implementations
+        webhook = Webhook(SPEC_SECRET)
+        signature = webhook.sign(
+            "msg_p5jXN8AQM9LWM0D4loKWxJek", 1614265330, '{"test": 2432232314}'
+        )
+        assert signature == "v1,g0hM9SsE+OTPJTGt/tmIKtSyZlE3uFJELVlNIOLJ1OE="
+
+    def test_secret_prefix_is_required(self):
+        unprefixed = SPEC_SECRET.removeprefix("whsec_")
+        with pytest.raises(ValueError):
+            decode_secret(unprefixed)
+
+    @pytest.mark.parametrize(
+        "secret",
+        [
+            "s3cret",  # not base64
+            "whsec_" + base64.b64encode(b"x" * 23).decode(),  # too short
+            "whsec_" + base64.b64encode(b"x" * 65).decode(),  # too long
+        ],
+    )
+    def test_invalid_secrets_rejected(self, secret):
+        with pytest.raises(ValueError):
+            decode_secret(secret)
+        with pytest.raises(ValidationError):
+            WebhookSettings(secret=secret, endpoint="https://webhook.localhost/")
+
+    def test_publish_headers_and_timeout(self):
+        webhook = Webhook(SPEC_SECRET)
+        with mock.patch("certificat.webhooks.requests.post") as post:
+            post.return_value.status_code = 204
+            webhook.publish("https://webhook.localhost/", {"a": 1}, timeout=7)
+
+        _, kwargs = post.call_args
+        assert kwargs["timeout"] == 7
+        headers = kwargs["headers"]
+        # Standard Webhooks requires integer seconds
+        assert headers["webhook-timestamp"].isdigit()
+        assert webhook.verify(kwargs["data"], headers) == {"a": 1}
+
+    def test_verify_rejects_old_timestamp(self):
+        webhook = Webhook(SPEC_SECRET)
+        old = int(time.time()) - 600
+        body = '{"a":1}'
+        headers = {
+            "webhook-id": "msg_1",
+            "webhook-timestamp": str(old),
+            "webhook-signature": webhook.sign("msg_1", old, body),
+        }
+        with pytest.raises(WebhookVerificationError):
+            webhook.verify(body, headers)

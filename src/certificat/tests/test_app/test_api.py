@@ -115,6 +115,8 @@ class TestApi:
             jwk_thumbprint="invalid-thumbprint",
         )
 
+        db.AccountBinding.generate(account_owner, "binding", "note").bind_to(acct)
+
         response = web_client.get(
             reverse("api:edit_preauthorizations", args=[acct.name])
         )

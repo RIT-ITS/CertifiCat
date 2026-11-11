@@ -15,6 +15,7 @@ from certificat.modules.acme.backends.acme import (
     ensure_acme_account_registered,
 )
 from certificat.settings.dynamic import (
+    ACMEFinalizerSettings,
     CERTINextACMEFinalizerSettings,
     CERTINextExternalAccountBinding,
 )
@@ -28,7 +29,17 @@ class CERTINextACMEFinalizer(Finalizer):
         if order.identifiers.count() > 1:
             eab_info = self.settings.multi_domain_binding
 
-        client = create_acme_client(eab_info.directory, self.settings.client_user_agent)
+        # Adapt settings to the ACMEFinalizer for reuse
+        acme_settings = ACMEFinalizerSettings(
+            directory=eab_info.directory,
+            account_kid=eab_info.account_kid,
+            account_hmac_key=eab_info.account_hmac_key,
+            account_email=eab_info.account_email,
+            client_user_agent=self.settings.client_user_agent,
+        )
+
+        client = create_acme_client(acme_settings)
+
         # This could fail and may retrigger a retry
         ensure_acme_account_registered(
             client,
@@ -42,37 +53,13 @@ class CERTINextACMEFinalizer(Finalizer):
             # result in a StopFinalization error that will prevent retry
 
             new_order = client.new_order(pem_csr.encode())
-
-            # Extract authorizations
-            authz_list: list[acme.messages.AuthorizationResource] = (
-                new_order.authorizations
-            )
-
             # Extract preferred challenges from authorizations
-            preferred_challenges: list[acme.messages.ChallengeBody] = []
-            for authz in authz_list:
-                # Choosing challenge.
-                challenges: list[acme.messages.ChallengeBody] = authz.body.challenges
-                for c in challenges:
-                    # Find the preferred/supported challenge.
-                    if isinstance(c.chall, acme.challenges.HTTP01):
-                        preferred_challenges.append(c)
 
-            # This is likely only necessary for the test ACME client, we can't answer
-            # http-01 challenges from CERTInext, but this is needed to satisfy Pebble
-            for chall in preferred_challenges:
-                response, _ = chall.response_and_validation(client.net.key)
-                # I think there's a bit of a race condition here, the response could say it's been validated
-                # It may be useful to swallow this error or have a toggle to swallow it
-                if not chall.validated:
-                    # again, this code should never get called in production because
-                    # everything should be validated
-                    client.answer_challenge(chall, response)
-
+            client.answer_preferred_chalenges(new_order)
             new_order = client.poll_and_finalize(
                 new_order,
                 # The ACME api requires a naive datetime
-                datetime.now() + timedelta(seconds=self.settings.finalization_timeout),  # noqa: DTZ005
+                datetime.now() + timedelta(seconds=self.settings.finalization_timeout),
             )
             db.Certificate.objects.create(order=order, chain=new_order.fullchain_pem)
 

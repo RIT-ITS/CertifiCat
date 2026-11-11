@@ -19,6 +19,7 @@ from certificat.settings.dynamic import (
     ACMEFinalizerChallengeSettings,
     ACMEFinalizerDNS01ChallengeSettings,
     ACMEFinalizerSettings,
+    ACMEFinalizerWebhookSettings,
     ApplicationSettings,
     WebhookSettings,
 )
@@ -251,7 +252,7 @@ class TestACMEFinalizer:
 
         try:
             finalize_order(self.acme_client, order, timeout=1)
-        except Exception:
+        except Exception:  # noqa: BLE001
             pass
 
         order_name = order.uri.split("/")[-1]
@@ -261,13 +262,13 @@ class TestACMEFinalizer:
 
     @pytest.mark.slow
     @pytest.mark.django_db
-    def test_webhooks_called(self, pebble_starter):
+    def test_pre_ans_chall_webhook_called(self, pebble_starter):
         pebble_starter()
         webhook_endpoint = "https://webhook.localhost/pre-neworder"
-        shared_secret = "s3cret"
+        shared_secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
         settings = ACMEFinalizerSettings.get()
-        settings.challenges = ACMEFinalizerChallengeSettings(
-            challenge_webhook=WebhookSettings(
+        settings.webhooks = ACMEFinalizerWebhookSettings(
+            pre_answer_challenges=WebhookSettings(
                 secret=shared_secret, endpoint=webhook_endpoint
             )
         )
@@ -288,7 +289,7 @@ class TestACMEFinalizer:
             callback=webhook_callback,
         )
 
-        new_order: NewOrderRet = self.acme_neworder(self.acme_client, self.acme_acct)
+        self.acme_neworder(self.acme_client, self.acme_acct)
         order = self._get_processed_order()
 
         assert verified, "Webhook data was not verified"
@@ -297,14 +298,14 @@ class TestACMEFinalizer:
 
     @pytest.mark.slow
     @pytest.mark.django_db
-    def test_webhooks_general_error(self, pebble_starter):
+    def test_pre_ans_chall_webhook_general_error(self, pebble_starter):
         pebble_starter()
         webhook_endpoint = "https://webhook.localhost/pre-neworder"
-        shared_secret = "s3cret"
+        shared_secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
 
         settings = ACMEFinalizerSettings.get()
-        settings.challenges = ACMEFinalizerChallengeSettings(
-            challenge_webhook=WebhookSettings(
+        settings.webhooks = ACMEFinalizerWebhookSettings(
+            pre_answer_challenges=WebhookSettings(
                 secret=shared_secret, endpoint=webhook_endpoint
             )
         )
@@ -321,7 +322,7 @@ class TestACMEFinalizer:
             callback=webhook_callback,
         )
 
-        new_order: NewOrderRet = self.acme_neworder(self.acme_client, self.acme_acct)
+        self.acme_neworder(self.acme_client, self.acme_acct)
         order = self._get_processed_order(expect_failure=True)
 
         assert order.status == OrderStatus.invalid
@@ -329,13 +330,13 @@ class TestACMEFinalizer:
 
     @pytest.mark.slow
     @pytest.mark.django_db
-    def test_webhooks_specific_error(self, pebble_starter):
+    def test_pre_ans_chall_webhook_specific_error(self, pebble_starter):
         pebble_starter()
         webhook_endpoint = "https://webhook.localhost/pre-neworder"
-        shared_secret = "s3cret"
+        shared_secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
         settings = ACMEFinalizerSettings.get()
-        settings.challenges = ACMEFinalizerChallengeSettings(
-            challenge_webhook=WebhookSettings(
+        settings.webhooks = ACMEFinalizerWebhookSettings(
+            pre_answer_challenges=WebhookSettings(
                 secret=shared_secret, endpoint=webhook_endpoint
             )
         )
@@ -355,7 +356,7 @@ class TestACMEFinalizer:
             callback=webhook_callback,
         )
 
-        new_order: NewOrderRet = self.acme_neworder(self.acme_client, self.acme_acct)
+        self.acme_neworder(self.acme_client, self.acme_acct)
         order = self._get_processed_order(expect_failure=True)
 
         assert order.status == OrderStatus.invalid
@@ -366,12 +367,14 @@ class TestACMEFinalizer:
     def test_check_dns_propagation(self, pebble_starter, dns_server: DNSServer):
         pebble_starter()
         webhook_endpoint = "https://webhook.localhost/pre-neworder"
-        shared_secret = "s3cret"
+        shared_secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
         settings = ACMEFinalizerSettings.get()
-        settings.challenges = ACMEFinalizerChallengeSettings(
-            challenge_webhook=WebhookSettings(
+        settings.webhooks = ACMEFinalizerWebhookSettings(
+            pre_answer_challenges=WebhookSettings(
                 secret=shared_secret, endpoint=webhook_endpoint
-            ),
+            )
+        )
+        settings.challenges = ACMEFinalizerChallengeSettings(
             dns_01=ACMEFinalizerDNS01ChallengeSettings(
                 verification_nameservers=[f"127.0.0.1:{self.dns_server_port}"],
                 verification_timeout=5,
@@ -423,12 +426,14 @@ class TestACMEFinalizer:
     ):
         pebble_starter()
         webhook_endpoint = "https://webhook.localhost/pre-neworder"
-        shared_secret = "s3cret"
+        shared_secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
         settings = ACMEFinalizerSettings.get()
-        settings.challenges = ACMEFinalizerChallengeSettings(
-            challenge_webhook=WebhookSettings(
+        settings.webhooks = ACMEFinalizerWebhookSettings(
+            pre_answer_challenges=WebhookSettings(
                 secret=shared_secret, endpoint=webhook_endpoint
-            ),
+            )
+        )
+        settings.challenges = ACMEFinalizerChallengeSettings(
             dns_01=ACMEFinalizerDNS01ChallengeSettings(
                 verification_nameservers=[
                     f"127.0.0.1:{self.dns_server_port}",
@@ -501,12 +506,14 @@ class TestACMEFinalizer:
     ):
         pebble_starter()
         webhook_endpoint = "https://webhook.localhost/pre-neworder"
-        shared_secret = "s3cret"
+        shared_secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
         settings = ACMEFinalizerSettings.get()
-        settings.challenges = ACMEFinalizerChallengeSettings(
-            challenge_webhook=WebhookSettings(
+        settings.webhooks = ACMEFinalizerWebhookSettings(
+            pre_answer_challenges=WebhookSettings(
                 secret=shared_secret, endpoint=webhook_endpoint
-            ),
+            )
+        )
+        settings.challenges = ACMEFinalizerChallengeSettings(
             dns_01=ACMEFinalizerDNS01ChallengeSettings(
                 verification_nameservers=[
                     f"127.0.0.1:{self.dns_server_port}",
@@ -571,6 +578,64 @@ class TestACMEFinalizer:
 
         assert order.status == OrderStatus.invalid
         assert order.last_finalization_error() is not None
+
+    @pytest.mark.slow
+    @pytest.mark.django_db
+    @pytest.mark.parametrize("error_in_pre_webhook", [False, True])
+    def test_post_ans_chall_webhook_called(
+        self, pebble_starter, error_in_pre_webhook: bool
+    ):
+        pebble_starter()
+        webhook_endpoint = "https://webhook.localhost/webhook"
+        shared_secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw"
+        settings = ACMEFinalizerSettings.get()
+        settings.webhooks = ACMEFinalizerWebhookSettings(
+            pre_answer_challenges=WebhookSettings(
+                secret=shared_secret, endpoint=webhook_endpoint
+            ),
+            post_answer_challenges=WebhookSettings(
+                secret=shared_secret, endpoint=webhook_endpoint
+            ),
+        )
+
+        verified_calls = []
+
+        def webhook_callback(arg):
+            nonlocal verified_calls
+            webhook = Webhook(shared_secret)
+            data = webhook.verify(arg.body.encode(), arg.headers)
+            verified_calls.append(data["type"])
+
+            match data["type"]:
+                case "order.pre-answer-challenges":
+                    if error_in_pre_webhook:
+                        return (500, {}, "")
+                    else:
+                        return (200, {}, "")
+                case "order.post-answer-challenges":
+                    return (200, {}, "")
+
+        self.responses.add_callback(
+            responses.POST,
+            webhook_endpoint,
+            callback=webhook_callback,
+        )
+
+        self.acme_neworder(self.acme_client, self.acme_acct)
+        order = self._get_processed_order(expect_failure=error_in_pre_webhook)
+
+        assert "order.pre-answer-challenges" in verified_calls, (
+            "order.pre-answer-challenges was not called with verified data"
+        )
+        assert "order.post-answer-challenges" in verified_calls, (
+            "order.post-answer-challenges was not called with verified data"
+        )
+
+        assert order.status == (
+            OrderStatus.invalid if error_in_pre_webhook else OrderStatus.valid
+        )
+        if not error_in_pre_webhook:
+            assert order.certificate is not None
 
     @pytest.mark.slow
     @pytest.mark.django_db

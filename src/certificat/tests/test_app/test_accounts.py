@@ -341,3 +341,59 @@ def test_view_all_accounts_listings(authenticated_web_client: Client):
     # now see all bindings
     assert all(binding.accessible_by(viewer) for binding in bindings)
     assert set(db.AccountBinding.objects.by_user(viewer)) == set(bindings)
+
+
+@pytest.mark.django_db
+def test_finalizer_editable_by_account_editors(
+    authenticated_web_client: Client, acme_newacct, monkeypatch
+):
+    settings = inject.instance(ApplicationSettings)
+    monkeypatch.setattr(
+        settings,
+        "alternative_finalizers",
+        [
+            AlternativeFinalizerSettings(
+                id="alt",
+                name="alt finalizer",
+                description="alt finalizer description",
+                finalizer=ACMEFinalizerSettings(
+                    directory="https://acme.localhost/directory",
+                    account_email="noreply@acme.localhost",
+                ),
+            )
+        ],
+    )
+
+    owner = authenticated_web_client.test_user
+    assert not owner.is_superuser
+    binding = db.AccountBinding.generate(owner, "owned account", "note")
+    acme_newacct(with_eab=True, binding=binding, user=owner)
+    binding.refresh_from_db()
+    account_url = reverse("account", args=[binding.id])
+
+    # The owner can edit the account, so they can see and change the finalizer
+    response = authenticated_web_client.get(account_url)
+    controller = response.context["finalizer_controller"]
+    assert controller.should_display_finalizer()
+    assert controller.editable()
+
+    response = authenticated_web_client.post(
+        reverse("api:edit_finalizer", args=[binding.bound_to.name]),
+        {"id": "alt"},
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    binding.bound_to.refresh_from_db()
+    assert binding.bound_to.finalizer == "alt"
+
+    # A user who can only view the account sees the finalizer read-only
+    viewer = gen_user()
+    app_label, codename = Perms.VIEW_ALL_ACCOUNTS.split(".")
+    viewer.user_permissions.add(
+        Permission.objects.get(content_type__app_label=app_label, codename=codename)
+    )
+    authenticated_web_client.force_login(viewer)
+    response = authenticated_web_client.get(account_url)
+    controller = response.context["finalizer_controller"]
+    assert controller.should_display_finalizer()
+    assert not controller.editable()

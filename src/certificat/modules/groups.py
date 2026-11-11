@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 from django.db import models
 
 from certificat.modules.perms import (
@@ -10,11 +10,6 @@ from certificat.modules.perms import (
     manageable_permissions,
     permission_name,
 )
-
-
-def can_edit_groups(user: User) -> bool:
-    """Only administrators can choose which permissions a group grants."""
-    return user.is_superuser
 
 
 def search_groups(query: str | None = None) -> models.QuerySet[Group]:

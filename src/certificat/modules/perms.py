@@ -1,9 +1,18 @@
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
+from functools import wraps
 from typing import TYPE_CHECKING
 
+from django.http import HttpRequest, HttpResponse
+
+from certificat.modules.acme import models as db
+
+logger = logging.getLogger(__name__)
+
 if TYPE_CHECKING:
-    from django.contrib.auth.models import Group, Permission
+    from django.contrib.auth.models import Group, Permission, User
 
 
 class Perms(StrEnum):
@@ -30,6 +39,167 @@ class Perms(StrEnum):
         return Permission.objects.get(
             content_type__app_label=self.app_label, codename=self.codename
         )
+
+
+class Gates(StrEnum):
+    EDIT_ACCOUNT = "edit_account"
+    VIEW_ACCOUNT = "view_account"
+    VIEW_ORDER = "view_order"
+    VIEW_GROUPS = "view_groups"
+    EDIT_GROUPS = "edit_groups"
+    VIEW_USERS = "view_users"
+    EDIT_PREAUTHS = "edit_preauths"
+    TRANSFERRABLE_BY = "transferrable_by"
+    EDIT_USAGE = "edit_usage"
+    EDIT_TOS = "edit_tos"
+    CAN_ACCESS_MANAGEMENT = "access_management"
+
+
+class PermissionDeniedError(Exception):
+    pass
+
+
+class GateContext:
+    pass
+
+
+@dataclass
+class AccountGateContext(GateContext):
+    binding: db.AccountBinding
+
+
+@dataclass
+class OrderGateContext(GateContext):
+    order: db.Order
+
+
+class UserPermissionGate:
+    def __init__(self, user: User):
+        self.user = user
+
+    def evaluate(self, action: Gates, ctx: GateContext | None = None) -> bool:
+        return PermissionGate.evaluate(self.user, action, ctx)
+
+
+class PermissionGate:
+    """
+    This routes permission gates to evaluators so permission evaluation can be centralized.
+    """
+
+    @staticmethod
+    def throw_if_fails(user: User, action: Gates, ctx: GateContext | None = None):
+        if not user or not user.is_authenticated:
+            raise PermissionDeniedError("User was not authenticated")
+
+        if not PermissionGate.evaluate(user, action, ctx):
+            raise PermissionDeniedError(f"Permission denied for gate '{action.value}'")
+
+    @staticmethod
+    def evaluate(user: User, action: Gates, ctx: GateContext | None = None) -> bool:
+        if not user or not user.is_authenticated:
+            return False
+
+        if user.is_superuser:
+            return True
+
+        passed = False
+
+        match action:
+            case Gates.VIEW_ACCOUNT:
+                passed = PermissionGate.can_view_account(user, ctx)
+            case Gates.VIEW_ORDER:
+                passed = PermissionGate.can_view_order(user, ctx)
+            case Gates.VIEW_USERS | Gates.VIEW_GROUPS:
+                passed = user.has_perm(Perms.VIEW_USERS)
+            case Gates.EDIT_GROUPS:
+                passed = user.is_superuser
+            case Gates.EDIT_ACCOUNT:
+                passed = PermissionGate.can_edit_account(user, ctx)
+            case Gates.TRANSFERRABLE_BY:
+                passed = PermissionGate.can_transfer_account(user, ctx)
+            case Gates.EDIT_PREAUTHS:
+                passed = PermissionGate.can_edit_preauthorizations(user)
+            case Gates.EDIT_USAGE:
+                passed = user.has_perm(Perms.EDIT_USAGE)
+            case Gates.EDIT_TOS:
+                passed = user.has_perm(Perms.EDIT_TOS)
+            case Gates.CAN_ACCESS_MANAGEMENT:
+                passed = (
+                    user.is_superuser
+                    or user.is_staff
+                    or any(
+                        user.has_perm(p)
+                        for p in (
+                            Perms.VIEW_USERS,
+                            Perms.EDIT_TOS,
+                            Perms.EDIT_USAGE,
+                        )
+                    )
+                )
+            case _:
+                raise Exception(f"Unhandled permission gate {action.value}")  # noqa: TRY002
+
+        if not passed:
+            logger.info(
+                f"User {user.username} failed permission gate. ctx={ctx}, action='{action.value}'"
+            )
+            return False
+
+        return True
+
+    @staticmethod
+    def can_edit_preauthorizations(user: User):
+        return user.has_perm(Perms.EDIT_PREAUTHS)
+
+    @staticmethod
+    def can_view_account(user: User, ctx: AccountGateContext) -> bool:
+        return ctx.binding.accessible_by(user)
+
+    @staticmethod
+    def can_view_order(user: User, ctx: OrderGateContext) -> bool:
+        return ctx.order.accessible_by(user)
+
+    @staticmethod
+    def can_edit_account(user: User, ctx: AccountGateContext) -> bool:
+        return ctx.binding.editable_by(user)
+
+    @staticmethod
+    def can_transfer_account(user: User, ctx: AccountGateContext) -> bool:
+        return ctx.binding.transferable_by(user)
+
+
+def normalize_gate_error(view_func):
+    @wraps(view_func)
+    def _wrapped_view(*args, **kwargs):
+        try:
+            return view_func(*args, **kwargs)
+        except PermissionDeniedError:
+            return HttpResponse(status=403)
+
+    return _wrapped_view
+
+
+def require_gate(
+    action: Gates, get_context: Callable[[HttpRequest], GateContext] | None = None
+):
+    """
+    Decorator that forces a view through the PermissionGate before executing.
+    """
+
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(*args, **kwargs):
+            # request will be the first or second parameter depending on if this is a
+            # class or function-based view
+            request = args[0] if isinstance(args[0], HttpRequest) else args[1]
+            context = get_context(*args, **kwargs) if get_context else None
+            PermissionGate.throw_if_fails(request.user, action, context)
+
+            return view_func(*args, **kwargs)
+
+        return _wrapped_view
+
+    return decorator
 
 
 class PermCategory(StrEnum):

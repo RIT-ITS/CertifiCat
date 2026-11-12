@@ -57,8 +57,39 @@ class Dictable:
         return {name: operator.attrgetter(name)(self) for name in self.dict_fields}
 
 
-def choices(obj: Enum) -> Mapping[str, str]:
-    return {s: s for s in obj}
+def choices(obj: type[Enum]) -> Mapping[str, str]:
+    # Use the raw values. str() of a (str, Enum) member is the qualified name
+    # ("OrderStatus.valid"), which forms and the Django admin would submit.
+    return {s.value: s.value for s in obj}
+
+
+class EnumCharField(models.CharField):
+    """A CharField that stores acmev2's (str, Enum) members by value.
+
+    Those enums mix in str, so Django passes them to the database driver as-is and
+    the driver formats them with str(), which gives the qualified member name
+    ("OrderStatus.valid") rather than "valid". This converts members to their value
+    for saves, .update() calls, and lookups.
+    """
+
+    def get_prep_value(self, value):
+        if isinstance(value, Enum):
+            value = value.value
+        return super().get_prep_value(value)
+
+    def pre_save(self, model_instance, add):
+        value = super().pre_save(model_instance, add)
+        if isinstance(value, Enum):
+            # Keep the instance consistent with what was stored
+            value = value.value
+            setattr(model_instance, self.attname, value)
+        return value
+
+    def deconstruct(self):
+        # Behaves the same as a CharField in the database, so don't make migrations
+        # depend on this class
+        name, _, args, kwargs = super().deconstruct()
+        return name, "django.db.models.CharField", args, kwargs
 
 
 class TimestampMixin(models.Model):
@@ -86,7 +117,7 @@ class TermsOfService(MarkdownDisplay):
 
 class Account(TimestampMixin):
     name = models.CharField(max_length=15, unique=True)
-    status = models.CharField(max_length=15, choices=choices(AccountStatus))
+    status = EnumCharField(max_length=15, choices=choices(AccountStatus))
     jwk = models.TextField()
     jwk_thumbprint = models.CharField(max_length=100, unique=True)
     finalizer = models.CharField(null=True, blank=True, max_length=255)
@@ -293,7 +324,7 @@ class Order(TimestampMixin, Dictable):
     )
 
     name = models.CharField(max_length=15, unique=True)
-    status = models.CharField(max_length=15, choices=choices(OrderStatus))
+    status = EnumCharField(max_length=15, choices=choices(OrderStatus))
     expires = models.DateTimeField()
 
     events = GenericRelation("TaggedEvent")
@@ -433,7 +464,7 @@ class Identifier(TimestampMixin):
         Order, on_delete=models.CASCADE, related_name="identifiers"
     )
 
-    type = models.CharField(max_length=15, choices=choices(IdentifierType))
+    type = EnumCharField(max_length=15, choices=choices(IdentifierType))
     value = models.CharField(max_length=255)
 
     def __str__(self):
@@ -445,7 +476,7 @@ class PreAuthorizedAccountIdentifier(TimestampMixin):
         Account, on_delete=models.CASCADE, related_name="preauthorized_identifiers"
     )
 
-    identifier_type = models.CharField(max_length=15, choices=choices(IdentifierType))
+    identifier_type = EnumCharField(max_length=15, choices=choices(IdentifierType))
     identifier_value = models.CharField(max_length=255)
 
     def __str__(self):
@@ -465,7 +496,7 @@ class Authorization(TimestampMixin, Dictable):
     )
 
     name = models.CharField(max_length=15, unique=True)
-    status = models.CharField(max_length=15, choices=choices(AuthorizationStatus))
+    status = EnumCharField(max_length=15, choices=choices(AuthorizationStatus))
     expires = models.DateTimeField()
 
     @property
@@ -493,9 +524,9 @@ class Challenge(TimestampMixin, Dictable):
     )
 
     name = models.CharField(max_length=15, unique=True)
-    type = models.CharField(max_length=15, choices=choices(ChallengeType))
+    type = EnumCharField(max_length=15, choices=choices(ChallengeType))
     token = models.CharField(max_length=100)
-    status = models.CharField(max_length=15, choices=choices(ChallengeStatus))
+    status = EnumCharField(max_length=15, choices=choices(ChallengeStatus))
     validated = models.DateTimeField(null=True)
 
     @property

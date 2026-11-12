@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm
+FROM mcr.microsoft.com/devcontainers/python:3.15-bookworm
 
 ENV PYTHONUNBUFFERED=1
 

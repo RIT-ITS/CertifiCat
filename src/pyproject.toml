@@ -4,7 +4,7 @@ version = "0.0.0"
 description = "Web site and reference implementation for the acmev2 package"
 readme = "README.md"
 license = { text = "Apache-2.0" }
-requires-python = ">=3.13"
+requires-python = ">=3.15"
 dependencies = [
     "asn1>=3.2.0",
     "django-cotton>=2.6.1",
@@ -39,6 +39,10 @@ dev = [
     "dnslib>=0.9.26",
 ]
 
+[tool.uv]
+override-dependencies = [
+    "xmlschema >=4.0.0", # Temporary fix for pysaml2
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

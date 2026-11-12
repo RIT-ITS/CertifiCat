@@ -1,4 +1,4 @@
-FROM python:3.13.3-alpine AS base
+FROM python:3.15.2-alpine AS base
 
 FROM base AS builder
 
@@ -32,7 +32,7 @@ RUN pip3 install uv && \
     uv build && \
     uv export --no-emit-workspace --no-hashes -o requirements-frozen.txt
 
-ARG GUNICORN_VERSION=25.1.0
+ARG GUNICORN_VERSION=27.0.0
 RUN python3 -m venv /venv/ && \
     /venv/bin/pip install \
         --no-cache-dir \

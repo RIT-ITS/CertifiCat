@@ -97,7 +97,9 @@ class NonceService(INonceService):
 
 
 class AccountService(IAccountService):
-    def create(self, resource: AccountResource, eab_kid: str = None) -> AccountResource:
+    def create(
+        self, resource: AccountResource, eab_kid: str | None = None
+    ) -> AccountResource:
         # TODO: Add lock around this to avoid race condition. Will probably never happen
         # except in testing.
         binding: db.AccountBinding | None = None

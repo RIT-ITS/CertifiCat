@@ -7,29 +7,35 @@ include:
       when: never
   # Run using default settings
   - template: Security/Dependency-Scanning.gitlab-ci.yml
-  # Run only on tags
+  # Run on releases and scheduled scans
   - template: Security/Container-Scanning.gitlab-ci.yml
   # Run using default settings
   - template: Security/Secret-Detection.gitlab-ci.yml
   - local: '.gitlab-ci.helm.yml'
 
+# Releases are started manually from a branch pipeline and tag themselves when they
+# finish, so the pipelines for those tags have nothing to do.
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: always
+
 stages:
+  - version
   - build
   - security
-  - test  
+  - test
   - package_helm
   - upload_helm
-  
+  - tag
+
 variables:
   # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
   DOCKER_HOST: tcp://localhost:2375
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
   CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-  APP_VERSION: $CI_COMMIT_TAG
-  HELM_VERSION: $CI_COMMIT_TAG
-  HELM_APPVERSION: $CI_COMMIT_TAG
   CS_SEVERITY_THRESHOLD: High
   GIT_SUBMODULE_STRATEGY: recursive
   # Disable certain SAST modules that don't matter
@@ -37,22 +43,114 @@ variables:
   GITLAB_ADVANCED_SAST_ENABLED: 'true'
   ADVANCED_SAST_PARTIAL_SCAN: 'differential'
 
+# Jobs that make up a release. They're created in every branch pipeline but wait on
+# the manual version job, so nothing is built until someone starts a release.
+.release:
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+
+# Starts a release. Versions follow ${calVersion}[-${branch}]+${commitCount}, e.g.
+# 2026.11.12+1234 on the default branch or 2026.11.12-feat-foo+1234 elsewhere.
+version:
+  stage: version
+  image:
+    name: alpine/git:latest
+    entrypoint: [""]
+  variables:
+    # The full history is needed to count commits
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_STRATEGY: none
+  script:
+    - |
+      set -eu
+
+      # YYYY.M.D without leading zeros, which semver forbids
+      CAL_VERSION="$(date -u +%Y.%m.%d | sed 's/\.0/./g')"
+      BUILD_NUMBER="$(git rev-list --count HEAD)"
+
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        RELEASE_VERSION="${CAL_VERSION}+${BUILD_NUMBER}"
+        # Python packages need a PEP 440 version
+        APP_VERSION="${CAL_VERSION}+build.${BUILD_NUMBER}"
+        PUSH_LATEST=true
+      else
+        # The ref slug is already lowercase alphanumerics and hyphens. Keep it short
+        # enough that the image tag fits in a Kubernetes label (63 characters).
+        BRANCH="$(printf '%s' "$CI_COMMIT_REF_SLUG" | cut -c1-40 | sed 's/-*$//')"
+        # An all-numeric prerelease identifier can't have leading zeros
+        case "$BRANCH" in
+          *[!0-9]*) ;;
+          *) BRANCH="branch-${BRANCH}" ;;
+        esac
+        RELEASE_VERSION="${CAL_VERSION}-${BRANCH}+${BUILD_NUMBER}"
+        APP_VERSION="${CAL_VERSION}+${BRANCH}.${BUILD_NUMBER}"
+        PUSH_LATEST=false
+      fi
+
+      if ! printf '%s' "$RELEASE_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?\+[0-9A-Za-z-]+$'; then
+        echo "Generated version '${RELEASE_VERSION}' is not valid semver"
+        exit 1
+      fi
+
+      # ls-remote exits with 2 when nothing matches
+      TAG_CHECK=0
+      git ls-remote --exit-code --tags origin "refs/tags/${RELEASE_VERSION}" >/dev/null || TAG_CHECK=$?
+      case "$TAG_CHECK" in
+        2) ;;
+        0)
+          echo "Tag ${RELEASE_VERSION} already exists, this commit has already been released today"
+          exit 1
+          ;;
+        *)
+          echo "Couldn't check whether tag ${RELEASE_VERSION} exists"
+          exit 1
+          ;;
+      esac
+
+      # Image tags can't contain '+'
+      IMAGE_VERSION="$(printf '%s' "$RELEASE_VERSION" | tr '+' '.')"
+
+      echo "Releasing ${RELEASE_VERSION}"
+      {
+        echo "RELEASE_VERSION=${RELEASE_VERSION}"
+        echo "APP_VERSION=${APP_VERSION}"
+        echo "IMAGE_TAG=${CI_REGISTRY_IMAGE}:${IMAGE_VERSION}"
+        echo "PUSH_LATEST=${PUSH_LATEST}"
+        echo "HELM_VERSION=${RELEASE_VERSION}"
+        # The chart uses its appVersion as the image tag
+        echo "HELM_APPVERSION=${IMAGE_VERSION}"
+      } > release.env
+  artifacts:
+    reports:
+      dotenv: release.env
+  rules:
+    # Keep in sync with .release
+    - if: $CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: manual
+      # Don't mark every branch pipeline as blocked
+      allow_failure: true
+
 build:
   stage: build
   image:
     name: moby/buildkit:rootless
     entrypoint: [""]
+  needs:
+    - version
   variables:
     BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   before_script:
     - mkdir -p ~/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
   script:
-      - internal/build-image "${CS_IMAGE},${IMAGE_TAG},${CI_REGISTRY_IMAGE}:latest"
+    - |
+      TAGS="${CS_IMAGE},${IMAGE_TAG}"
+      if [ "$PUSH_LATEST" = "true" ]; then
+        TAGS="${TAGS},${CI_REGISTRY_IMAGE}:latest"
+      fi
+      internal/build-image "$TAGS"
   rules:
-    # Build when a new tag is committed
-    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^\d+\.\d+\..+/
-      when: always
+    - !reference [.release, rules]
 
 dependency_scanning:
   before_script:
@@ -60,17 +158,44 @@ dependency_scanning:
 
 container_scanning:
   stage: test
+  # Neither job exists in scheduled pipelines, which scan the existing latest image
+  needs:
+    - job: version
+      optional: true
+    - job: build
+      optional: true
   # If this is a scheduled job we need to scan the latest image, we don't build images for every
   # checkin and we can't be sure the last found tag is appropriate to scan
   before_script:
     - |
-      if [ $SCHEDULED_SECURITY_SCAN == 'true' || $SCHEDULED_SECURITY_SCAN == '1' ]; then
-        CS_IMAGE="${CI_REGISTRY_IMAGE}:latest"
-      fi 
+      if [ "$SCHEDULED_SECURITY_SCAN" = "true" ] || [ "$SCHEDULED_SECURITY_SCAN" = "1" ]; then
+        export CS_IMAGE="${CI_REGISTRY_IMAGE}:latest"
+      fi
   rules:
     # Scan if the build pipeline indicates they want a scan
     - if: $SCHEDULED_SECURITY_SCAN == 'true' || $SCHEDULED_SECURITY_SCAN == '1'
       when: always
-    # Scan when a new tag is committed
-    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^\d+\.\d+\..+/
-      when: always
+    # Scan images built for a release
+    - !reference [.release, rules]
+
+# Tag the release once everything has been built, scanned, and published. Needs a
+# RELEASE_TAG_TOKEN CI/CD variable holding an access token with the api scope that is
+# allowed to create tags.
+tag:
+  stage: tag
+  image: curlimages/curl:latest
+  needs:
+    - version
+    - build
+    - container_scanning
+    - upload_helm
+  script:
+    - |
+      curl --fail-with-body --silent --show-error \
+        --request POST \
+        --header "PRIVATE-TOKEN: ${RELEASE_TAG_TOKEN}" \
+        --data-urlencode "tag_name=${RELEASE_VERSION}" \
+        --data-urlencode "ref=${CI_COMMIT_SHA}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags"
+  rules:
+    - !reference [.release, rules]

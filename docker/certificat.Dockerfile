@@ -14,7 +14,9 @@ RUN apk update && \
     nodejs \
     yarn \
     compiler-rt \
-    clang
+    clang \
+    # clang needs gcc's linker and startup files (crtbeginS.o etc.) to link C extensions
+    gcc
 
 ENV CC=clang
 COPY --from=src ./ /code/
@@ -26,18 +28,32 @@ RUN yarn && \
 
 WORKDIR /code/
 
-ARG CERTIFICAT_VERSION
-RUN pip3 install uv && \
-    uv version ${CERTIFICAT_VERSION} && \
-    uv build && \
-    uv export --no-emit-workspace --no-hashes -o requirements-frozen.txt
-
+# The shenanigans here are necessary for two reasons:
+#  1. The dependencies installed should be exactly what exists in the lockfile
+#  2. Some dependencies may be unresolvable because of packages incorrectly 
+#     limiting packages ranges.
+#
+# So this installs exactly what we have in dev without tooling making any changes.
+ARG CERTIFICAT_VERSION=0.0.0
 ARG GUNICORN_VERSION=27.0.0
-RUN python3 -m venv /venv/ && \
-    /venv/bin/pip install \
-        --no-cache-dir \
-        -c requirements-frozen.txt \
-        /code/dist/certificat-*.whl gunicorn==$GUNICORN_VERSION
+# Build the venv at its final path, venv scripts record the path they were built at
+ENV UV_PROJECT_ENVIRONMENT=/srv/www/.venv \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+# Install the dependencies exactly as they are in uv.lock, then the certificat wheel
+# on top of them. pip can't be used here because it resolves dependencies again and
+# ignores uv's override-dependencies.
+RUN pip3 install uv && \
+    # Fail if uv.lock is out of date with pyproject.toml
+    uv lock --check && \
+    # Set the version without re-locking
+    uv version --frozen "${CERTIFICAT_VERSION}" && \
+    uv sync --frozen --no-dev --no-install-project && \
+    uv build --wheel && \
+    # The dependencies are already installed from the lockfile, so don't resolve them again
+    uv pip install --python "${UV_PROJECT_ENVIRONMENT}" --no-deps dist/certificat-*.whl && \
+    uv pip install --python "${UV_PROJECT_ENVIRONMENT}" "gunicorn==${GUNICORN_VERSION}"
 
 FROM base AS prod
 
@@ -62,7 +78,7 @@ RUN adduser -S certificat && \
      chmod 0750 /run/certificat
 
 # Add venv built in previous step
-COPY --from=builder /venv /srv/www/.venv
+COPY --from=builder /srv/www/.venv /srv/www/.venv
 
 # Overlay static configuration and runtime files
 COPY --from=dockerfiles /srv /srv/

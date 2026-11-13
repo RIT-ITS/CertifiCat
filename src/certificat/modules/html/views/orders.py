@@ -148,7 +148,7 @@ class OrderView(ViewBase):
     def get(self, request: HttpRequest, order_id):
         order: Order = get_object_or_404(
             Order.objects.select_related(
-                "account", "account__binding"
+                "account", "account__binding", "finalizer_thumbprint"
             ).prefetch_related(
                 "authorizations",
                 "authorizations__identifier",

@@ -67,6 +67,27 @@
             </ul>
         </dd>
 
+        {% if order.finalizer_thumbprint %}
+            <dt>Finalizer</dt>
+            <dd>
+                <span class="bold" title="type: {{ order.finalizer_thumbprint.type }}">
+                    {{ order.finalizer_thumbprint.name }}
+                </span>
+                <p>{{ order.finalizer_thumbprint.description }}</p>
+                <div class="subtext">Detected {{ order.finalizer_thumbprint.activated_at }} &mdash; {% if order.finalizer_thumbprint.deactivated_at %}{{ order.finalizer_thumbprint.deactivated_at }}{% else %}present{% endif %}</div>
+                {% if request.user.is_superuser %}
+                    <span class="badge--group mt-2">
+                        <span class="badge badge--light">
+                            type
+                        </span>
+                        <span class="badge badge--outlined badge--light">
+                            {{ order.finalizer_thumbprint.type }}
+                        </span>
+                    </span>
+                {% endif %}
+            </dd>
+        {% endif %}
+
     </dl>
 
     <c-tabs bordered class="mt-4">

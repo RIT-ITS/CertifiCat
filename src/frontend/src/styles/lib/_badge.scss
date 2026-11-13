@@ -86,7 +86,7 @@
 
         &.badge--outlined {
             --badge-background-color: color-mix(in srgb, var(--gray-color--200) 20%, #FFF 80%);
-            --badge-border-color: var(--body-text-color);
+            --badge-border-color: var(--gray-color--200);
         }
     }
 

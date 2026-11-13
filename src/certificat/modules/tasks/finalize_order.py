@@ -16,30 +16,25 @@ from certificat.modules.acme.backends import (
     NotReadyException,
     StopFinalization,
 )
-from certificat.settings.dynamic import (
-    ApplicationSettings,
-    PolymorphicFinalizerSettings,
-)
+from certificat.modules.acme.finalizers import ConfiguredFinalizer, resolve_finalizer
+from certificat.settings.dynamic import ApplicationSettings
 
 logger = logging.getLogger(__name__)
 
 
 def get_finalizer(account: db.Account) -> Finalizer:
+    return build_finalizer(_resolve(account))
+
+
+def _resolve(account: db.Account) -> ConfiguredFinalizer:
     app_settings = inject.instance(ApplicationSettings)
-
     logger.info(f"creating finalizer for account {account.id}:{account.name}")
+    return resolve_finalizer(app_settings, account.finalizer)
 
-    finalizer_settings: PolymorphicFinalizerSettings = app_settings.finalizer
-    if account.finalizer:
-        for alt_finalizer in app_settings.alternative_finalizers:
-            if alt_finalizer.id == account.finalizer:
-                finalizer_settings = alt_finalizer.finalizer
-                break
 
-    finalizer_klass: type[Finalizer] = import_string(finalizer_settings.module)
-    finalizer: Finalizer = finalizer_klass(finalizer_settings)
-
-    return finalizer
+def build_finalizer(configured: ConfiguredFinalizer) -> Finalizer:
+    finalizer_klass: type[Finalizer] = import_string(configured.settings.module)
+    return finalizer_klass(configured.settings)
 
 
 def _run_task(order_name: str):
@@ -55,8 +50,15 @@ def _run_task(order_name: str):
 
     csr = db.CertificateRequest.objects.get(order=order).csr
 
-    finalizer = get_finalizer(order.account)
+    configured = _resolve(order.account)
+    finalizer = build_finalizer(configured)
     logger.info(f"Finalizer selected: {finalizer}")
+
+    # Record the finalizer settings used by this attempt. Registering here instead of
+    # only looking the thumbprint up covers task workers that started without the
+    # startup registration, e.g. after a config change.
+    order.finalizer_thumbprint, _ = db.FinalizerThumbprint.objects.register(configured)
+    order.save(update_fields=["finalizer_thumbprint", "updated_at"])
 
     try:
         finalize_response: FinalizeResponse = finalizer.finalize(order, csr)

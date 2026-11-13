@@ -113,6 +113,11 @@ def finalize(request, order_id: str):
 
 
 @csrf_exempt
+def not_found(request: HttpRequest, path: str = ""):
+    return HttpResponse("404 page not found", status=404)
+
+
+@csrf_exempt
 def acct_redirect(request: HttpRequest, acct_id: str):
     binding = get_object_or_404(db.AccountBinding, bound_to__name=acct_id)
     acme_settings = inject.instance(LocalACMESettings)

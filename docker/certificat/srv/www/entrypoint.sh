@@ -73,6 +73,9 @@ initserver() {
     collectstatic
 
     "${PYTHON}" /srv/www/manage.py initialize_authentication
+
+    log_info "Registering finalizer thumbprints"
+    "${PYTHON}" /srv/www/manage.py register_finalizers
 }
 
 runserver() {

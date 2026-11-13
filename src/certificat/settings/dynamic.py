@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 import re
+import sys
 import textwrap
 from collections.abc import Mapping
 from typing import ClassVar, Literal, Self
@@ -458,6 +459,12 @@ class FinalizerSettings(BaseModel):
     # admin setup checklist. Not configurable.
     production_ready: ClassVar[bool] = False
 
+    def thumbprint_attributes(self) -> list[str] | None:
+        """The settings whose changes count as a new version of this finalizer,
+        see calculate_finalizer_thumbprint. None uses every setting. Finalizers
+        override this to ignore settings that don't change what they issue."""
+        return None
+
 
 class WebhookSettings(BaseModel):
     secret: str = Field(
@@ -565,6 +572,13 @@ class ACMEFinalizerSettings(FinalizerSettings):
         if settings.finalizer.type == "acme":
             return settings.finalizer
 
+    def thumbprint_attributes(self):
+        return [
+            "directory",
+            "account_kid",
+            "account_hmac_key",
+        ]
+
     directory: HttpUrl = Field(
         description="Path to the ACME API endpoint. This usually ends with /directory."
     )
@@ -627,6 +641,12 @@ class CERTINextACMEFinalizerSettings(FinalizerSettings):
         settings = inject.instance(ApplicationSettings)
         if settings.finalizer.type == "certinext-acme":
             return settings.finalizer
+
+    def thumbprint_attributes(self):
+        return [
+            "single_domain_binding",
+            "multi_domain_binding",
+        ]
 
     single_domain_binding: CERTINextExternalAccountBinding = Field(
         description="ACME credentials used when creating a single-domain certificate."
@@ -1077,11 +1097,11 @@ class ConfigFile(BaseSettings):
                 print(
                     "CERTIFICAT__CONFIG environment variable should contain a config path, instead was empty."
                 )
-                exit(1)
+                sys.exit(1)
 
             if not os.path.exists(config_file):
                 print("Could not load config at path: " + config_file)
-                exit(1)
+                sys.exit(1)
 
             with open(config_file) as file:
                 config_values = yaml.safe_load(file)
@@ -1091,16 +1111,16 @@ class ConfigFile(BaseSettings):
                 cls._config = _config
             except ValidationError as err:
                 print("Fatal error loading config at " + config_file)
-                for err in err.errors():
-                    str_loc = [str(p) for p in err.get("loc")]
-                    print(f"  {'.'.join(str_loc)}: {err.get('msg')}")
+                for validation_err in err.errors():
+                    str_loc = [str(p) for p in validation_err.get("loc")]
+                    print(f"  {'.'.join(str_loc)}: {validation_err.get('msg')}")
 
-                exit(1)
-            except Exception as err:
+                sys.exit(1)
+            except Exception as err:  # noqa: BLE001
                 print("Fatal error loading config at " + config_file)
                 print("  " + str(err))
 
-                exit(1)
+                sys.exit(1)
 
         return _config
 

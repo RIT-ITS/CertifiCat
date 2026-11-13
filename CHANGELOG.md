@@ -7,6 +7,7 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 ## Unreleased / In Development
 
+- Added a display for the finalizer used by the order. Will only work for future orders.
 - Centralized and reworked permissions to make permissions apply more consistantly and to separate logical operations from implementation.
 - Hundreds of documentation updates to attempt to bring parity to documentation and features.
 - Consolidated and reworked ACME finalizer to make the finalizer flow more straightforward.

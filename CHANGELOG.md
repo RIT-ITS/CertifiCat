@@ -7,6 +7,8 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 ## Unreleased / In Development
 
+- Added an integration test suite that tests a fresh CertifiCat install can issue a certificate
+- Added a quickstart evaluation script that sets up CertifiCat with no intervention
 - Added a display for the finalizer used by the order. Will only work for future orders.
 - Centralized and reworked permissions to make permissions apply more consistantly and to separate logical operations from implementation.
 - Hundreds of documentation updates to attempt to bring parity to documentation and features.

@@ -124,6 +124,16 @@ class SQLiteDatabaseSettings(DatabaseSettings):
             "OPTIONS": self.options,
         }
 
+    def to_peewee(self) -> peewee.SqliteDatabase:
+        # Huey stats has to write to the same file Django reads from: the
+        # HueyEvent model is unmanaged, so its table only exists where peewee
+        # creates it. Share Django's busy timeout so both wait on each other's
+        # write locks for the same amount of time.
+        return peewee.SqliteDatabase(
+            self.name,
+            timeout=self.options.get("timeout", 5),
+        )
+
 
 class TaskQueueSettings(BaseModel):
     workers: int = Field(

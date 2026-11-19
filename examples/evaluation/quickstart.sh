@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Self-contained CertifiCat evaluation environment.
 #
-# On the first run this script writes config.yaml next to itself with a random
+# On the first run this script writes config.yaml next to itself (or to the
+# current directory when piped into bash from curl) with a random
 # secret key, Redis password and admin password, and a freshly generated
 # self-signed CA for the local finalizer. CertifiCat uses SQLite for storage and
 # runs the web interface and task runner in a single container, alongside a
@@ -42,7 +43,13 @@ CERTIFICAT_CONTAINER="${CERTIFICAT_EVAL_NAME}"
 DATA_VOLUME="${CERTIFICAT_EVAL_NAME}-data"
 DATA_DIR="/var/lib/certificat"
 
-HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+# When the script is piped into bash (curl ... | bash) there is no script file,
+# so BASH_SOURCE is empty and config.yaml goes in the current directory instead.
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+  HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+else
+  HERE=$(pwd)
+fi
 CONFIG="${HERE}/config.yaml"
 
 log() {
@@ -148,100 +155,104 @@ config_value() {
     "${CERTIFICAT_IMAGE}" -r "$1" /etc/certificat/config.yaml
 }
 
-require "${DOCKER}"
-require curl
+# Everything runs from main, which is only called on the last line. When the
+# script is piped from curl, bash executes it as it downloads, so a dropped
+# connection would otherwise run a truncated script.
+main() {
+  require "${DOCKER}"
+  require curl
 
-if [ -f "${CONFIG}" ]; then
-  log "INFO Found existing ${CONFIG}, skipping setup and starting CertifiCat"
-  FRESH_CONFIG=false
-else
-  generate_config
-  FRESH_CONFIG=true
-fi
-
-if [ "${CERTIFICAT_PULL}" = true ]; then
-  log "INFO Pulling ${CERTIFICAT_IMAGE}"
-  "${DOCKER}" pull "${CERTIFICAT_IMAGE}" >/dev/null \
-    || log "WARN Could not pull ${CERTIFICAT_IMAGE}, using the local copy if there is one"
-fi
-
-REDIS_PASSWORD=$(config_value '.certificat.redis.password')
-URL_ROOT=$(config_value '.certificat.url_root')
-ADMIN_USERNAME=$(config_value '.certificat.authentication.admin.username')
-ADMIN_PASSWORD=$(config_value '.certificat.authentication.admin.password')
-[ -n "${REDIS_PASSWORD}" ] && [ "${REDIS_PASSWORD}" != "null" ] \
-  || die "certificat.redis.password is missing from ${CONFIG}."
-
-# The published port has to match the port in url_root, otherwise ACME clients
-# are handed URLs they can't reach.
-HOST_PORT=$(sed -nE 's#^https?://[^/:]+:([0-9]+).*#\1#p' <<<"${URL_ROOT}")
-HOST_PORT="${HOST_PORT:-80}"
-
-"${DOCKER}" network inspect "${NETWORK}" &>/dev/null \
-  || "${DOCKER}" network create "${NETWORK}" >/dev/null
-
-# Redis only holds the cache and task queue, so it's recreated on every run to
-# pick up the password from config.yaml.
-if container_exists "${REDIS_CONTAINER}"; then
-  "${DOCKER}" rm -f "${REDIS_CONTAINER}" >/dev/null
-fi
-log "INFO Starting Redis (${REDIS_CONTAINER})"
-"${DOCKER}" run -d \
-  --name "${REDIS_CONTAINER}" \
-  --network "${NETWORK}" \
-  --restart unless-stopped \
-  "${REDIS_IMAGE}" \
-  redis-server --save "" --appendonly no --requirepass "${REDIS_PASSWORD}" >/dev/null
-
-if container_exists "${CERTIFICAT_CONTAINER}"; then
-  "${DOCKER}" rm -f "${CERTIFICAT_CONTAINER}" >/dev/null
-fi
-
-# The web interface and task runner run as the unprivileged certificat user,
-# while migrations run as root during startup. Create the SQLite database ahead
-# of time and hand the data directory to certificat so both can write to it.
-log "INFO Starting CertifiCat (${CERTIFICAT_CONTAINER}) on port ${HOST_PORT}"
-"${DOCKER}" run -d \
-  --name "${CERTIFICAT_CONTAINER}" \
-  --network "${NETWORK}" \
-  --restart unless-stopped \
-  --publish "${HOST_PORT}:80" \
-  --add-host "host.docker.internal:host-gateway" \
-  --volume "${CONFIG}:/etc/certificat/config.yaml:ro,z" \
-  --volume "${DATA_VOLUME}:${DATA_DIR}" \
-  --env CERTIFICAT__CONFIG=/etc/certificat/config.yaml \
-  --entrypoint /bin/bash \
-  "${CERTIFICAT_IMAGE}" \
-  -c "mkdir -p ${DATA_DIR} \
-      && touch ${DATA_DIR}/certificat.sqlite3 \
-      && chown -R certificat ${DATA_DIR} \
-      && exec /srv/www/entrypoint.sh start" >/dev/null
-
-log "INFO Waiting for CertifiCat to become ready"
-# First startup runs migrations and collects static files, which can take a
-# couple of minutes.
-for _ in $(seq 1 150); do
-  # A container that exited or is crash-looping won't come up on its own.
-  if [ "$("${DOCKER}" container inspect -f '{{.State.Status}}/{{.RestartCount}}' "${CERTIFICAT_CONTAINER}" 2>/dev/null)" != "running/0" ]; then
-    echo
-    "${DOCKER}" logs --tail 50 "${CERTIFICAT_CONTAINER}" >&2 || true
-    die "CertifiCat exited during startup, see the logs above."
+  if [ -f "${CONFIG}" ]; then
+    log "INFO Found existing ${CONFIG}, skipping setup and starting CertifiCat"
+    FRESH_CONFIG=false
+  else
+    generate_config
+    FRESH_CONFIG=true
   fi
-  if curl -fsS -o /dev/null "http://localhost:${HOST_PORT}/directory" 2>/dev/null; then
-    READY=true
-    break
+
+  if [ "${CERTIFICAT_PULL}" = true ]; then
+    log "INFO Pulling ${CERTIFICAT_IMAGE}"
+    "${DOCKER}" pull "${CERTIFICAT_IMAGE}" >/dev/null \
+      || log "WARN Could not pull ${CERTIFICAT_IMAGE}, using the local copy if there is one"
   fi
-  echo -n "."
-  sleep 2
-done
-echo
 
-if [ "${READY:-false}" != true ]; then
-  "${DOCKER}" logs --tail 30 "${CERTIFICAT_CONTAINER}" >&2 || true
-  log "WARN CertifiCat isn't answering yet, see the logs above. Follow its progress with: ${DOCKER} logs -f ${CERTIFICAT_CONTAINER}"
-fi
+  REDIS_PASSWORD=$(config_value '.certificat.redis.password')
+  URL_ROOT=$(config_value '.certificat.url_root')
+  ADMIN_USERNAME=$(config_value '.certificat.authentication.admin.username')
+  ADMIN_PASSWORD=$(config_value '.certificat.authentication.admin.password')
+  [ -n "${REDIS_PASSWORD}" ] && [ "${REDIS_PASSWORD}" != "null" ] \
+    || die "certificat.redis.password is missing from ${CONFIG}."
 
-cat <<EOF
+  # The published port has to match the port in url_root, otherwise ACME clients
+  # are handed URLs they can't reach.
+  HOST_PORT=$(sed -nE 's#^https?://[^/:]+:([0-9]+).*#\1#p' <<<"${URL_ROOT}")
+  HOST_PORT="${HOST_PORT:-80}"
+
+  "${DOCKER}" network inspect "${NETWORK}" &>/dev/null \
+    || "${DOCKER}" network create "${NETWORK}" >/dev/null
+
+  # Redis only holds the cache and task queue, so it's recreated on every run to
+  # pick up the password from config.yaml.
+  if container_exists "${REDIS_CONTAINER}"; then
+    "${DOCKER}" rm -f "${REDIS_CONTAINER}" >/dev/null
+  fi
+  log "INFO Starting Redis (${REDIS_CONTAINER})"
+  "${DOCKER}" run -d \
+    --name "${REDIS_CONTAINER}" \
+    --network "${NETWORK}" \
+    --restart unless-stopped \
+    "${REDIS_IMAGE}" \
+    redis-server --save "" --appendonly no --requirepass "${REDIS_PASSWORD}" >/dev/null
+
+  if container_exists "${CERTIFICAT_CONTAINER}"; then
+    "${DOCKER}" rm -f "${CERTIFICAT_CONTAINER}" >/dev/null
+  fi
+
+  # The web interface and task runner run as the unprivileged certificat user,
+  # while migrations run as root during startup. Create the SQLite database ahead
+  # of time and hand the data directory to certificat so both can write to it.
+  log "INFO Starting CertifiCat (${CERTIFICAT_CONTAINER}) on port ${HOST_PORT}"
+  "${DOCKER}" run -d \
+    --name "${CERTIFICAT_CONTAINER}" \
+    --network "${NETWORK}" \
+    --restart unless-stopped \
+    --publish "${HOST_PORT}:80" \
+    --add-host "host.docker.internal:host-gateway" \
+    --volume "${CONFIG}:/etc/certificat/config.yaml:ro,z" \
+    --volume "${DATA_VOLUME}:${DATA_DIR}" \
+    --env CERTIFICAT__CONFIG=/etc/certificat/config.yaml \
+    --entrypoint /bin/bash \
+    "${CERTIFICAT_IMAGE}" \
+    -c "mkdir -p ${DATA_DIR} \
+        && touch ${DATA_DIR}/certificat.sqlite3 \
+        && chown -R certificat ${DATA_DIR} \
+        && exec /srv/www/entrypoint.sh start" >/dev/null
+
+  log "INFO Waiting for CertifiCat to become ready"
+  # First startup runs migrations and collects static files, which can take a
+  # couple of minutes.
+  for _ in $(seq 1 150); do
+    # A container that exited or is crash-looping won't come up on its own.
+    if [ "$("${DOCKER}" container inspect -f '{{.State.Status}}/{{.RestartCount}}' "${CERTIFICAT_CONTAINER}" 2>/dev/null)" != "running/0" ]; then
+      echo
+      "${DOCKER}" logs --tail 50 "${CERTIFICAT_CONTAINER}" >&2 || true
+      die "CertifiCat exited during startup, see the logs above."
+    fi
+    if curl -fsS -o /dev/null "http://localhost:${HOST_PORT}/directory" 2>/dev/null; then
+      READY=true
+      break
+    fi
+    echo -n "."
+    sleep 2
+  done
+  echo
+
+  if [ "${READY:-false}" != true ]; then
+    "${DOCKER}" logs --tail 30 "${CERTIFICAT_CONTAINER}" >&2 || true
+    log "WARN CertifiCat isn't answering yet, see the logs above. Follow its progress with: ${DOCKER} logs -f ${CERTIFICAT_CONTAINER}"
+  fi
+
+  cat <<EOF
 
 CertifiCat is running at ${URL_ROOT}
   Web login:       ${ADMIN_USERNAME} / ${ADMIN_PASSWORD}
@@ -255,3 +266,6 @@ Log in, create an account binding, then request a certificate, for example:
 Logs:  ${DOCKER} logs -f ${CERTIFICAT_CONTAINER}
 Stop:  ${DOCKER} stop ${CERTIFICAT_CONTAINER} ${REDIS_CONTAINER}
 EOF
+}
+
+main "$@"

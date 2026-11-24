@@ -31,6 +31,14 @@ class TruncDayNaive(Func):
 
     output_field = DateField()
 
+    def as_sqlite(self, compiler, connection, **extra_context):
+        return self.as_sql(
+            compiler,
+            connection,
+            template="%(function)s(%(expressions)s)",
+            function="date",
+        )
+
     def as_postgresql(self, compiler, connection):
         return self.as_sql(
             compiler,
@@ -48,11 +56,11 @@ class TruncDayNaive(Func):
         )
 
     def convert_value(self, value, expression, connection):
-        return dateparse.parse_date(value)
+        return dateparse.parse_date(value) if isinstance(value, str) else value
 
 
 @require_http_methods(["GET"])
-@cache_page(60 * 15)  # Cached for 15 minutes
+@cache_page(60 * 10)  # Cached for 10 minutes
 def cert_activity(request: HttpRequest):
     # 375 is not a typo, we get some extra days to account for the graph
     # winding back to the first Sunday of the week.

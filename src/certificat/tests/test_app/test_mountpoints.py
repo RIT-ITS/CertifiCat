@@ -1,10 +1,13 @@
-from certificat.modules.html.nav import Sections
-from certificat.settings.dynamic import ApplicationSettings
-from django.urls import reverse
+from urllib.parse import urlsplit
+
 import inject
 import pytest
-from urllib.parse import urlsplit
 from acmev2.services import ACMEEndpoint, IDirectoryService
+from django.test import Client
+from django.urls import reverse
+
+from certificat.modules.html.nav import Sections
+from certificat.settings.dynamic import ApplicationSettings
 
 
 @pytest.mark.django_db
@@ -71,3 +74,24 @@ def test_mountpoints_equivalency(reload_urls):
         assert urlsplit(url).path == "/web/accounts/", (
             f"{prefix} produced incorrect url"
         )
+
+
+@pytest.mark.django_db
+def test_directory_resolves(reload_urls, web_client: Client):
+    app_settings = ApplicationSettings.get()
+    web_prefix = "web-prefix/"
+    acme_prefix = "acme-prefix/"
+
+    # If you change the web_prefix, web URLs should load from there
+    app_settings.web_ui_mountpoint = web_prefix
+    # Likewise ACME URLs should change
+    app_settings.web_acme_mountpoint = acme_prefix
+
+    reload_urls()
+
+    url = reverse("directory")
+    assert urlsplit(url).path == "/" + acme_prefix + "directory"
+
+    response = web_client.get(url)
+    assert response.status_code == 200
+    assert "newAccount" in response.json()

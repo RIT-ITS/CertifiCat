@@ -7,6 +7,7 @@ and this project uses modified [Calendar Versioning](https://calver.org/).
 
 ## Unreleased / In Development
 
+- Fixed an order of operations bug with handling the directory URL after acme URLs
 - Added an integration test suite that tests a fresh CertifiCat install can issue a certificate
 - Added a quickstart evaluation script that sets up CertifiCat with no intervention
 - Added a display for the finalizer used by the order. Will only work for future orders.
